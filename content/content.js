@@ -240,11 +240,17 @@
       current = { lobby, items: [], playersCount: all.length };
       if (!settings.overlay) { clearOverlay(); return; }
 
-      const icons = new Set(hidden.map((r) => r.icon).filter(Boolean));
+      // Avatars count unless the site is clearly masking them (many hidden rows, all one placeholder).
+      const hiddenIcons = new Set(hidden.map((r) => r.icon).filter(Boolean));
+      const iconsMasked = hidden.length >= 4 && hiddenIcons.size <= 1;
+      const iconFreq = {};
+      pool.forEach((p) => { if (p.icon) iconFreq[p.icon] = (iconFreq[p.icon] || 0) + 1 / pool.length; });
+      stats = (await S.loadAll()).stats;
+      const iconSwap = (((stats.iconChecked || 0) - (stats.iconSame || 0)) + 2) / ((stats.iconChecked || 0) + 5); // prior 40 % swap
       const matches = R.matchLobby(hidden.map((r) => ({
         rankIdx: r.rankIdx, abs: r.abs, w: r.w, l: r.l, season: lobby.season, icon: r.icon,
         suffix: r.suffix || null, heroes: r.heroes,
-      })), pool.map(S.toCandidate), { useSuffix: settings.useSuffix && suffixTrusted(), useIcons: settings.useIcons && icons.size >= 3 });
+      })), pool.map(S.toCandidate), { useSuffix: settings.useSuffix && suffixTrusted(), useIcons: settings.useIcons && !iconsMasked, iconFreq, iconSwap });
 
       current.items = hidden.map((row, i) => ({ row, match: matches[i], player: byUid[matches[i].uid] || null, byUid }));
       current.items.forEach((it) => {

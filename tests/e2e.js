@@ -88,6 +88,22 @@ const mockChrome = `
   await page.screenshot({ path: path.join(__dirname, 'out_ranked_masked.png') });
   await page.close();
 
+  console.log('\n[3b] Returning player swapped avatar; only 2 rows hidden (old >=3-distinct gate would have ignored avatars)');
+  const stats = JSON.parse(store.get('rdt_stats'));
+  ok(stats.iconChecked >= 1 && stats.iconSame === stats.iconChecked, `avatar-swap rate is learned from real sightings (${stats.iconSame}/${stats.iconChecked} unchanged)`);
+  page = await load('game3.html', () => {
+    const panel = document.querySelector('[role=tabpanel][aria-labelledby=live-game]');
+    panel.querySelectorAll('li').forEach((li) => {
+      const a = li.querySelector('a[href*="/player/"]'); if (!a) return;
+      if (!['PlayerA.', 'PlayerC42'].includes(a.textContent)) return;
+      const s = document.createElement('span'); s.className = a.className; s.textContent = '*****' + a.textContent.slice(-1); a.replaceWith(s);
+      if (a.textContent === 'PlayerC42') li.querySelector('img[src*="/icons/"]').src = 'https://cdn.rivalsdata.com/assets/icons/99999999.webp'; // swapped avatar
+    });
+  });
+  const two = await page.evaluate(() => [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.chip')].map((c) => c.querySelector('.nm').textContent + ' ' + ((c.querySelector('.pc') || {}).textContent || '')));
+  ok(two.length === 2 && two.every((t) => !t.startsWith('no match')), `both recognised, incl. the one with a swapped avatar: ${JSON.stringify(two)}`);
+  await page.close();
+
   console.log('\n[4] Real Quick Play ban-phase capture (rank only, partial names)');
   page = await load('ban_qp.html');
   const qp = await page.evaluate(() => ({

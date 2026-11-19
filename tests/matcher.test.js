@@ -48,4 +48,17 @@ ok(m[0].uid === 'inf' && m[0].p > 0.9, `...plus visible name suffix + avatar: co
 m = R.matchLobby([row(GM1, { abs: R.absScore(GM1, 70), w: 6, l: 3 })], [cand('x', 'Other', GM1, 20, { w: 4, l: 1 })]);
 ok(m[0].uid === null, 'same W/L change but +50 RS with no net wins => rejected');
 
+console.log('\nAvatars: common vs rare, and players who swap');
+const base = { abs: R.absScore(GM1, 70), w: 6, l: 3 };
+const same = (icon, freq) => R.matchLobby([row(GM1, Object.assign({ icon }, base))], [cand('inf', 'A', GM1, 70, { w: 4, l: 1, icon })], { iconFreq: freq })[0].p;
+const rare = same('rare', { rare: 0.01 }), common = same('common', { common: 0.4 });
+ok(rare > common + 0.1, `same RARE avatar is stronger evidence than same COMMON default avatar (${(rare * 100).toFixed(0)}% vs ${(common * 100).toFixed(0)}%)`);
+const swapped = R.matchLobby([row(GM1, Object.assign({ icon: 'new', suffix: '.' }, base))], [cand('inf', 'Infexious.', GM1, 70, { w: 4, l: 1, icon: 'old' })])[0];
+ok(swapped.uid === 'inf' && swapped.p > 0.5, `avatar swapped since last game still recognised via stats + name end (${(swapped.p * 100).toFixed(0)}%)`);
+const sw = (k) => R.matchLobby([row(GM1, Object.assign({ icon: 'new' }, base))], [cand('inf', 'A', GM1, 70, { w: 4, l: 1, icon: 'old' })], { iconSwap: k })[0].p;
+ok(sw(0.8) > sw(0.1), 'learned swap rate matters: frequent swappers are penalised less for a changed avatar');
+const pick = R.matchLobby([row(GM1, Object.assign({ icon: 'zzz' }, base))], [
+  cand('x', 'X', GM1, 70, { w: 4, l: 1, icon: 'old' }), cand('y', 'Y', GM1, -60, { w: 4, l: 1, icon: 'zzz' })], { iconFreq: { zzz: 0.01 } })[0];
+ok(pick.uid !== 'y', 'a matching avatar cannot rescue implausible stats (RS +130 with no net wins)');
+
 console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);
