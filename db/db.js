@@ -60,7 +60,11 @@
       if (p.names.length > 1) txt.appendChild(el('small', '', 'aka ' + p.names.slice(1, 4).join(', ')));
       wrap.appendChild(txt); nm.appendChild(wrap);
       tr.appendChild(nm);
-      tr.appendChild(el('td', '', l.rankLabel ? l.rankLabel + (l.rs != null ? ' · ' + l.rs + ' RS' : '') : '—'));
+      const rk = el('td'); const rkw = el('span', 'rk');
+      const ri = l.rankLabel && RDT.rankIconUrl(l.rankLabel);
+      if (ri) { const im = document.createElement('img'); im.src = ri; im.alt = ''; rkw.appendChild(im); }
+      rkw.appendChild(document.createTextNode(l.rankLabel ? l.rankLabel + (l.rs != null ? ' · ' + l.rs + ' RS' : '') : '—'));
+      rk.appendChild(rkw); tr.appendChild(rk);
       tr.appendChild(el('td', '', l.w != null ? l.w + 'W-' + l.l + 'L · ' + Math.round(wr(l) * 100) + '%' : '—'));
       const seen = el('td'); seen.appendChild(el('div', '', '×' + p.seen));
       const rel = el('div', 'rel');
@@ -159,5 +163,6 @@
     if (a && a.tagName === 'INPUT' && a.closest('#tbl')) return;
     clearTimeout(reload.t); reload.t = setTimeout(reload, 400);
   });
-  S.loadSeed(chrome.runtime.getURL('data/players.json')).then(reload);
+  // Merge the repo's bundled data first, but never let that step stop the page from rendering.
+  Promise.resolve().then(() => S.loadSeed(chrome.runtime.getURL('data/players.json'))).catch(() => 0).then(reload);
 })();

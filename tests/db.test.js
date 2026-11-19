@@ -28,6 +28,7 @@ seed.rdt_stats = { checked: 8, correct: 7, suffixChecked: 8, suffixOk: 8 };
   const rows = () => page.$$eval('#tbl tbody tr', (r) => r.map((x) => x.querySelector('td.nm a').textContent));
   ok((await rows()).length === 3 && !(await rows()).includes('DleanJeans'), '3 players rendered, your own row (DleanJeans) is hidden');
   ok((await page.$$eval('#tbl tbody tr td.nm img.av', (i) => i.map((x) => x.getAttribute('src')))).every((u) => u === 'https://cdn.rivalsdata.com/assets/icons/1.webp'), 'last avatar shown left of each name');
+  ok((await page.$$eval('#tbl tbody tr td .rk img', (i) => i.map((x) => x.getAttribute('src')))).every((u) => u === 'https://rivalsdata.com/assets/ranks/grandmaster.webp'), 'rank icon shown before the rank name');
   ok((await page.textContent('#cPlayers')) === '3' && (await page.textContent('#cGames')) === '1', 'tab counters');
   await page.fill('#q', 'playerc'); ok(JSON.stringify(await rows()) === '["PlayerC42"]', 'search by name');
   await page.fill('#q', ''); await page.selectOption('#role', 'enemy');

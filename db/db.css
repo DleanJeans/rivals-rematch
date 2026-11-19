@@ -39,3 +39,6 @@ tr.starred td{background:color-mix(in srgb,var(--acc) 9%,transparent)}
 
 .who{display:flex;align-items:center;gap:10px}
 img.av{width:30px;height:30px;border-radius:6px;background:var(--line);flex:none;object-fit:cover}
+
+.rk{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.rk img{width:22px;height:22px;object-fit:contain}

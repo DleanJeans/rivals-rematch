@@ -85,6 +85,18 @@ const mockChrome = `
   ok(got.length === 3 && got.every((c) => want[c.text]),
     `exactly the 3 returning players recognised: ${got.map((c) => c.text + ' ' + c.pc).join(', ')}`);
   ok(chips.filter((c) => c.cls === 'none').length === 8, '8 genuinely new players left as "no match" (no false positives)');
+  // hover a chip that has "no match" rows underneath its tooltip: the tooltip must be the topmost thing
+  await page.hover('#rdt-host >> .chip.hi >> nth=0'); await page.waitForTimeout(200);
+  const top = await page.evaluate(() => {
+    const sr = document.querySelector('#rdt-host').shadowRoot, tip = sr.querySelector('.tip'), r = tip.getBoundingClientRect();
+    tip.style.pointerEvents = 'auto';   // the tooltip ignores the mouse; make it hit-testable for this probe
+    const pts = [[0.2, 0.3], [0.5, 0.5], [0.8, 0.8], [0.5, 0.95]].map(([fx, fy]) => sr.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy));
+    return { open: tip.matches(':popover-open'), covered: pts.filter((e) => e && !tip.contains(e) && e !== tip).length, text: tip.textContent };
+  });
+  ok(top.open && top.covered === 0, `tooltip is in the top layer and nothing paints over it (covered points: ${top.covered})`);
+  const icons = await page.evaluate(() => [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.hud .rk img')].map((i) => i.getAttribute('src')));
+  ok(icons.length >= 11 && icons.every((u) => /\/assets\/ranks\/(grandmaster|diamond)\.webp$/.test(u)), `panel shows a rank icon before each rank name (${icons.length} icons)`);
+  ok(!/0%/.test(top.text.replace(/\b(9\d|100)%/g, '')), 'tooltip does not list 0% alternatives');
   await page.screenshot({ path: path.join(__dirname, 'out_ranked_masked.png') });
   await page.close();
 

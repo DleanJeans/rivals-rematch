@@ -11,6 +11,14 @@
   const doc = root.document;
   const HERO = (s) => 'https://rivalsdata.com/assets/heroes/' + encodeURIComponent(s) + '.webp';
   const ICON = (s) => 'https://cdn.rivalsdata.com/assets/icons/' + encodeURIComponent(s) + '.webp';
+  // rank text with its icon in front: <span class="rk"><img> GM1</span>
+  function rankSpan(label, extraClass) {
+    const sp = el('span', 'rk' + (extraClass ? ' ' + extraClass : ''));
+    const url = label && R.rankIconUrl(label);
+    if (url) { const im = doc.createElement('img'); im.src = url; im.alt = ''; sp.appendChild(im); }
+    sp.appendChild(doc.createTextNode(label || 'QP only'));
+    return sp;
+  }
   const PLAYER = (u) => 'https://rivalsdata.com/player/' + encodeURIComponent(u);
 
   let host = null, shadow = null, chipLayer = null, hud = null;
@@ -34,7 +42,7 @@
   .mid{border-color:#b8892a}.mid .pc{background:#6b4f12;color:#ffe2a1}
   .lo{border-color:#4a4f5c;color:#aab}.lo .pc{background:#30343e;color:#bbc}
   .none{border-style:dashed;color:#8a90a0;font-weight:400}
-  .tip{position:fixed;z-index:2147483002;display:none;max-width:320px;background:#12141a;border:1px solid #4a4f5c;border-radius:8px;
+  .tip{position:fixed;inset:auto;margin:0;z-index:2147483002;display:none;max-width:320px;background:#12141a;border:1px solid #4a4f5c;border-radius:8px;
     padding:8px 10px;color:#dfe2ea;font-size:12px;line-height:1.45;pointer-events:none;box-shadow:0 6px 24px #000a}
   .tip b{color:#fff}.tip .dim{color:#8e94a4}
   .hud{position:fixed;left:14px;bottom:14px;z-index:2147483001;width:430px;max-width:calc(100vw - 28px);max-height:70vh;overflow:auto;
@@ -49,6 +57,7 @@
   .r:last-child{border-bottom:0}
   .t1{color:#6ea8ff}.t2{color:#ff7b7b}.tm{font-weight:700;text-align:center}
   .who img.av{width:20px;height:20px;border-radius:4px;vertical-align:middle;margin-right:6px;background:#2a2d36}
+  .rk{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}.rk img{width:18px;height:18px;object-fit:contain}
   .who a{color:#fff;font-weight:600;text-decoration:none}.who a:hover{text-decoration:underline}
   .who .q{color:#8e94a4;font-weight:400}
   .meta{grid-column:2/4;color:#8e94a4;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
@@ -67,7 +76,7 @@
     chipLayer = doc.createElement('div'); chipLayer.className = 'layer'; shadow.appendChild(chipLayer);
     hud = doc.createElement('div'); hud.className = 'hud'; shadow.appendChild(hud);
     doc.body.appendChild(host);
-    tip = doc.createElement('div'); tip.className = 'tip'; shadow.appendChild(tip);
+    tip = doc.createElement('div'); tip.className = 'tip'; tip.setAttribute('popover', 'manual'); shadow.appendChild(tip); // top layer: always above the chips
   }
   let tip = null;
   function clearOverlay() { if (host) { host.remove(); host = null; } }
@@ -105,7 +114,7 @@
       c.appendChild(el('span', 'nm', label));
       if (it.match.uid) c.appendChild(el('span', 'pc', pct(it.match.p)));
       c.addEventListener('mouseenter', () => showTip(it, c));
-      c.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+      c.addEventListener('mouseleave', hideTip);
       c.dataset.row = it.row.idx;
       chipLayer.appendChild(c);
       it.chip = c;
@@ -127,6 +136,11 @@
     });
   }
 
+  function hideTip() {
+    tip.style.display = 'none';
+    try { if (tip.matches(':popover-open')) tip.hidePopover(); } catch (_) { /* older Chrome: z-index fallback */ }
+  }
+
   function showTip(it, anchor) {
     tip.textContent = '';
     const p = it.player;
@@ -135,7 +149,7 @@
       .filter(Boolean).join(' · ')));
     if (!it.match.uid) tip.appendChild(el('div', 'dim', 'No stored player fits these numbers — probably someone new.'));
     it.match.alts.forEach((a, i) => {
-      const ap = it.byUid[a.uid]; if (!ap || (i > 0 && a.p < 0.03)) return;   // skip hopeless alternatives
+      const ap = it.byUid[a.uid]; if (!ap || (a.p < 0.03 && a.uid !== it.match.uid)) return;   // skip hopeless alternatives
       const d = el('div', '');
       d.appendChild(el('b', '', (i === 0 ? '' : 'or ') + (ap.names[0] || a.uid)));
       d.appendChild(doc.createTextNode(' ' + pct(a.p)));
@@ -144,6 +158,7 @@
     });
     void p;
     tip.style.display = 'block';
+    try { if (tip.showPopover && !tip.matches(':popover-open')) tip.showPopover(); } catch (_) { /* fall back to z-index */ }
     const r = anchor.getBoundingClientRect();
     tip.style.left = Math.max(8, Math.min(r.left, root.innerWidth - 330)) + 'px';
     tip.style.top = Math.min(r.bottom + 6, root.innerHeight - tip.offsetHeight - 8) + 'px';
@@ -175,7 +190,7 @@
         who.appendChild(el('span', 'q', '  ' + pct(it.match.p) + (it.match.p < settings.minShow ? ' (low)' : '')));
       } else who.appendChild(el('span', 'q', 'unrecognised · ' + (it.row.rankLabel || 'QP only') + (it.row.suffix ? ' …' + it.row.suffix : '')));
       row.appendChild(who);
-      row.appendChild(el('div', 'q', it.row.rankLabel || 'QP only'));
+      const rc = el('div', 'q'); rc.appendChild(rankSpan(it.row.rankLabel)); row.appendChild(rc);
       if (it.match.uid) {
         const p = it.player, l = p.last || {};
         const meta = el('div', 'meta');
@@ -302,7 +317,7 @@
   function schedule() { clearTimeout(timer); timer = setTimeout(tick, 250); }
 
   async function start() {
-    if (root.chrome.runtime && root.chrome.runtime.getURL) await S.loadSeed(root.chrome.runtime.getURL('data/players.json'));
+    try { if (root.chrome.runtime && root.chrome.runtime.getURL) await S.loadSeed(root.chrome.runtime.getURL('data/players.json')); } catch (_) { /* optional */ }
     stats = (await S.loadAll()).stats;
     const mo = new MutationObserver((muts) => {
       if (host && muts.every((m) => host.contains(m.target))) return; // ignore our own overlay
