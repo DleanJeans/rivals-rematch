@@ -7,6 +7,9 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
 ## Install
 1. `chrome://extensions` → enable **Developer mode** → **Load unpacked** → pick this folder.
 2. Open your profile on rivalsdata.com and keep the **Live Game** tab open while you queue.
+3. Click the toolbar icon: **Read & save this lobby** reads the page right now (it also injects itself if the tab was
+   opened before the extension was installed/reloaded). It reports what was saved; **Open database** opens the full DB.
+   Saving also happens automatically in the background; the panel at the bottom-right of the page shows its status.
 
 ## How it works
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:
@@ -19,7 +22,7 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
 - Hidden rows get a chip over the `****` (green ≥80 %, amber ≥ threshold, grey "(maybe)", dashed "no match"),
   and a **HUD** lists each recognised player's name, **last-known top heroes**, teammate/enemy history and your notes —
   handy for deciding bans.
-- Click the toolbar icon for the database: search, sort, tag/note players, lobby log, settings, export/import.
+- Open the database from the popup: search, sort, tag/note players, lobby log, settings, export/import.
 
 ## Honest limits
 - It can only recognise people it has **seen with a visible name before**. New players show "no match".

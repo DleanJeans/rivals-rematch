@@ -5,6 +5,8 @@
  */
 (function (root) {
   'use strict';
+  if (root.__rdtContentLoaded) return;
+  root.__rdtContentLoaded = true;
   const R = root.RDT, S = R.store;
   const doc = root.document;
   const HERO = (s) => 'https://rivalsdata.com/assets/heroes/' + encodeURIComponent(s) + '.webp';
@@ -15,6 +17,8 @@
   let hudCollapsed = null; // null = auto
   let pending = new Map(); // ban-phase guesses awaiting the reveal: key -> {uid, suffix, t}
   let stats = {};
+  let statusText = 'starting…';
+  let lastResult = { noPanel: true };
 
   const CSS = `
   :host{all:initial}
@@ -150,7 +154,7 @@
     const matched = items.filter((i) => i.match.uid && i.match.p >= settings.minShow).length;
     hh.appendChild(el('span', '', 'Lobby Memory'));
     hh.appendChild(el('span', 'sub', items.length ? matched + '/' + items.length + ' hidden players recognised'
-      : current.playersCount + ' players saved'));
+      : current.playersCount + ' players saved · ' + statusText));
     hh.appendChild(el('span', 'sp'));
     hh.appendChild(el('span', 'sub', collapsed ? '▲' : '▼'));
     hh.addEventListener('click', () => { hudCollapsed = !collapsed; renderHud(items, settings); });
@@ -222,14 +226,19 @@
     running = true;
     try {
       const lobby = R.scrapeLive(doc);
-      if (!lobby) { clearOverlay(); lastSig = ''; return; }
+      if (!lobby) { clearOverlay(); lastSig = ''; lastResult = { noPanel: true }; return lastResult; }
       const sig = sigOf(lobby);
-      if (sig === lastSig) { position(); return; }
+      if (sig === lastSig) { position(); return lastResult; }
       lastSig = sig;
 
       const settings = await S.getSettings();
       await verifyGuesses(lobby);
-      await S.ingest(lobby, settings);
+      const ing = await S.ingest(lobby, settings);
+      const hiddenN = lobby.rows.filter((r) => r.masked).length;
+      lastResult = { noPanel: false, total: lobby.rows.length, saved: ing.saved, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
+      statusText = ing.saved
+        ? 'saved ' + ing.saved + ' from this lobby' + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
+        : 'all ' + lobby.rows.length + ' names hidden — saved once revealed';
 
       const all = await S.loadPlayers();
       const hidden = lobby.rows.filter((r) => r.masked);
@@ -238,7 +247,7 @@
       const pool = all.filter((p) => !visible.has(p.uid) && Date.now() - (p.lastSeen || 0) < maxAge);
       const byUid = {}; pool.forEach((p) => { byUid[p.uid] = p; });
       current = { lobby, items: [], playersCount: all.length };
-      if (!settings.overlay) { clearOverlay(); return; }
+      if (!settings.overlay) { clearOverlay(); return lastResult; }
 
       // Avatars count unless the site is clearly masking them (many hidden rows, all one placeholder).
       const hiddenIcons = new Set(hidden.map((r) => r.icon).filter(Boolean));
@@ -259,9 +268,14 @@
             { uid: it.match.uid, suffix: it.row.suffix, t: Date.now() });
         }
       });
+      lastResult.matched = current.items.filter((i) => i.match.uid && i.match.p >= settings.minShow).length;
       render(current.items, settings);
+      return lastResult;
     } catch (e) {
       console.warn('[Lobby Memory]', e);
+      lastResult = { error: String(e && e.message || e) };
+      try { statusText = 'ERROR: ' + (e && e.message || e); ensureHost(); hud.textContent = ''; hudCollapsed = false; hud.classList.remove('min');
+        const h = el('div', 'hh'); h.appendChild(el('span', '', 'Lobby Memory')); h.appendChild(el('span', 'sub', statusText)); hud.appendChild(h); } catch (_) { /* nothing more to do */ }
     } finally {
       running = false;
       if (again) { again = false; schedule(); }
@@ -270,6 +284,14 @@
 
   // If reveal checks show the "last characters of the name" assumption is wrong, stop using it.
   const suffixTrusted = () => !(stats.suffixChecked >= 6 && stats.suffixOk / stats.suffixChecked < 0.6);
+
+  /** Force a fresh read + save right now (used by the toolbar popup). */
+  async function scanNow() {
+    for (let i = 0; i < 40 && running; i++) await new Promise((r) => setTimeout(r, 50));
+    lastSig = '';
+    const r = await tick();
+    return r || lastResult;
+  }
 
   let timer = null;
   function schedule() { clearTimeout(timer); timer = setTimeout(tick, 250); }
@@ -285,6 +307,10 @@
     root.addEventListener('resize', () => position());
     root.chrome.storage.onChanged.addListener((ch, area) => {
       if (area === 'local' && ch.rdt_settings) { lastSig = ''; schedule(); }
+    });
+    if (root.chrome.runtime && root.chrome.runtime.onMessage) root.chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
+      if (msg && msg.type === 'rdt-ping') { reply({ ok: true }); return; }
+      if (msg && msg.type === 'rdt-scan') { scanNow().then(reply, (e) => reply({ error: String(e) })); return true; }
     });
     schedule();
   }

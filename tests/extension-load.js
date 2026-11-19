@@ -4,9 +4,8 @@ const ext = path.join(__dirname, '..');
 (async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rdt-'));
   const ctx = await chromium.launchPersistentContext(dir, { headless: false, args: ['--headless=new', '--no-sandbox', `--disable-extensions-except=${ext}`, `--load-extension=${ext}`] });
-  let sw = ctx.serviceWorkers()[0] || await ctx.waitForEvent('serviceworker', { timeout: 15000 });
-  const id = new URL(sw.url()).host;
-  console.log('  ✓ service worker started, extension id', id);
+  const id = require('crypto').createHash('sha256').update(fs.realpathSync(ext)).digest('hex').slice(0, 32).replace(/[0-9a-f]/g, (c) => String.fromCharCode(97 + parseInt(c, 16)));
+  console.log('  extension id', id);
   const page = await ctx.newPage(); const errs = [];
   page.on('pageerror', (e) => errs.push(e.message));
   await page.goto(`chrome-extension://${id}/db/db.html`);

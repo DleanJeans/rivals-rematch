@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lobby Memory</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="hd"><b>Lobby Memory</b><span id="counts" class="dim"></span></div>
+  <p id="where" class="dim">Checking this tab…</p>
+  <button id="scan" class="primary" disabled>Read &amp; save this lobby</button>
+  <div id="result" role="status" aria-live="polite"></div>
+  <button id="open">Open database</button>
+  <script src="../lib/shared.js"></script>
+  <script src="../lib/store.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
