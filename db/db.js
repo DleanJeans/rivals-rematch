@@ -133,6 +133,8 @@
   }
   ['sSelf', 'sOverlay', 'sSuffix', 'sIcons', 'sMin', 'sQp'].forEach((id) => $(id).addEventListener('change', saveSettings));
 
+  try { $('ver').textContent = 'v' + chrome.runtime.getManifest().version; } catch (_) { /* no manifest in tests */ }
+
   // ---- wiring
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('on', x === b));

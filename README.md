@@ -11,6 +11,11 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
    opened before the extension was installed/reloaded). It reports what was saved; **Open database** opens the full DB.
    Saving also happens automatically in the background; the panel at the bottom-right of the page shows its status.
 
+## Updating
+An unpacked extension does not update itself. Download the repo again (or `git pull`), then press the **reload**
+button on the extension's card at `chrome://extensions`. The installed version is shown in the toolbar popup and
+at the top of the database page (currently 0.2.0) so you can check you have the latest.
+
 ## How it works
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:
   name, UID, avatar, rank + RS, W-L, top heroes, party flag, and whether they were your teammate or enemy.
