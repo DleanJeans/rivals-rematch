@@ -19,7 +19,7 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
   and top heroes / party icon when shown. A global assignment guarantees two rows never claim the same person.
 - Matching leans on one hard rule: season **W and L only ever go up**. Your example fits it —
   PlayerA. `4W-1L → 6W-3L` (+2W +2L) with RS unchanged; RS can move at most about +20 per win and −25 per loss (GM), and RS shows −20…99 within a division (below −20 you derank), so impossible changes are ruled out.
-- **Quick Play lobbies** only save players ranked **GM or Celestial** (everyone is saved in Ranked). Toggle in Database → Settings.
+- **Quick Play lobbies** only save players ranked **GM or above** (GM, Celestial, Eternity, One Above All) (everyone is saved in Ranked). Toggle in Database → Settings.
 - Hidden rows get a chip over the `****` (green ≥80 %, amber ≥ threshold, grey "(maybe)", dashed "no match"),
   and a **HUD** lists each recognised player's name, **last-known top heroes**, teammate/enemy history and your notes —
   handy for deciding bans.

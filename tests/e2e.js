@@ -116,7 +116,7 @@ const mockChrome = `
   ok(two.length === 2 && two.every((t) => !t.startsWith('no match')), `both recognised, incl. the one with a swapped avatar: ${JSON.stringify(two)}`);
   await page.close();
 
-  console.log('\n[4] Real Quick Play ban-phase capture (rank only, partial names) - default: only GM/Celestial are saved');
+  console.log('\n[4] Real Quick Play ban-phase capture (rank only, partial names) - default: only GM or above are saved');
   const before = players().length;
   page = await load('ban_qp.html');
   const qp = await page.evaluate(() => ({
@@ -135,6 +135,18 @@ const mockChrome = `
     const im = li.querySelector('img[src*="/ranks/"]'); im.src = 'https://rivalsdata.com/assets/ranks/grandmaster.webp'; im.parentNode.firstChild.nodeType === 3 ? (im.parentNode.firstChild.textContent = 'GM2') : im.parentNode.childNodes.forEach((n) => { if (n.nodeType === 3) n.textContent = 'GM2'; });
   });
   ok(!!byName('PlayerX6') && players().length === before + 1, 'a GM player in the same Quick Play lobby IS saved');
+  await page.close();
+
+  // every tier at/above GM is kept; Diamond is not (labels as rivalsdata would render them, incl. "OAA" with a hyphenated image)
+  const setTier = (name, label, img) => {
+    const li = [...document.querySelectorAll('li')].find((x) => x.textContent.includes(name));
+    const im = li.querySelector('img[src*="/ranks/"]'); im.src = 'https://rivalsdata.com/assets/ranks/' + img + '.webp';
+    [...im.parentNode.childNodes].find((n) => n.nodeType === 3).textContent = label;
+  };
+  const before2 = players().length;
+  page = await load('ban_qp.html', `(${setTier.toString()})('PlayerM1', 'C2', 'celestial'); (${setTier.toString()})('Player26', 'E3', 'eternity'); (${setTier.toString()})('Player29', 'OAA', 'one-above-all');`);
+  ok(players().length === before2 + 3 && !!byName('PlayerM1') && !!byName('Player26') && !!byName('Player29'), `Celestial, Eternity and One Above All are saved in Quick Play (+${players().length - before2})`);
+  ok(!byName('Player27') && !byName('Player28'), 'Diamond players (Player27, Player28) still not saved');
   await page.close();
 
   console.log('\n[4b] Setting off => Quick Play saves everyone, QP rank kept separate');

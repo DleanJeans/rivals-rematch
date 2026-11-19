@@ -258,7 +258,7 @@
       lastResult = { noPanel: false, total: lobby.rows.length, saved: ing.saved, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
       statusText = ing.saved
         ? 'saved ' + ing.saved + ' from this lobby' + (ing.skipped ? ', ' + ing.skipped + ' below GM skipped (Quick Play)' : '') + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
-        : ing.skipped ? 'Quick Play: nobody at GM/Celestial to save'
+        : ing.skipped ? 'Quick Play: nobody at GM or above to save'
         : 'all ' + lobby.rows.length + ' names hidden — saved once revealed';
 
       const all = await S.loadPlayers();
