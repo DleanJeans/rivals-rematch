@@ -1,7 +1,11 @@
 // Real extension in Chromium. rivalsdata.com is served from a fixture so Chrome injects the REAL content script,
 // then the REAL popup page is driven: click "Read & save this lobby".
 const { chromium } = require('playwright'); const path = require('path'); const os = require('os'); const fs = require('fs'); const crypto = require('crypto');
-const ext = fs.realpathSync(path.join(__dirname, '..'));
+// Run against a COPY of the extension without data/players.json, so the repo's real data never leaks into the test profile.
+const repo = fs.realpathSync(path.join(__dirname, '..'));
+const extDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'rdt-popup-')), 'ext');
+fs.cpSync(repo, extDir, { recursive: true, filter: (f) => !['.git', 'node_modules'].some((x) => f.split(path.sep).includes(x)) && path.basename(f) !== 'players.json' });
+const ext = fs.realpathSync(extDir);
 let fail = 0; const ok = (c, m) => { console.log((c ? '  ✓ ' : '  ✗ ') + m); if (!c) fail++; };
 // Unpacked extension id = first 32 hex chars of sha256(path), mapped 0-f -> a-p.
 const extId = crypto.createHash('sha256').update(ext).digest('hex').slice(0, 32).replace(/[0-9a-f]/g, (c) => String.fromCharCode(97 + parseInt(c, 16)));
