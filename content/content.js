@@ -34,10 +34,10 @@
   .mid{border-color:#b8892a}.mid .pc{background:#6b4f12;color:#ffe2a1}
   .lo{border-color:#4a4f5c;color:#aab}.lo .pc{background:#30343e;color:#bbc}
   .none{border-style:dashed;color:#8a90a0;font-weight:400}
-  .tip{position:fixed;display:none;max-width:320px;background:#12141a;border:1px solid #4a4f5c;border-radius:8px;
+  .tip{position:fixed;z-index:2147483002;display:none;max-width:320px;background:#12141a;border:1px solid #4a4f5c;border-radius:8px;
     padding:8px 10px;color:#dfe2ea;font-size:12px;line-height:1.45;pointer-events:none;box-shadow:0 6px 24px #000a}
   .tip b{color:#fff}.tip .dim{color:#8e94a4}
-  .hud{position:fixed;right:14px;bottom:14px;width:430px;max-width:calc(100vw - 28px);max-height:70vh;overflow:auto;
+  .hud{position:fixed;left:14px;bottom:14px;z-index:2147483001;width:430px;max-width:calc(100vw - 28px);max-height:70vh;overflow:auto;
     background:#14161c;border:1px solid #3a3f4b;border-radius:10px;color:#e4e7ee;font-size:12px;pointer-events:auto;
     box-shadow:0 8px 30px #000b}
   .hud.min{width:auto;overflow:hidden}
@@ -135,7 +135,7 @@
       .filter(Boolean).join(' · ')));
     if (!it.match.uid) tip.appendChild(el('div', 'dim', 'No stored player fits these numbers — probably someone new.'));
     it.match.alts.forEach((a, i) => {
-      const ap = it.byUid[a.uid]; if (!ap) return;
+      const ap = it.byUid[a.uid]; if (!ap || (i > 0 && a.p < 0.03)) return;   // skip hopeless alternatives
       const d = el('div', '');
       d.appendChild(el('b', '', (i === 0 ? '' : 'or ') + (ap.names[0] || a.uid)));
       d.appendChild(doc.createTextNode(' ' + pct(a.p)));
@@ -145,7 +145,7 @@
     void p;
     tip.style.display = 'block';
     const r = anchor.getBoundingClientRect();
-    tip.style.left = Math.min(r.left, root.innerWidth - 330) + 'px';
+    tip.style.left = Math.max(8, Math.min(r.left, root.innerWidth - 330)) + 'px';
     tip.style.top = Math.min(r.bottom + 6, root.innerHeight - tip.offsetHeight - 8) + 'px';
   }
 
