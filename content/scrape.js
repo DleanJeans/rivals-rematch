@@ -99,9 +99,12 @@
       const m = /^Season\s+(\d+)$/.exec(e.textContent.trim());
       if (m) { season = +m[1]; break; }
     }
-    const qpLobby = rows.some((r) => r.qp);   // QP lobbies show a second, (QP)-labelled rank column
+    // Mode: the profile header reads "In game (Quick Play)" / "In game (Competitive)"; the second (QP) rank column is a fallback.
+    const mm = /In game \(([^)]+)\)/.exec(doc.body ? doc.body.textContent : '');
+    const mode = mm ? mm[1].trim().toLowerCase() : null;
+    const qpLobby = mode ? mode.includes('quick') : rows.some((r) => r.qp);
     rows.forEach((r) => { r.qpLobby = qpLobby; });
-    return { season, teams, rows, qpLobby };
+    return { season, teams, rows, qpLobby, mode };
   }
 
   root.RDT = Object.assign(root.RDT || {}, { scrapeLive });

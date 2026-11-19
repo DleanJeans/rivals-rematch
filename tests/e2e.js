@@ -116,20 +116,36 @@ const mockChrome = `
   ok(two.length === 2 && two.every((t) => !t.startsWith('no match')), `both recognised, incl. the one with a swapped avatar: ${JSON.stringify(two)}`);
   await page.close();
 
-  console.log('\n[4] Real Quick Play ban-phase capture (rank only, partial names)');
+  console.log('\n[4] Real Quick Play ban-phase capture (rank only, partial names) - default: only GM/Celestial are saved');
+  const before = players().length;
   page = await load('ban_qp.html');
   const qp = await page.evaluate(() => ({
     host: !!document.querySelector('#rdt-host'),
+    mode: RDT.scrapeLive(document).mode, qpLobby: RDT.scrapeLive(document).qpLobby,
     chips: [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.chip')].map((c) => c.textContent),
   }));
   ok(qp.host && qp.chips.length === 5, `5 masked rows detected and overlaid (got ${qp.chips.length}): ${JSON.stringify(qp.chips)}`);
-  const known = players().filter((p) => p.names.includes('PlayerM1') || p.names.includes('PlayerX6'));
-  ok(known.length === 2, 'visible players in the ban phase are still saved');
+  ok(qp.mode === 'quick play' && qp.qpLobby === true, `lobby recognised as Quick Play from the page header (mode="${qp.mode}")`);
+  ok(!byName('PlayerM1') && !byName('PlayerX6'), 'Platinum / Gold players in a Quick Play lobby are NOT saved');
+  ok(players().filter((p) => p.names.includes('PlayerM1') || p.names.includes('PlayerX6')).length === 0 && players().length === before, `database unchanged: still ${before} players (got ${players().length})`);
+  await page.close();
+
+  page = await load('ban_qp.html', () => {   // same lobby, but one visible Gold player is actually Grandmaster
+    const li = [...document.querySelectorAll('li')].find((x) => x.textContent.includes('PlayerX6'));
+    const im = li.querySelector('img[src*="/ranks/"]'); im.src = 'https://rivalsdata.com/assets/ranks/grandmaster.webp'; im.parentNode.firstChild.nodeType === 3 ? (im.parentNode.firstChild.textContent = 'GM2') : im.parentNode.childNodes.forEach((n) => { if (n.nodeType === 3) n.textContent = 'GM2'; });
+  });
+  ok(!!byName('PlayerX6') && players().length === before + 1, 'a GM player in the same Quick Play lobby IS saved');
+  await page.close();
+
+  console.log('\n[4b] Setting off => Quick Play saves everyone, QP rank kept separate');
+  store.set('rdt_settings', JSON.stringify({ qpHighRankOnly: false }));
+  page = await load('ban_qp.html');
   const mo = byName('PlayerM1');
+  ok(!!mo && !!byName('PlayerX6'), 'with the filter off, Platinum / Gold players are saved again');
   ok(mo.last.rs === 50 && mo.last.w == null, `partial row stored without inventing W/L (rs=${mo.last.rs}, w=${mo.last.w})`);
   ok(mo.last.qp && mo.last.qp.label === 'B1', `QP rank kept separate (${mo.last.qp && mo.last.qp.label}) and not mistaken for ranked (${mo.last.rankLabel})`);
   const only = await page.evaluate(() => {   // a player who shows ONLY a (QP) rank, no ranked column
-    const li = [...document.querySelectorAll('li')].find((x) => x.textContent.includes('momoring') || x.textContent.includes('PlayerM1'));
+    const li = [...document.querySelectorAll('li')].find((x) => x.textContent.includes('PlayerM1'));
     li.querySelectorAll('img[src*="/ranks/"]')[0].parentElement.remove();
     const r = RDT.scrapeLive(document).rows.find((x) => x.name === 'PlayerM1');
     return r && { rankIdx: r.rankIdx, qp: r.qp && r.qp.label, qpLobby: r.qpLobby };

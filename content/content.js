@@ -255,9 +255,10 @@
       await verifyGuesses(lobby);
       const ing = await S.ingest(lobby, settings);
       const hiddenN = lobby.rows.filter((r) => r.masked).length;
-      lastResult = { noPanel: false, total: lobby.rows.length, saved: ing.saved, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
+      lastResult = { noPanel: false, total: lobby.rows.length, saved: ing.saved, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
       statusText = ing.saved
-        ? 'saved ' + ing.saved + ' from this lobby' + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
+        ? 'saved ' + ing.saved + ' from this lobby' + (ing.skipped ? ', ' + ing.skipped + ' below GM skipped (Quick Play)' : '') + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
+        : ing.skipped ? 'Quick Play: nobody at GM/Celestial to save'
         : 'all ' + lobby.rows.length + ' names hidden — saved once revealed';
 
       const all = await S.loadPlayers();

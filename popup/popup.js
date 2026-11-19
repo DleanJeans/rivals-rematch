@@ -47,6 +47,7 @@
         const lines = [(r.saved ? 'Saved ' + r.saved + ' player' + (r.saved === 1 ? '' : 's') : 'Nothing saved yet')];
         lines.push(r.total + ' in the lobby' + (r.newGame ? ' · new lobby' : '') + (r.hidden ? ' · ' + r.hidden + ' names hidden' : ''));
         if (r.hidden) lines.push(r.matched + ' of ' + r.hidden + ' hidden players recognised (see the panel on the page)');
+        if (r.skipped) lines.push(r.skipped + ' Quick Play player' + (r.skipped === 1 ? '' : 's') + ' below GM not saved');
         if (!r.saved && r.hidden) lines.push('Names are hidden during the ban phase — press again once the match starts.');
         show('ok', lines);
       }

@@ -117,7 +117,7 @@
   function renderSettings() {
     const s = data.settings;
     $('sSelf').value = s.selfUid; $('sOverlay').checked = s.overlay; $('sSuffix').checked = s.useSuffix;
-    $('sIcons').checked = s.useIcons; $('sMin').value = Math.round(s.minShow * 100);
+    $('sIcons').checked = s.useIcons; $('sQp').checked = s.qpHighRankOnly; $('sMin').value = Math.round(s.minShow * 100);
     const st = data.stats;
     $('accuracy').textContent = st.checked
       ? 'Track record: ' + st.correct + ' of ' + st.checked + ' ban-phase guesses were confirmed correct once names were revealed.' +
@@ -127,11 +127,11 @@
   async function saveSettings() {
     const s = Object.assign({}, data.settings, {
       selfUid: $('sSelf').value.trim(), overlay: $('sOverlay').checked, useSuffix: $('sSuffix').checked,
-      useIcons: $('sIcons').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
+      useIcons: $('sIcons').checked, qpHighRankOnly: $('sQp').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
     });
     await S.saveSettings(s); data.settings = s;
   }
-  ['sSelf', 'sOverlay', 'sSuffix', 'sIcons', 'sMin'].forEach((id) => $(id).addEventListener('change', saveSettings));
+  ['sSelf', 'sOverlay', 'sSuffix', 'sIcons', 'sMin', 'sQp'].forEach((id) => $(id).addEventListener('change', saveSettings));
 
   // ---- wiring
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => {
