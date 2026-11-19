@@ -54,7 +54,7 @@ seed.rdt_stats = { checked: 8, correct: 7, suffixChecked: 8, suffixOk: 8 };
   await page.evaluate(() => RDT.store.deletePlayer('11'));
   const n = await page.evaluate(async (e) => RDT.store.importAll(e), exp);
   ok(n === 4 && await page.evaluate(() => 'p:11' in window.__st), 'import restores a deleted player (merge)');
-  await page.click('[data-tab=lobbies]'); ok((await page.textContent('#tab-lobbies')).includes('2 players recorded'), 'lobby log renders');
+  await page.click('[data-tab=lobbies]'); ok((await page.textContent('#tab-lobbies')).includes('2 players saved'), 'lobby log renders');
   await page.screenshot({ path: path.join(__dirname, 'out_db.png') });
   await b.close(); console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);
 })();

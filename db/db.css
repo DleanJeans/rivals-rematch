@@ -42,3 +42,27 @@ img.av{width:30px;height:30px;border-radius:6px;background:var(--line);flex:none
 
 .rk{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .rk img{width:22px;height:22px;object-fit:contain}
+
+/* ---- rows styled after rivalsdata's Live Game list ---- */
+:root{--good:#4AAC4D;--bad:#f87171;--gold:#FFD970}
+#tbl td,table.team td{padding:7px 10px}
+#tbl tbody tr:nth-child(even),table.team tbody tr:nth-child(even){background:color-mix(in srgb,var(--tx) 3%,transparent)}
+#tbl tbody tr:hover,table.team tbody tr:hover{background:color-mix(in srgb,var(--tx) 6%,transparent)}
+img.av{width:36px;height:36px;border-radius:7px}
+.nmline{display:flex;align-items:center;gap:6px}
+td.nm a{font-size:15px;font-weight:500}
+td.nm a.me{color:var(--gold)}
+.party{flex:none}
+.rk .rl{font-size:15px;font-weight:500}
+.rk .rs{font-size:10px;color:var(--dim);align-self:flex-start;margin-top:3px}
+.rk img{width:28px;height:28px}
+td.rec{text-align:center;white-space:nowrap;line-height:1.25}
+td.rec .wl{font-size:13px;color:var(--dim)}td.rec .pc{font-size:13px}
+.heroes{gap:4px}.heroes img{width:32px;height:32px;border-radius:6px}
+tr.starred td{background:color-mix(in srgb,var(--acc) 9%,transparent)}
+/* lobbies */
+.lob table.team{margin:8px 0 0;border:0;border-radius:6px}
+.lob table.team thead th{font-size:14px;color:var(--tx);font-weight:500;cursor:default;padding:8px 10px;border-bottom:1px solid var(--line)}
+.lob table.team thead th.avg{font-variant-numeric:tabular-nums}
+.lob table.team td{border-bottom:0}
+.lob table.team col,.lob table.team th:nth-child(1){width:34%}

@@ -22,10 +22,57 @@
 
   async function reload() {
     data = await S.loadAll();
+    data.all = data.players;
     data.players = data.players.filter((p) => p.uid !== data.settings.selfUid);   // you are not a lobby contact
     $('cPlayers').textContent = data.players.length;
     $('cGames').textContent = data.games.length;
     renderPlayers(); renderLobbies(); renderSettings();
+  }
+
+
+  // ---- cells that mirror rivalsdata's Live Game rows (avatar, name+party, rank icon+RS, winrate, top heroes)
+  const GOOD = '#4AAC4D', BAD = '#f87171';
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  function partyIcon(color) {
+    const svg = document.createElementNS(SVGNS, 'svg');
+    ['width', 'height'].forEach((a) => svg.setAttribute(a, '14')); svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'currentColor'); svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('class', 'party'); svg.style.color = color || '#60a5fa';
+    const t = document.createElementNS(SVGNS, 'title'); t.textContent = 'Was in a party'; svg.appendChild(t);
+    const path = document.createElementNS(SVGNS, 'path'); path.setAttribute('d', 'M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2');
+    const c = document.createElementNS(SVGNS, 'circle'); c.setAttribute('cx', '12'); c.setAttribute('cy', '7'); c.setAttribute('r', '4');
+    svg.appendChild(path); svg.appendChild(c); return svg;
+  }
+  /** avatar + name (+ party icon) [+ "aka" line]; `href` makes the name a link */
+  function whoCell(o) {
+    const td = el('td', 'nm'); const wrap = el('div', 'who');
+    if (o.icon) { const av = document.createElement('img'); av.className = 'av'; av.src = ICON(o.icon); av.alt = ''; av.title = 'Last avatar seen'; wrap.appendChild(av); }
+    const txt = el('div', 'nmtxt'); const line = el('div', 'nmline');
+    const a = el('a', o.self ? 'me' : '', o.name); a.href = 'https://rivalsdata.com/player/' + o.uid; a.target = '_blank'; a.rel = 'noopener';
+    line.appendChild(a); if (o.party) line.appendChild(partyIcon(o.partyColor));
+    txt.appendChild(line);
+    if (o.aka && o.aka.length) txt.appendChild(el('small', '', 'aka ' + o.aka.join(', ')));
+    wrap.appendChild(txt); td.appendChild(wrap); return td;
+  }
+  function rankCell(label, rs) {
+    const td = el('td'); const w = el('span', 'rk');
+    const ri = label && RDT.rankIconUrl(label);
+    if (ri) { const im = document.createElement('img'); im.src = ri; im.alt = ''; w.appendChild(im); }
+    w.appendChild(el('span', 'rl', label || '—'));
+    if (label && rs != null) w.appendChild(el('span', 'rs', rs + ' RS'));
+    td.appendChild(w); return td;
+  }
+  function recordCell(w, l) {
+    const td = el('td', 'rec');
+    if (w == null) { td.appendChild(el('span', 'dim', '—')); return td; }
+    const pc = w + l ? Math.round((100 * w) / (w + l)) : 0;
+    td.appendChild(el('div', 'wl', w + 'W - ' + l + 'L'));
+    const p = el('div', 'pc', pc + '%'); p.style.color = pc >= 50 ? GOOD : BAD; td.appendChild(p); return td;
+  }
+  function heroesCell(slugs, labels) {
+    const td = el('td'); const hw = el('div', 'heroes');
+    (slugs || []).slice(0, 4).forEach((h) => { const im = document.createElement('img'); im.src = HERO(h); im.title = (labels && labels[h]) || h; im.alt = im.title; hw.appendChild(im); });
+    td.appendChild(hw); return td;
   }
 
   function renderPlayers() {
@@ -51,31 +98,17 @@
       sb.title = p.starred ? 'Unstar' : 'Star this player'; sb.setAttribute('aria-pressed', String(!!p.starred));
       sb.addEventListener('click', async () => { await S.updatePlayer(p.uid, { starred: !p.starred }); p.starred = !p.starred; renderPlayers(); });
       st.appendChild(sb); tr.appendChild(st);
-      const nm = el('td', 'nm');
-      const wrap = el('div', 'who');
-      if (p.icon) { const av = document.createElement('img'); av.className = 'av'; av.src = ICON(p.icon); av.alt = ''; av.title = 'Last avatar seen'; wrap.appendChild(av); }
-      const txt = el('div');
-      const a = el('a', '', p.names[0] || p.uid); a.href = 'https://rivalsdata.com/player/' + p.uid; a.target = '_blank'; a.rel = 'noopener';
-      txt.appendChild(a);
-      if (p.names.length > 1) txt.appendChild(el('small', '', 'aka ' + p.names.slice(1, 4).join(', ')));
-      wrap.appendChild(txt); nm.appendChild(wrap);
-      tr.appendChild(nm);
-      const rk = el('td'); const rkw = el('span', 'rk');
-      const ri = l.rankLabel && RDT.rankIconUrl(l.rankLabel);
-      if (ri) { const im = document.createElement('img'); im.src = ri; im.alt = ''; rkw.appendChild(im); }
-      rkw.appendChild(document.createTextNode(l.rankLabel ? l.rankLabel + (l.rs != null ? ' · ' + l.rs + ' RS' : '') : '—'));
-      rk.appendChild(rkw); tr.appendChild(rk);
-      tr.appendChild(el('td', '', l.w != null ? l.w + 'W-' + l.l + 'L · ' + Math.round(wr(l) * 100) + '%' : '—'));
+      tr.appendChild(whoCell({ uid: p.uid, name: p.names[0] || p.uid, icon: p.icon, aka: p.names.slice(1, 4), party: l.party, partyColor: l.partyColor }));
+      tr.appendChild(rankCell(l.rankLabel, l.rs));
+      tr.appendChild(recordCell(l.w, l.l));
+      tr.appendChild(heroesCell(l.heroes, l.heroLabels));
       const seen = el('td'); seen.appendChild(el('div', '', '×' + p.seen));
       const rel = el('div', 'rel');
       if (p.asTeammate) rel.appendChild(el('b', 'm', 'mate ' + p.asTeammate));
       if (p.asTeammate && p.asEnemy) rel.appendChild(document.createTextNode(' · '));
       if (p.asEnemy) rel.appendChild(el('b', 'e', 'enemy ' + p.asEnemy));
       seen.appendChild(rel); tr.appendChild(seen);
-      tr.appendChild(el('td', '', ago(p.lastSeen)));
-      const hs = el('td'); const hw = el('div', 'heroes');
-      (l.heroes || []).slice(0, 4).forEach((h) => { const im = document.createElement('img'); im.src = HERO(h); im.title = (l.heroLabels && l.heroLabels[h]) || h; im.alt = im.title; hw.appendChild(im); });
-      hs.appendChild(hw); tr.appendChild(hs);
+      tr.appendChild(el('td', 'dim', ago(p.lastSeen)));
       tr.appendChild(editCell(p, 'tag', 'tag', 'e.g. toxic'));
       tr.appendChild(editCell(p, 'note', '', 'note'));
       const del = el('td'); const x = el('button', 'x', '✕'); x.title = 'Forget this player';
@@ -93,24 +126,40 @@
 
   function renderLobbies() {
     const box = $('tab-lobbies'); box.textContent = '';
-    const byUid = {}; data.players.forEach((p) => { byUid[p.uid] = p; });
+    const byUid = {}; data.all.forEach((p) => { byUid[p.uid] = p; });       // includes you, unlike the players tab
     if (!data.games.length) { box.appendChild(el('p', 'dim', 'No lobbies recorded yet.')); return; }
+    const avg = (rows) => { const v = rows.map((r) => r.abs).filter((x) => x != null); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null; };
     data.games.slice().reverse().slice(0, 60).forEach((g) => {
       const d = el('div', 'lob');
-      d.appendChild(el('h4', '', new Date(g.t).toLocaleString() + ' · ' + Object.keys(g.players).length + ' players recorded'));
-      const cols = el('div', 'cols');
-      [1, 2].forEach((team) => {
-        const c = el('div');
-        Object.keys(g.players).filter((u) => g.players[u].team === team).forEach((u) => {
-          const p = byUid[u]; const row = el('div', 'p');
-          row.appendChild(el('span', 't' + team, p ? (p.names[0] || u) : u));
-          const gp = g.players[u];
-          row.appendChild(el('span', 'r', gp.w != null ? gp.w + 'W-' + gp.l + 'L' : ''));
-          c.appendChild(row);
-        });
-        cols.appendChild(c);
+      const n = Object.keys(g.players).length;
+      d.appendChild(el('h4', '', new Date(g.t).toLocaleString() + (g.mode ? ' · ' + g.mode : '') + ' · ' + n + ' players saved'));
+      // one record per saved player, older lobbies lack some fields -> fall back to what we know now
+      const rows = Object.keys(g.players).map((uid) => {
+        const gp = g.players[uid], p = byUid[uid] || { names: [uid], last: {} }, l = p.last || {};
+        return { uid, team: gp.team, idx: gp.idx, name: gp.name || p.names[0] || uid, icon: gp.icon || p.icon,
+          abs: gp.abs, rankLabel: gp.rankLabel || l.rankLabel, rs: gp.rs != null ? gp.rs : l.rs, w: gp.w, l: gp.l,
+          heroes: gp.heroes || l.heroes, heroLabels: l.heroLabels, party: gp.party != null ? gp.party : l.party, partyColor: gp.partyColor || l.partyColor };
       });
-      d.appendChild(cols); box.appendChild(d);
+      const teams = [1, 2].map((t) => rows.filter((r) => r.team === t).sort((a, b) => (a.idx != null && b.idx != null) ? a.idx - b.idx : (b.abs || 0) - (a.abs || 0)));
+      const avgs = teams.map(avg);
+      teams.forEach((trs, i) => {
+        if (!trs.length) return;
+        const tbl = el('table', 'team'); const hd = el('thead').appendChild(el('tr'));
+        hd.appendChild(el('th', 'tname', 'Team ' + (i + 1)));
+        const th = el('th', 'avg'); th.appendChild(el('span', 'dim', 'Avg: ')); th.appendChild(document.createTextNode(avgs[i] != null ? avgs[i] + ' RS' : '—'));
+        const other = avgs[1 - i];
+        if (avgs[i] != null && other != null) { const df = avgs[i] - other, sp = el('span', '', ' (' + (df >= 0 ? '+' : '') + df + ')'); sp.style.color = df >= 0 ? GOOD : BAD; th.appendChild(sp); }
+        hd.appendChild(th); hd.appendChild(el('th', '', 'Winrate')); hd.appendChild(el('th', '', 'Top Heroes'));
+        const tb = el('tbody');
+        trs.forEach((r) => {
+          const tr = el('tr');
+          tr.appendChild(whoCell({ uid: r.uid, name: r.name, icon: r.icon, party: r.party, partyColor: r.partyColor, self: r.uid === data.settings.selfUid }));
+          tr.appendChild(rankCell(r.rankLabel, r.rs)); tr.appendChild(recordCell(r.w, r.l)); tr.appendChild(heroesCell(r.heroes, r.heroLabels));
+          tb.appendChild(tr);
+        });
+        tbl.appendChild(hd.parentNode); tbl.appendChild(tb); d.appendChild(tbl);
+      });
+      box.appendChild(d);
     });
   }
 
