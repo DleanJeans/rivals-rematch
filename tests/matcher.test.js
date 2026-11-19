@@ -2,7 +2,7 @@ const R = require('../lib/shared.js');
 let fail = 0;
 const ok = (c, m) => { console.log((c ? '  ✓ ' : '  ✗ ') + m); if (!c) fail++; };
 const P1 = R.parseRank('P1', 'platinum'), P3 = R.parseRank('P3', 'platinum'), D3 = R.parseRank('D3', 'diamond');
-const cand = (uid, name, rk, rs, extra) => Object.assign({ uid, names: [name], abs: R.absScore(rk, rs), season: 11, w: null, l: null, icon: null, heroes: null }, extra);
+const cand = (uid, name, rk, rs, extra) => Object.assign({ uid, names: [name], abs: R.absScore(rk, rs), rankIdx: R.rankIdx(rk), season: 11, w: null, l: null, icon: null, heroes: null }, extra);
 const row = (rk, extra) => Object.assign({ rankIdx: R.rankIdx(rk), abs: null, w: null, l: null, season: 11, icon: null, suffix: null, heroes: null }, extra);
 
 console.log('\nQuick-Play style row: rank tier + avatar + name suffix only (no RS, no W/L)');
@@ -60,5 +60,31 @@ ok(sw(0.8) > sw(0.1), 'learned swap rate matters: frequent swappers are penalise
 const pick = R.matchLobby([row(GM1, Object.assign({ icon: 'zzz' }, base))], [
   cand('x', 'X', GM1, 70, { w: 4, l: 1, icon: 'old' }), cand('y', 'Y', GM1, -60, { w: 4, l: 1, icon: 'zzz' })], { iconFreq: { zzz: 0.01 } })[0];
 ok(pick.uid !== 'y', 'a matching avatar cannot rescue implausible stats (RS +130 with no net wins)');
+
+console.log('\nRS bounds (win <= +20, loss >= -25 at GM; RS shows -20..99 per division)');
+const one = (rsNow, w, l, was) => R.matchLobby([row(GM1, { abs: R.absScore(GM1, rsNow), w, l })], [cand('p', 'P', GM1, was, { w: 14, l: 6 })])[0];
+ok(one(57, 15, 6, 37).p > 0.5, `your DleanJeans: 14-6 @37 -> 15-6 @57 (+20 for a win) accepted (${(one(57, 15, 6, 37).p * 100).toFixed(0)}%)`);
+ok(one(75, 15, 6, 37).uid === null, 'one win cannot add +38 RS => rejected');
+ok(one(40, 14, 7, 55).p > 0.5 && one(10, 14, 7, 55).uid === null, 'one loss: -15 fine, -45 far exceeds the -25 cap => rejected');
+ok(one(60, 14, 7, 37).uid === null, 'a LOSS cannot raise RS => rejected');
+
+console.log('\nRank-only row: RS is only known to be in -20..99 of that division');
+const win = (candRank, candRs, extra) => R.matchLobby([row(GM1, {})], [cand('c', 'C', candRank, candRs, extra)])[0];
+const GM2 = R.parseRank('GM2', 'grandmaster'), GM3 = R.parseRank('GM3', 'grandmaster');
+ok(win(GM1, 50).p > win(GM3, 50).p && win(GM3, 50).uid === null, 'GM1 row: a GM1 player fits, a GM3 player (200 RS below) does not');
+ok(win(GM2, 85, { w: 5, l: 5 }) && R.matchLobby([row(GM1, {})], [cand('c', 'C', GM2, 85)])[0].p > 0.3, 'GM2 85 RS can be promoted into GM1 (within a game or two)');
+ok(R.matchLobby([row(GM1, { w: 6, l: 5 })], [cand('c', 'C', GM2, 85, { w: 5, l: 5 })])[0].uid === 'c', 'promotion GM2 85 -> GM1 after exactly 1 win accepted');
+ok(R.matchLobby([row(GM1, { w: 5, l: 6 })], [cand('c', 'C', GM2, 85, { w: 5, l: 5 })])[0].uid === null, 'but after a LOSS it cannot have been promoted => rejected');
+
+console.log('\nQuick Play lobbies (two rank columns: ranked + QP)');
+const S3 = R.parseRank('S3', 'silver');
+const qpCand = cand('q', 'Foo7', D3, 35, { qp: { abs: R.absScore(S3, 40), rankIdx: R.rankIdx(S3) } });
+const hidden = (qpLobby) => R.matchLobby([row(S3, { suffix: '7', qpLobby })], [qpCand])[0];
+ok(hidden(false).uid === null, 'S3 hidden row does NOT match a D3-ranked player when the column is ranked');
+ok(hidden(true).uid === 'q', 'in a QP lobby the unlabelled S3 may be the QP rank => matches via the stored QP rank');
+ok(R.matchLobby([row(D3, { suffix: '7', qpLobby: true })], [qpCand])[0].p > hidden(true).p, 'but the ranked-column reading is preferred when it fits');
+ok(R.matchLobby([row(null === 0 ? D3 : D3, { qpLobby: true })], [cand('z', 'Z', D3, 35)])[0].uid !== undefined, 'players with no stored QP rank are unaffected');
+const noRank = R.matchLobby([{ rankIdx: null, abs: null, w: null, l: null, season: 11, suffix: '7', icon: null, heroes: null }], [qpCand])[0];
+ok(noRank.uid === 'q', 'a row with NO readable rank still matches on name end alone, without crashing');
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);

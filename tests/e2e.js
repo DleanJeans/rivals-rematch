@@ -116,6 +116,13 @@ const mockChrome = `
   const mo = byName('PlayerM1');
   ok(mo.last.rs === 50 && mo.last.w == null, `partial row stored without inventing W/L (rs=${mo.last.rs}, w=${mo.last.w})`);
   ok(mo.last.qp && mo.last.qp.label === 'B1', `QP rank kept separate (${mo.last.qp && mo.last.qp.label}) and not mistaken for ranked (${mo.last.rankLabel})`);
+  const only = await page.evaluate(() => {   // a player who shows ONLY a (QP) rank, no ranked column
+    const li = [...document.querySelectorAll('li')].find((x) => x.textContent.includes('momoring') || x.textContent.includes('PlayerM1'));
+    li.querySelectorAll('img[src*="/ranks/"]')[0].parentElement.remove();
+    const r = RDT.scrapeLive(document).rows.find((x) => x.name === 'PlayerM1');
+    return r && { rankIdx: r.rankIdx, qp: r.qp && r.qp.label, qpLobby: r.qpLobby };
+  });
+  ok(only && only.rankIdx === null && only.qp === 'B1' && only.qpLobby === true, `QP-only row is kept (not dropped): ${JSON.stringify(only)}`);
   await page.screenshot({ path: path.join(__dirname, 'out_qp_ban.png') });
   await page.close();
 

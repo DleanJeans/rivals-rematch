@@ -123,7 +123,7 @@
   function showTip(it, anchor) {
     tip.textContent = '';
     const p = it.player;
-    tip.appendChild(el('div', '', 'Hidden: ' + [it.row.rankLabel + (it.row.rs != null ? ' ' + it.row.rs + ' RS' : ''),
+    tip.appendChild(el('div', '', 'Hidden: ' + [(it.row.rankLabel || 'QP only') + (it.row.rs != null ? ' ' + it.row.rs + ' RS' : ''),
       it.row.w != null ? it.row.w + 'W-' + it.row.l + 'L' : '', it.row.suffix ? 'name ends “' + it.row.suffix + '”' : '']
       .filter(Boolean).join(' · ')));
     if (!it.match.uid) tip.appendChild(el('div', 'dim', 'No stored player fits these numbers — probably someone new.'));
@@ -165,9 +165,9 @@
         const a = el('a', '', it.player.names[0] || it.player.uid); a.href = PLAYER(it.match.uid); a.target = '_blank'; a.rel = 'noopener';
         who.appendChild(a);
         who.appendChild(el('span', 'q', '  ' + pct(it.match.p) + (it.match.p < settings.minShow ? ' (low)' : '')));
-      } else who.appendChild(el('span', 'q', 'unrecognised · ' + it.row.rankLabel + (it.row.suffix ? ' …' + it.row.suffix : '')));
+      } else who.appendChild(el('span', 'q', 'unrecognised · ' + (it.row.rankLabel || 'QP only') + (it.row.suffix ? ' …' + it.row.suffix : '')));
       row.appendChild(who);
-      row.appendChild(el('div', 'q', it.row.rankLabel));
+      row.appendChild(el('div', 'q', it.row.rankLabel || 'QP only'));
       if (it.match.uid) {
         const p = it.player, l = p.last || {};
         const meta = el('div', 'meta');
@@ -249,7 +249,7 @@
       const iconSwap = (((stats.iconChecked || 0) - (stats.iconSame || 0)) + 2) / ((stats.iconChecked || 0) + 5); // prior 40 % swap
       const matches = R.matchLobby(hidden.map((r) => ({
         rankIdx: r.rankIdx, abs: r.abs, w: r.w, l: r.l, season: lobby.season, icon: r.icon,
-        suffix: r.suffix || null, heroes: r.heroes,
+        suffix: r.suffix || null, heroes: r.heroes, qpLobby: r.qpLobby,
       })), pool.map(S.toCandidate), { useSuffix: settings.useSuffix && suffixTrusted(), useIcons: settings.useIcons && !iconsMasked, iconFreq, iconSwap });
 
       current.items = hidden.map((row, i) => ({ row, match: matches[i], player: byUid[matches[i].uid] || null, byUid }));

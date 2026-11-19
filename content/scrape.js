@@ -43,7 +43,8 @@
     const suffix = masked ? name.replace(/^[*•·\s]+/, '') : null;
 
     const ranks = parseRankSpans(li);
-    if (!ranks.ranked) return null; // not a player row
+    if (!ranks.ranked && !ranks.qp) return null; // not a player row
+    const rk = ranks.ranked || { tier: null, div: null, label: null, idx: null, rs: null, abs: null };
 
     // Read the W/L cell on its own: li.textContent would glue a name suffix ("*****1") onto "4W - 7L".
     const wlCell = grid.children[3];
@@ -64,9 +65,9 @@
     return {
       idx, team, masked, uid, name, suffix,
       icon: iconImg ? last(iconImg.getAttribute('src')) : null,
-      tier: ranks.ranked.tier, div: ranks.ranked.div, rankLabel: ranks.ranked.label,
-      rankIdx: ranks.ranked.idx, rs: ranks.ranked.rs, abs: ranks.ranked.abs,
-      qp: ranks.qp ? { label: ranks.qp.label, rs: ranks.qp.rs, abs: ranks.qp.abs } : null,
+      tier: rk.tier, div: rk.div, rankLabel: rk.label,
+      rankIdx: rk.idx, rs: rk.rs, abs: rk.abs,
+      qp: ranks.qp ? { label: ranks.qp.label, rs: ranks.qp.rs, abs: ranks.qp.abs, rankIdx: ranks.qp.idx } : null,
       w: wl ? +wl[1] : null, l: wl ? +wl[2] : null,
       heroes: heroes.length ? heroes : null,
       heroLabels: labels,
@@ -98,7 +99,9 @@
       const m = /^Season\s+(\d+)$/.exec(e.textContent.trim());
       if (m) { season = +m[1]; break; }
     }
-    return { season, teams, rows };
+    const qpLobby = rows.some((r) => r.qp);   // QP lobbies show a second, (QP)-labelled rank column
+    rows.forEach((r) => { r.qpLobby = qpLobby; });
+    return { season, teams, rows, qpLobby };
   }
 
   root.RDT = Object.assign(root.RDT || {}, { scrapeLive });
