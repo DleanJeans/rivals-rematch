@@ -21,6 +21,7 @@
 
   async function reload() {
     data = await S.loadAll();
+    data.players = data.players.filter((p) => p.uid !== data.settings.selfUid);   // you are not a lobby contact
     $('cPlayers').textContent = data.players.length;
     $('cGames').textContent = data.games.length;
     renderPlayers(); renderLobbies(); renderSettings();
@@ -32,18 +33,23 @@
       if (q && ![p.uid, p.tag, p.note].concat(p.names).join(' ').toLowerCase().includes(q)) return false;
       if (role === 'mate' && !p.asTeammate) return false;
       if (role === 'enemy' && !p.asEnemy) return false;
+      if (role === 'starred' && !p.starred) return false;
       if (role === 'tagged' && !p.tag && !p.note) return false;
       return true;
     });
     const f = key[sortKey] === wr ? (p) => wr(p.last) : key[sortKey];
-    list.sort((a, b) => (f(a) > f(b) ? 1 : f(a) < f(b) ? -1 : 0) * sortDir);
+    list.sort((a, b) => ((b.starred ? 1 : 0) - (a.starred ? 1 : 0)) || (f(a) > f(b) ? 1 : f(a) < f(b) ? -1 : 0) * sortDir); // starred first
     $('count').textContent = list.length + ' shown';
     $('empty').hidden = data.players.length > 0;
     $('tbl').hidden = data.players.length === 0;
     const tb = document.querySelector('#tbl tbody'); tb.textContent = '';
     list.slice(0, 500).forEach((p) => {
       const l = p.last || {};
-      const tr = el('tr');
+      const tr = el('tr'); if (p.starred) tr.className = 'starred';
+      const st = el('td', 'st'); const sb = el('button', 'star' + (p.starred ? ' on' : ''), p.starred ? '★' : '☆');
+      sb.title = p.starred ? 'Unstar' : 'Star this player'; sb.setAttribute('aria-pressed', String(!!p.starred));
+      sb.addEventListener('click', async () => { await S.updatePlayer(p.uid, { starred: !p.starred }); p.starred = !p.starred; renderPlayers(); });
+      st.appendChild(sb); tr.appendChild(st);
       const nm = el('td', 'nm');
       const a = el('a', '', p.names[0] || p.uid); a.href = 'https://rivalsdata.com/player/' + p.uid; a.target = '_blank'; a.rel = 'noopener';
       nm.appendChild(a);
@@ -130,7 +136,7 @@
   $('exportBtn').addEventListener('click', async () => {
     const blob = new Blob([JSON.stringify(await S.exportAll(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'lobby-memory-' + new Date().toISOString().slice(0, 10) + '.json'; a.click(); URL.revokeObjectURL(a.href);
+    a.download = 'rivals-rematch-' + new Date().toISOString().slice(0, 10) + '.json'; a.click(); URL.revokeObjectURL(a.href);
   });
   $('importBtn').addEventListener('click', () => $('importFile').click());
   $('importFile').addEventListener('change', async (e) => {

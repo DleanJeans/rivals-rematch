@@ -32,7 +32,7 @@ const mockChrome = `
   async function load(file, mutate) {
     const page = await ctx.newPage();
     page.on('pageerror', (e) => { console.log('  PAGEERROR', e.message); fail++; });
-    page.on('console', (m) => { if (m.type() === 'warning' && m.text().includes('Lobby Memory')) console.log('  WARN', m.text()); });
+    page.on('console', (m) => { if (m.type() === 'warning' && m.text().includes('Rivals Rematch')) console.log('  WARN', m.text()); });
     let html = read('tests/fixtures/' + file).replace(/<script[\s\S]*?<\/script>/g, '').replace(/<link[^>]*stylesheet[^>]*>/g, '').replace('</head>', '<style>' + read('tests/fixtures/site.css') + '</style></head>');
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
     if (mutate) await page.evaluate(mutate);

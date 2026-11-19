@@ -53,6 +53,7 @@
   .heroes{display:flex;gap:3px}.heroes img{width:26px;height:26px;border-radius:4px;background:#2a2d36}
   .badge{padding:0 5px;border-radius:4px;background:#2a2d36;color:#cdd}
   .badge.tag{background:#5a2a2a;color:#ffd0d0}
+  .badge.star{background:#5a4a12;color:#ffe08a}
   .foot{padding:7px 10px;color:#8e94a4;border-top:1px solid #22252d}
   `;
 
@@ -152,7 +153,7 @@
     hud.classList.toggle('min', collapsed);
     const hh = el('div', 'hh');
     const matched = items.filter((i) => i.match.uid && i.match.p >= settings.minShow).length;
-    hh.appendChild(el('span', '', 'Lobby Memory'));
+    hh.appendChild(el('span', '', 'Rivals Rematch'));
     hh.appendChild(el('span', 'sub', items.length ? matched + '/' + items.length + ' hidden players recognised'
       : current.playersCount + ' players saved · ' + statusText));
     hh.appendChild(el('span', 'sp'));
@@ -188,6 +189,7 @@
         meta.appendChild(el('span', '', rel.join(' · ') || ('seen ×' + p.seen)));
         meta.appendChild(el('span', '', wlText(l)));
         if (l.party) meta.appendChild(el('span', 'badge', 'was in party'));
+        if (p.starred) meta.appendChild(el('span', 'badge star', '★ starred'));
         if (p.tag) meta.appendChild(el('span', 'badge tag', p.tag));
         if (p.note) meta.appendChild(el('span', '', '“' + p.note + '”'));
         row.appendChild(meta);
@@ -272,10 +274,10 @@
       render(current.items, settings);
       return lastResult;
     } catch (e) {
-      console.warn('[Lobby Memory]', e);
+      console.warn('[Rivals Rematch]', e);
       lastResult = { error: String(e && e.message || e) };
       try { statusText = 'ERROR: ' + (e && e.message || e); ensureHost(); hud.textContent = ''; hudCollapsed = false; hud.classList.remove('min');
-        const h = el('div', 'hh'); h.appendChild(el('span', '', 'Lobby Memory')); h.appendChild(el('span', 'sub', statusText)); hud.appendChild(h); } catch (_) { /* nothing more to do */ }
+        const h = el('div', 'hh'); h.appendChild(el('span', '', 'Rivals Rematch')); h.appendChild(el('span', 'sub', statusText)); hud.appendChild(h); } catch (_) { /* nothing more to do */ }
     } finally {
       running = false;
       if (again) { again = false; schedule(); }

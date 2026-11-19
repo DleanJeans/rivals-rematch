@@ -1,4 +1,4 @@
-# Rivals Lobby Memory
+# Rivals Rematch
 
 A Chrome extension that **remembers the players in your Marvel Rivals lobbies** (read from
 [rivalsdata.com](https://rivalsdata.com)'s *Live Game* tab) and **recognises them again during the ban

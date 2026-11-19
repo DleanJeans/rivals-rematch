@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lobby Memory</title>
+<title>Rivals Rematch</title>
 <link rel="stylesheet" href="db.css">
 </head>
 <body>
 <header>
-  <h1>Lobby Memory</h1>
+  <h1>Rivals Rematch</h1>
   <nav id="tabs">
     <button data-tab="players" class="on">Players <span id="cPlayers"></span></button>
     <button data-tab="lobbies">Lobbies <span id="cGames"></span></button>
@@ -28,13 +28,14 @@
         <option value="">Everyone</option>
         <option value="mate">Teammates</option>
         <option value="enemy">Enemies</option>
+        <option value="starred">★ Starred</option>
         <option value="tagged">Tagged / noted</option>
       </select>
       <span id="count" class="dim"></span>
     </div>
     <table id="tbl">
       <thead><tr>
-        <th data-s="name">Name</th><th data-s="abs">Rank</th><th data-s="wr">Record</th>
+        <th title="Star players you want to keep an eye on">★</th><th data-s="name">Name</th><th data-s="abs">Rank</th><th data-s="wr">Record</th>
         <th data-s="seen">Seen</th><th data-s="when">Last seen</th><th>Top heroes</th><th>Tag</th><th>Note</th><th></th>
       </tr></thead>
       <tbody></tbody>

@@ -1,2 +1,2 @@
-{ "name": "rivals-lobby-memory", "private": true, "version": "0.1.0",
+{ "name": "rivals-rematch", "private": true, "version": "0.1.0",
   "scripts": { "test": "node tests/matcher.test.js && node tests/e2e.js && node tests/db.test.js && node tests/extension-load.js && node tests/popup.test.js" } }
