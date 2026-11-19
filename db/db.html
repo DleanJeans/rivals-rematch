@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lobby Memory</title>
+<link rel="stylesheet" href="db.css">
+</head>
+<body>
+<header>
+  <h1>Lobby Memory</h1>
+  <nav id="tabs">
+    <button data-tab="players" class="on">Players <span id="cPlayers"></span></button>
+    <button data-tab="lobbies">Lobbies <span id="cGames"></span></button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+  <span class="sp"></span>
+  <button id="exportBtn">Export</button>
+  <button id="importBtn">Import</button>
+  <input id="importFile" type="file" accept="application/json" hidden>
+</header>
+
+<main>
+  <section id="tab-players">
+    <div class="bar">
+      <input id="q" type="search" placeholder="Search name, UID, tag, note…" autofocus>
+      <select id="role">
+        <option value="">Everyone</option>
+        <option value="mate">Teammates</option>
+        <option value="enemy">Enemies</option>
+        <option value="tagged">Tagged / noted</option>
+      </select>
+      <span id="count" class="dim"></span>
+    </div>
+    <table id="tbl">
+      <thead><tr>
+        <th data-s="name">Name</th><th data-s="abs">Rank</th><th data-s="wr">Record</th>
+        <th data-s="seen">Seen</th><th data-s="when">Last seen</th><th>Top heroes</th><th>Tag</th><th>Note</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    <p id="empty" class="dim" hidden>Nothing saved yet. Open a player's <b>Live Game</b> tab on rivalsdata.com during a match — names are saved automatically.</p>
+  </section>
+
+  <section id="tab-lobbies" hidden></section>
+
+  <section id="tab-settings" hidden>
+    <div class="card">
+      <h3>You</h3>
+      <label>Your rivalsdata UID <input id="sSelf" size="14"></label>
+      <p class="dim">Used to tell teammates from enemies. It's the number in your profile URL (rivalsdata.com/player/<b>520435205</b>).</p>
+    </div>
+    <div class="card">
+      <h3>Ban-phase recognition</h3>
+      <label><input type="checkbox" id="sOverlay"> Show names over hidden players + HUD</label>
+      <label><input type="checkbox" id="sSuffix"> Use the visible end of a hidden name (<code>*****7</code> → ends in “7”)</label>
+      <label><input type="checkbox" id="sIcons"> Use the avatar image when it isn't masked</label>
+      <label>Show a name only when at least <input id="sMin" type="number" min="5" max="95" step="5" style="width:4.5em">% sure (otherwise “maybe”)</label>
+      <p id="accuracy" class="dim"></p>
+    </div>
+    <div class="card">
+      <h3>Data</h3>
+      <p class="dim">Everything is stored locally in this browser (chrome.storage). Nothing is sent anywhere.</p>
+      <button id="wipe" class="danger">Delete all saved data…</button>
+    </div>
+  </section>
+</main>
+<script src="../lib/shared.js"></script>
+<script src="../lib/store.js"></script>
+<script src="db.js"></script>
+</body>
+</html>
