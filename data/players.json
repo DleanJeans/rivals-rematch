@@ -1,0 +1,1316 @@
+{
+ "version": 1,
+ "exportedAt": 1795078476094,
+ "players": [
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4441,
+     "l": 56,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 41
+    }
+   ],
+   "icon": "31037212",
+   "last": {
+    "abs": 4441,
+    "heroLabels": {
+     "doctor-strange": "Doctor Strange",
+     "gambit": "Gambit",
+     "groot": "Groot",
+     "magneto": "Magneto"
+    },
+    "heroes": [
+     "magneto",
+     "doctor-strange",
+     "gambit",
+     "groot"
+    ],
+    "l": 56,
+    "party": true,
+    "partyColor": "rgb(52, 211, 153)",
+    "rankIdx": 14,
+    "rankLabel": "D1",
+    "rs": 41,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 1,
+    "w": 41
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "V3RONIC4"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1024770900"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795076311436,
+   "hist": [
+    {
+     "abs": 4734,
+     "l": 7,
+     "season": 11,
+     "t": 1795076311436,
+     "w": 10
+    }
+   ],
+   "icon": "31040211",
+   "last": {
+    "abs": 4734,
+    "heroLabels": {
+     "elsa-bloodstone": "Elsa Bloodstone",
+     "hela": "Hela",
+     "mister-fantastic": "Mister Fantastic",
+     "the-punisher": "The Punisher"
+    },
+    "heroes": [
+     "hela",
+     "mister-fantastic",
+     "elsa-bloodstone",
+     "the-punisher"
+    ],
+    "l": 7,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 34,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 2,
+    "w": 10
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "ThatDudeBacon"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "1170226890"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4599,
+     "l": 32,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 35
+    }
+   ],
+   "icon": "31062203",
+   "last": {
+    "abs": 4599,
+    "heroLabels": {
+     "doctor-strange": "Doctor Strange",
+     "jeff-the-land-shark": "Jeff the Land Shark",
+     "rocket-raccoon": "Rocket Raccoon",
+     "the-hood": "The Hood"
+    },
+    "heroes": [
+     "the-hood",
+     "jeff-the-land-shark",
+     "rocket-raccoon",
+     "doctor-strange"
+    ],
+    "l": 32,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": -1,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 2,
+    "w": 35
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "Barrilicious"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "1192215885"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795076311436,
+   "hist": [
+    {
+     "abs": 4772,
+     "l": 7,
+     "season": 11,
+     "t": 1795076311436,
+     "w": 23
+    }
+   ],
+   "icon": "30000179",
+   "last": {
+    "abs": 4772,
+    "heroLabels": {
+     "daredevil": "Daredevil",
+     "elsa-bloodstone": "Elsa Bloodstone",
+     "hela": "Hela",
+     "wolverine": "Wolverine"
+    },
+    "heroes": [
+     "daredevil",
+     "hela",
+     "elsa-bloodstone",
+     "wolverine"
+    ],
+    "l": 7,
+    "party": true,
+    "partyColor": "rgb(244, 114, 182)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 72,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 1,
+    "w": 23
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "сnc.bunni"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1361407834"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795076311436,
+   "hist": [
+    {
+     "abs": 4810,
+     "l": 3,
+     "season": 11,
+     "t": 1795076311436,
+     "w": 11
+    }
+   ],
+   "icon": "31041211",
+   "last": {
+    "abs": 4810,
+    "heroLabels": {
+     "doctor-strange": "Doctor Strange",
+     "emma-frost": "Emma Frost",
+     "the-hood": "The Hood",
+     "venom": "Venom"
+    },
+    "heroes": [
+     "the-hood",
+     "emma-frost",
+     "venom",
+     "doctor-strange"
+    ],
+    "l": 3,
+    "party": true,
+    "partyColor": "rgb(52, 211, 153)",
+    "rankIdx": 18,
+    "rankLabel": "C3",
+    "rs": 10,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 2,
+    "w": 11
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "Daяк"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1684069305"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795076311436,
+   "hist": [
+    {
+     "abs": 4679,
+     "l": 22,
+     "season": 11,
+     "t": 1795076311436,
+     "w": 27
+    }
+   ],
+   "icon": "31062202",
+   "last": {
+    "abs": 4679,
+    "heroLabels": {
+     "gambit": "Gambit",
+     "loki": "Loki",
+     "thor": "Thor",
+     "wolverine": "Wolverine"
+    },
+    "heroes": [
+     "thor",
+     "wolverine",
+     "gambit",
+     "loki"
+    ],
+    "l": 22,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 79,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 1,
+    "w": 27
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "Kearal"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "1855477530"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4626,
+     "l": 36,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 39
+    }
+   ],
+   "icon": "30000134",
+   "last": {
+    "abs": 4626,
+    "heroLabels": {
+     "elsa-bloodstone": "Elsa Bloodstone",
+     "iron-fist": "Iron Fist",
+     "magik": "Magik",
+     "psylocke": "Psylocke"
+    },
+    "heroes": [
+     "psylocke",
+     "elsa-bloodstone",
+     "magik",
+     "iron-fist"
+    ],
+    "l": 36,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 26,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 2,
+    "w": 39
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "BustX"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "1862832375"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795076311436,
+   "hist": [
+    {
+     "abs": 4800,
+     "l": 31,
+     "season": 11,
+     "t": 1795076311436,
+     "w": 37
+    }
+   ],
+   "icon": "31042203",
+   "last": {
+    "abs": 4800,
+    "heroLabels": {
+     "groot": "Groot",
+     "magneto": "Magneto",
+     "peni-parker": "Peni Parker",
+     "rogue": "Rogue"
+    },
+    "heroes": [
+     "rogue",
+     "peni-parker",
+     "magneto",
+     "groot"
+    ],
+    "l": 31,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 18,
+    "rankLabel": "C3",
+    "rs": 0,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 2,
+    "w": 37
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "Cute Shota"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "1913305464"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4599,
+     "l": 27,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 32
+    }
+   ],
+   "icon": "31048212",
+   "last": {
+    "abs": 4599,
+    "heroLabels": {
+     "hela": "Hela",
+     "phoenix": "Phoenix",
+     "star-lord": "Star-Lord",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "hela",
+     "winter-soldier",
+     "star-lord",
+     "phoenix"
+    ],
+    "l": 27,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": -1,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 1,
+    "w": 32
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "Dea3th"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "2055148520"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4674,
+     "l": 17,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 21
+    }
+   ],
+   "icon": "31042207",
+   "last": {
+    "abs": 4674,
+    "heroLabels": {
+     "emma-frost": "Emma Frost",
+     "invisible-woman": "Invisible Woman",
+     "magneto": "Magneto",
+     "peni-parker": "Peni Parker"
+    },
+    "heroes": [
+     "peni-parker",
+     "magneto",
+     "emma-frost",
+     "invisible-woman"
+    ],
+    "l": 17,
+    "party": true,
+    "partyColor": "rgb(96, 165, 250)",
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 74,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 2,
+    "w": 21
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "BeegFro"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "2056407895"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795076311436,
+   "hist": [
+    {
+     "abs": 4715,
+     "l": 14,
+     "season": 11,
+     "t": 1795076311436,
+     "w": 32
+    }
+   ],
+   "icon": "31054211",
+   "last": {
+    "abs": 4715,
+    "heroLabels": {
+     "emma-frost": "Emma Frost",
+     "magneto": "Magneto",
+     "star-lord": "Star-Lord",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "magneto",
+     "emma-frost",
+     "winter-soldier",
+     "star-lord"
+    ],
+    "l": 14,
+    "party": true,
+    "partyColor": "rgb(244, 114, 182)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 15,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 1,
+    "w": 32
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "evil xi4m"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "2112958722"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795076189244,
+   "hist": [
+    {
+     "abs": 4906,
+     "l": 1,
+     "season": 11,
+     "t": 1795076189244,
+     "w": 11
+    }
+   ],
+   "icon": "31064204",
+   "last": {
+    "abs": 4906,
+    "heroLabels": {
+     "jubilee": "Jubilee",
+     "rogue": "Rogue",
+     "stratpool": "Stratpool"
+    },
+    "heroes": [
+     "jubilee",
+     "rogue",
+     "stratpool"
+    ],
+    "l": 1,
+    "party": true,
+    "partyColor": "rgb(52, 211, 153)",
+    "rankIdx": 19,
+    "rankLabel": "C2",
+    "rs": 6,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 2,
+    "w": 11
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "BappyHois"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "2131497922"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4637,
+     "l": 15,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 23
+    }
+   ],
+   "icon": "31042206",
+   "last": {
+    "abs": 4637,
+    "heroLabels": {
+     "gambit": "Gambit",
+     "invisible-woman": "Invisible Woman",
+     "jubilee": "Jubilee",
+     "luna-snow": "Luna Snow"
+    },
+    "heroes": [
+     "invisible-woman",
+     "luna-snow",
+     "gambit",
+     "jubilee"
+    ],
+    "l": 15,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 37,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 1,
+    "w": 23
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "kai penat"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "2135569866"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795076311436,
+   "hist": [
+    {
+     "abs": 4666,
+     "l": 59,
+     "season": 11,
+     "t": 1795076311436,
+     "w": 63
+    }
+   ],
+   "icon": "31033208",
+   "last": {
+    "abs": 4666,
+    "heroLabels": {
+     "cyclops": "Cyclops",
+     "hela": "Hela",
+     "phoenix": "Phoenix",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "cyclops",
+     "hela",
+     "winter-soldier",
+     "phoenix"
+    ],
+    "l": 59,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 66,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 2,
+    "w": 63
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "郑朋"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "317473106"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4732,
+     "l": 7,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 15
+    },
+    {
+     "abs": 4750,
+     "l": 7,
+     "season": 11,
+     "t": 1795076189244,
+     "w": 16
+    }
+   ],
+   "icon": "30000189",
+   "last": {
+    "abs": 4750,
+    "heroLabels": {
+     "groot": "Groot",
+     "jubilee": "Jubilee",
+     "peni-parker": "Peni Parker",
+     "venom": "Venom"
+    },
+    "heroes": [
+     "peni-parker",
+     "venom",
+     "groot",
+     "jubilee"
+    ],
+    "l": 7,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 50,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 1,
+    "w": 16
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "DleanJeans"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 2,
+   "tag": "",
+   "uid": "520435205"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795076311436,
+   "hist": [
+    {
+     "abs": 4838,
+     "l": 25,
+     "season": 11,
+     "t": 1795076311436,
+     "w": 38
+    }
+   ],
+   "icon": "31029210",
+   "last": {
+    "abs": 4838,
+    "heroLabels": {
+     "emma-frost": "Emma Frost",
+     "invisible-woman": "Invisible Woman",
+     "luna-snow": "Luna Snow",
+     "rogue": "Rogue"
+    },
+    "heroes": [
+     "rogue",
+     "invisible-woman",
+     "emma-frost",
+     "luna-snow"
+    ],
+    "l": 25,
+    "party": true,
+    "partyColor": "rgb(96, 165, 250)",
+    "rankIdx": 18,
+    "rankLabel": "C3",
+    "rs": 38,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 1,
+    "w": 38
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "Lucy_VNG"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "52617249"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4771,
+     "l": 15,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 18
+    }
+   ],
+   "icon": "31033208",
+   "last": {
+    "abs": 4771,
+    "heroLabels": {
+     "spider-man": "Spider-Man",
+     "stratpool": "Stratpool",
+     "tankpool": "Tankpool",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "spider-man",
+     "stratpool",
+     "winter-soldier",
+     "tankpool"
+    ],
+    "l": 15,
+    "party": true,
+    "partyColor": "rgb(52, 211, 153)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 71,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 1,
+    "w": 18
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "IIFlapFlapII"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "581170252"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795076311436,
+   "hist": [
+    {
+     "abs": 4679,
+     "l": 38,
+     "season": 11,
+     "t": 1795076311436,
+     "w": 44
+    }
+   ],
+   "icon": "31031203",
+   "last": {
+    "abs": 4679,
+    "heroLabels": {
+     "gambit": "Gambit",
+     "magik": "Magik",
+     "psylocke": "Psylocke",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "magik",
+     "winter-soldier",
+     "psylocke",
+     "gambit"
+    ],
+    "l": 38,
+    "party": true,
+    "partyColor": "rgb(96, 165, 250)",
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 79,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 1,
+    "w": 44
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "KhanhT0an"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "653284212"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795076189244,
+   "hist": [
+    {
+     "abs": 4630,
+     "l": 6,
+     "season": 11,
+     "t": 1795076189244,
+     "w": 8
+    }
+   ],
+   "icon": "31014209",
+   "last": {
+    "abs": 4630,
+    "heroLabels": {
+     "gambit": "Gambit",
+     "gorr": "Gorr",
+     "namor": "Namor",
+     "scarlet-witch": "Scarlet Witch"
+    },
+    "heroes": [
+     "gorr",
+     "scarlet-witch",
+     "namor",
+     "gambit"
+    ],
+    "l": 6,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 30,
+    "season": 11,
+    "t": 1795076311436,
+    "team": 2,
+    "w": 8
+   },
+   "lastSeen": 1795076311436,
+   "names": [
+    "MASTER SHIFOOL"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "736489971"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4537,
+     "l": 22,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 15
+    }
+   ],
+   "icon": "31066204",
+   "last": {
+    "abs": 4537,
+    "heroLabels": {
+     "iron-fist": "Iron Fist",
+     "magneto": "Magneto",
+     "the-hood": "The Hood",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "iron-fist",
+     "the-hood",
+     "magneto",
+     "winter-soldier"
+    ],
+    "l": 22,
+    "party": true,
+    "partyColor": "rgb(244, 114, 182)",
+    "rankIdx": 15,
+    "rankLabel": "GM3",
+    "rs": 37,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 2,
+    "w": 15
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "テイシインの猫"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "773252667"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4810,
+     "l": 1,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 5
+    }
+   ],
+   "icon": "30000128",
+   "last": {
+    "abs": 4810,
+    "heroLabels": {
+     "adam-warlock": "Adam Warlock",
+     "hela": "Hela",
+     "ultron": "Ultron",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "ultron",
+     "adam-warlock",
+     "hela",
+     "winter-soldier"
+    ],
+    "l": 1,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 18,
+    "rankLabel": "C3",
+    "rs": 10,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 1,
+    "w": 5
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "dasggjgfawdasc"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "832426254"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4730,
+     "l": 3,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 5
+    }
+   ],
+   "icon": "31047203",
+   "last": {
+    "abs": 4730,
+    "heroLabels": {
+     "iron-fist": "Iron Fist",
+     "jeff-the-land-shark": "Jeff the Land Shark",
+     "luna-snow": "Luna Snow",
+     "rocket-raccoon": "Rocket Raccoon"
+    },
+    "heroes": [
+     "jeff-the-land-shark",
+     "rocket-raccoon",
+     "luna-snow",
+     "iron-fist"
+    ],
+    "l": 3,
+    "party": true,
+    "partyColor": "rgb(96, 165, 250)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 30,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 2,
+    "w": 5
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "ˡᵉᵃᶠʸ"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "864304877"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "firstSeen": 1795075479822,
+   "hist": [
+    {
+     "abs": 4603,
+     "l": 10,
+     "season": 11,
+     "t": 1795075479822,
+     "w": 7
+    }
+   ],
+   "icon": "30000122",
+   "last": {
+    "abs": 4603,
+    "heroLabels": {
+     "invisible-woman": "Invisible Woman",
+     "jeff-the-land-shark": "Jeff the Land Shark",
+     "jubilee": "Jubilee",
+     "thor": "Thor"
+    },
+    "heroes": [
+     "jubilee",
+     "invisible-woman",
+     "thor",
+     "jeff-the-land-shark"
+    ],
+    "l": 10,
+    "party": true,
+    "partyColor": "rgb(244, 114, 182)",
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 3,
+    "season": 11,
+    "t": 1795075479971,
+    "team": 2,
+    "w": 7
+   },
+   "lastSeen": 1795075479971,
+   "names": [
+    "嗷酱"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "917027791"
+  }
+ ],
+ "games": [
+  {
+   "id": "mwn9lcsu",
+   "last": 1795075479971,
+   "players": {
+    "520435205": {
+     "abs": 4732,
+     "l": 7,
+     "team": 1,
+     "w": 15
+    },
+    "581170252": {
+     "abs": 4771,
+     "l": 15,
+     "team": 1,
+     "w": 18
+    },
+    "773252667": {
+     "abs": 4537,
+     "l": 22,
+     "team": 2,
+     "w": 15
+    },
+    "832426254": {
+     "abs": 4810,
+     "l": 1,
+     "team": 1,
+     "w": 5
+    },
+    "864304877": {
+     "abs": 4730,
+     "l": 3,
+     "team": 2,
+     "w": 5
+    },
+    "917027791": {
+     "abs": 4603,
+     "l": 10,
+     "team": 2,
+     "w": 7
+    },
+    "1024770900": {
+     "abs": 4441,
+     "l": 56,
+     "team": 1,
+     "w": 41
+    },
+    "1192215885": {
+     "abs": 4599,
+     "l": 32,
+     "team": 2,
+     "w": 35
+    },
+    "1862832375": {
+     "abs": 4626,
+     "l": 36,
+     "team": 2,
+     "w": 39
+    },
+    "2055148520": {
+     "abs": 4599,
+     "l": 27,
+     "team": 1,
+     "w": 32
+    },
+    "2056407895": {
+     "abs": 4674,
+     "l": 17,
+     "team": 2,
+     "w": 21
+    },
+    "2135569866": {
+     "abs": 4637,
+     "l": 15,
+     "team": 1,
+     "w": 23
+    }
+   },
+   "season": 11,
+   "t": 1795075479822
+  },
+  {
+   "id": "mwna0k70",
+   "last": 1795076311436,
+   "players": {
+    "52617249": {
+     "abs": 4838,
+     "l": 25,
+     "team": 1,
+     "w": 38
+    },
+    "317473106": {
+     "abs": 4666,
+     "l": 59,
+     "team": 2,
+     "w": 63
+    },
+    "520435205": {
+     "abs": 4750,
+     "l": 7,
+     "team": 1,
+     "w": 16
+    },
+    "653284212": {
+     "abs": 4679,
+     "l": 38,
+     "team": 1,
+     "w": 44
+    },
+    "736489971": {
+     "abs": 4630,
+     "l": 6,
+     "team": 2,
+     "w": 8
+    },
+    "1170226890": {
+     "abs": 4734,
+     "l": 7,
+     "team": 2,
+     "w": 10
+    },
+    "1361407834": {
+     "abs": 4772,
+     "l": 7,
+     "team": 1,
+     "w": 23
+    },
+    "1684069305": {
+     "abs": 4810,
+     "l": 3,
+     "team": 2,
+     "w": 11
+    },
+    "1855477530": {
+     "abs": 4679,
+     "l": 22,
+     "team": 1,
+     "w": 27
+    },
+    "1913305464": {
+     "abs": 4800,
+     "l": 31,
+     "team": 2,
+     "w": 37
+    },
+    "2112958722": {
+     "abs": 4715,
+     "l": 14,
+     "team": 1,
+     "w": 32
+    },
+    "2131497922": {
+     "abs": 4906,
+     "l": 1,
+     "team": 2,
+     "w": 11
+    }
+   },
+   "season": 11,
+   "t": 1795076189244
+  }
+ ],
+ "stats": {
+  "checked": 0,
+  "correct": 0,
+  "iconChecked": 1,
+  "iconSame": 1,
+  "suffixChecked": 0,
+  "suffixOk": 0
+ },
+ "settings": {
+  "selfUid": "520435205",
+  "overlay": true,
+  "minShow": 0.5,
+  "useSuffix": true,
+  "useIcons": true,
+  "qpHighRankOnly": true
+ }
+}
