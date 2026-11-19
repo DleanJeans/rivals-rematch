@@ -141,7 +141,8 @@
   $('exportBtn').addEventListener('click', async () => {
     const blob = new Blob([JSON.stringify(await S.exportAll(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'rivals-rematch-' + new Date().toISOString().slice(0, 10) + '.json'; a.click(); URL.revokeObjectURL(a.href);
+    a.download = 'players.json';   // upload as data/players.json in the repo to have it load automatically
+     a.click(); URL.revokeObjectURL(a.href);
   });
   $('importBtn').addEventListener('click', () => $('importFile').click());
   $('importFile').addEventListener('change', async (e) => {
@@ -158,5 +159,5 @@
     if (a && a.tagName === 'INPUT' && a.closest('#tbl')) return;
     clearTimeout(reload.t); reload.t = setTimeout(reload, 400);
   });
-  reload();
+  S.loadSeed(chrome.runtime.getURL('data/players.json')).then(reload);
 })();

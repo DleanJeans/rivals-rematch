@@ -58,6 +58,7 @@
   }
 
   async function init() {
+    await RDT.store.loadSeed(chrome.runtime.getURL('data/players.json'));
     refreshCounts();
     $('open').addEventListener('click', () => { chrome.tabs.create({ url: chrome.runtime.getURL('db/db.html') }); window.close(); });
     tab = await findTab();

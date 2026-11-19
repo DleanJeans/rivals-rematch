@@ -24,6 +24,12 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
   handy for deciding bans.
 - Open the database from the popup: search, sort, tag/note players, lobby log, settings, export/import.
 
+## Keeping your data between sessions (e.g. a PC that resets)
+1. Keep this repo **private** (it will hold other players' names and your notes).
+2. End of session: Database → **Export** (saves `players.json`), then on GitHub: `data/` → *Add file → Upload files* → commit.
+3. Next session: download the repo as a ZIP, unzip, `chrome://extensions` → **Load unpacked**. The extension merges
+   `data/players.json` into its storage on first run, so everything is already there. Settings and the accuracy record come back too.
+
 ## Honest limits
 - It can only recognise people it has **seen with a visible name before**. New players show "no match".
 - With only rank tier visible (as in the Quick Play capture) matches rest on avatar + name-end + rank, so

@@ -302,6 +302,7 @@
   function schedule() { clearTimeout(timer); timer = setTimeout(tick, 250); }
 
   async function start() {
+    if (root.chrome.runtime && root.chrome.runtime.getURL) await S.loadSeed(root.chrome.runtime.getURL('data/players.json'));
     stats = (await S.loadAll()).stats;
     const mo = new MutationObserver((muts) => {
       if (host && muts.every((m) => host.contains(m.target))) return; // ignore our own overlay
