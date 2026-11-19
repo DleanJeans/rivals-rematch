@@ -100,7 +100,7 @@ const mockChrome = `
   await page.screenshot({ path: path.join(__dirname, 'out_ranked_masked.png') });
   await page.close();
 
-  console.log('\n[3b] Returning player swapped avatar; only 2 rows hidden (old >=3-distinct gate would have ignored avatars)');
+  console.log('\n[3b] Returning player swapped avatar but their top heroes are still visible; only 2 rows hidden');
   const stats = JSON.parse(store.get('rdt_stats'));
   ok(stats.iconChecked >= 1 && stats.iconSame === stats.iconChecked, `avatar-swap rate is learned from real sightings (${stats.iconSame}/${stats.iconChecked} unchanged)`);
   page = await load('game3.html', () => {
@@ -113,7 +113,7 @@ const mockChrome = `
     });
   });
   const two = await page.evaluate(() => [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.chip')].map((c) => c.querySelector('.nm').textContent + ' ' + ((c.querySelector('.pc') || {}).textContent || '')));
-  ok(two.length === 2 && two.every((t) => !t.startsWith('no match')), `both recognised, incl. the one with a swapped avatar: ${JSON.stringify(two)}`);
+  ok(two.length === 2 && two.every((t) => !t.startsWith('no match')), `both recognised; the swapped-avatar one is carried by its matching top heroes: ${JSON.stringify(two)}`);
   await page.close();
 
   console.log('\n[4] Real Quick Play ban-phase capture (rank only, partial names) - default: only GM or above are saved');

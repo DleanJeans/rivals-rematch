@@ -39,14 +39,14 @@
     const nameCell = grid.children[1];
     const name = (link ? link.textContent : (nameCell ? nameCell.textContent : '')).trim();
     const masked = !uid;
-    // "*****7" -> suffix "7": the only characters of the real name still visible.
-    const suffix = masked ? name.replace(/^[*•·\s]+/, '') : null;
+    // "*****7": the 7 is just this player's number in the match, NOT part of their name. Kept for display only.
+    const slot = masked ? name.replace(/^[*•·\s]+/, '') : null;
 
     const ranks = parseRankSpans(li);
     if (!ranks.ranked && !ranks.qp) return null; // not a player row
     const rk = ranks.ranked || { tier: null, div: null, label: null, idx: null, rs: null, abs: null };
 
-    // Read the W/L cell on its own: li.textContent would glue a name suffix ("*****1") onto "4W - 7L".
+    // Read the W/L cell on its own: li.textContent would glue the slot number ("*****1") onto "4W - 7L".
     const wlCell = grid.children[3];
     const wl = /(\d+)\s*W\s*-\s*(\d+)\s*L/.exec(wlCell ? wlCell.textContent : '');
     const iconImg = grid.querySelector('img[src*="/icons/"]');
@@ -63,7 +63,7 @@
     const partySvg = partyEl && partyEl.querySelector('svg');
 
     return {
-      idx, team, masked, uid, name, suffix,
+      idx, team, masked, uid, name, slot,
       icon: iconImg ? last(iconImg.getAttribute('src')) : null,
       tier: rk.tier, div: rk.div, rankLabel: rk.label,
       rankIdx: rk.idx, rs: rk.rs, abs: rk.abs,

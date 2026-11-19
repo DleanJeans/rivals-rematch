@@ -24,7 +24,7 @@
   let host = null, shadow = null, chipLayer = null, hud = null;
   let lastSig = '', running = false, again = false, current = null;
   let hudCollapsed = null; // null = auto
-  let pending = new Map(); // ban-phase guesses awaiting the reveal: key -> {uid, suffix, t}
+  let pending = new Map(); // ban-phase guesses awaiting the reveal: key -> {uid, t}
   let stats = {};
   let statusText = 'starting…';
   let lastResult = { noPanel: true };
@@ -145,7 +145,7 @@
     tip.textContent = '';
     const p = it.player;
     tip.appendChild(el('div', '', 'Hidden: ' + [(it.row.rankLabel || 'QP only') + (it.row.rs != null ? ' ' + it.row.rs + ' RS' : ''),
-      it.row.w != null ? it.row.w + 'W-' + it.row.l + 'L' : '', it.row.suffix ? 'name ends “' + it.row.suffix + '”' : '']
+      it.row.w != null ? it.row.w + 'W-' + it.row.l + 'L' : '', it.row.slot ? 'player #' + it.row.slot : '']
       .filter(Boolean).join(' · ')));
     if (!it.match.uid) tip.appendChild(el('div', 'dim', 'No stored player fits these numbers — probably someone new.'));
     it.match.alts.forEach((a, i) => {
@@ -188,7 +188,7 @@
         const a = el('a', '', it.player.names[0] || it.player.uid); a.href = PLAYER(it.match.uid); a.target = '_blank'; a.rel = 'noopener';
         who.appendChild(a);
         who.appendChild(el('span', 'q', '  ' + pct(it.match.p) + (it.match.p < settings.minShow ? ' (low)' : '')));
-      } else who.appendChild(el('span', 'q', 'unrecognised · ' + (it.row.rankLabel || 'QP only') + (it.row.suffix ? ' …' + it.row.suffix : '')));
+      } else who.appendChild(el('span', 'q', 'unrecognised · ' + (it.row.rankLabel || 'QP only') + (it.row.slot ? ' · #' + it.row.slot : '')));
       row.appendChild(who);
       const rc = el('div', 'q'); rc.appendChild(rankSpan(it.row.rankLabel)); row.appendChild(rc);
       if (it.match.uid) {
@@ -216,8 +216,7 @@
     });
     if (!items.length) hud.appendChild(el('div', 'foot', 'No hidden players right now. Names get saved automatically whenever they are visible.'));
     if (stats.checked) hud.appendChild(el('div', 'foot',
-      'Past guesses verified at reveal: ' + stats.correct + '/' + stats.checked + ' correct' +
-      (stats.suffixChecked ? ' · name-suffix rule held ' + stats.suffixOk + '/' + stats.suffixChecked : '')));
+      'Past guesses verified at reveal: ' + stats.correct + '/' + stats.checked + ' correct'));
   }
 
   // ------------------------------------------------------------------- logic
@@ -229,16 +228,15 @@
     const known = lobby.rows.filter((r) => r.uid);
     const byKey = new Map();
     known.forEach((r) => { const k = r.team + '|' + r.rankIdx + '|' + r.icon; byKey.set(k, byKey.has(k) ? null : r); });
-    let checked = 0, correct = 0, sc = 0, so = 0;
+    let checked = 0, correct = 0;
     for (const [k, g] of Array.from(pending)) {
       if (Date.now() - g.t > 3600e3) { pending.delete(k); continue; }
       const r = byKey.get(k);
       if (!r) continue;
       pending.delete(k); checked++;
       if (r.uid === g.uid) correct++;
-      if (g.suffix) { sc++; if (r.name.toLowerCase().endsWith(g.suffix.toLowerCase())) so++; }
     }
-    if (checked) stats = await S.recordOutcome(checked, correct, sc, so);
+    if (checked) stats = await S.recordOutcome(checked, correct);
   }
 
   async function tick() {
@@ -279,14 +277,14 @@
       const iconSwap = (((stats.iconChecked || 0) - (stats.iconSame || 0)) + 2) / ((stats.iconChecked || 0) + 5); // prior 40 % swap
       const matches = R.matchLobby(hidden.map((r) => ({
         rankIdx: r.rankIdx, abs: r.abs, w: r.w, l: r.l, season: lobby.season, icon: r.icon,
-        suffix: r.suffix || null, heroes: r.heroes, qpLobby: r.qpLobby,
-      })), pool.map(S.toCandidate), { useSuffix: settings.useSuffix && suffixTrusted(), useIcons: settings.useIcons && !iconsMasked, iconFreq, iconSwap });
+        heroes: r.heroes, qpLobby: r.qpLobby,
+      })), pool.map(S.toCandidate), { useIcons: settings.useIcons && !iconsMasked, iconFreq, iconSwap });
 
       current.items = hidden.map((row, i) => ({ row, match: matches[i], player: byUid[matches[i].uid] || null, byUid }));
       current.items.forEach((it) => {
         if (it.match.uid && it.match.p >= settings.minShow) {
           pending.set(it.row.team + '|' + it.row.rankIdx + '|' + it.row.icon,
-            { uid: it.match.uid, suffix: it.row.suffix, t: Date.now() });
+            { uid: it.match.uid, t: Date.now() });
         }
       });
       lastResult.matched = current.items.filter((i) => i.match.uid && i.match.p >= settings.minShow).length;
@@ -302,9 +300,6 @@
       if (again) { again = false; schedule(); }
     }
   }
-
-  // If reveal checks show the "last characters of the name" assumption is wrong, stop using it.
-  const suffixTrusted = () => !(stats.suffixChecked >= 6 && stats.suffixOk / stats.suffixChecked < 0.6);
 
   /** Force a fresh read + save right now (used by the toolbar popup). */
   async function scanNow() {

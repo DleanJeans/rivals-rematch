@@ -165,22 +165,21 @@
 
   function renderSettings() {
     const s = data.settings;
-    $('sSelf').value = s.selfUid; $('sOverlay').checked = s.overlay; $('sSuffix').checked = s.useSuffix;
+    $('sSelf').value = s.selfUid; $('sOverlay').checked = s.overlay;
     $('sIcons').checked = s.useIcons; $('sQp').checked = s.qpHighRankOnly; $('sMin').value = Math.round(s.minShow * 100);
     const st = data.stats;
     $('accuracy').textContent = st.checked
-      ? 'Track record: ' + st.correct + ' of ' + st.checked + ' ban-phase guesses were confirmed correct once names were revealed.' +
-        (st.suffixChecked ? ' The visible-name-end rule held ' + st.suffixOk + '/' + st.suffixChecked + ' times.' : '')
+      ? 'Track record: ' + st.correct + ' of ' + st.checked + ' ban-phase guesses were confirmed correct once names were revealed.'
       : 'Track record: no ban-phase guesses have been verified yet — it builds up automatically as names get revealed.';
   }
   async function saveSettings() {
     const s = Object.assign({}, data.settings, {
-      selfUid: $('sSelf').value.trim(), overlay: $('sOverlay').checked, useSuffix: $('sSuffix').checked,
+      selfUid: $('sSelf').value.trim(), overlay: $('sOverlay').checked,
       useIcons: $('sIcons').checked, qpHighRankOnly: $('sQp').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
     });
     await S.saveSettings(s); data.settings = s;
   }
-  ['sSelf', 'sOverlay', 'sSuffix', 'sIcons', 'sMin', 'sQp'].forEach((id) => $(id).addEventListener('change', saveSettings));
+  ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sQp'].forEach((id) => $(id).addEventListener('change', saveSettings));
 
   try { $('ver').textContent = 'v' + chrome.runtime.getManifest().version; } catch (_) { /* no manifest in tests */ }
 

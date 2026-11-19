@@ -20,10 +20,10 @@ at the top of the database page (currently 0.2.0) so you can check you have the 
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:
   name, UID, avatar, rank + RS, W-L, top heroes, party flag, and whether they were your teammate or enemy.
 - **When names are hidden** each masked row is matched against that database using whatever is still
-  visible: rank/division, RS, W-L, the avatar, the **visible end of the masked name** (`*****7` → ends in "7"),
-  and top heroes / party icon when shown. A global assignment guarantees two rows never claim the same person.
+  visible: rank/division, RS, W-L, the avatar, and top heroes / party icon when shown. (The `7` in `*****7` is just
+  the player's number in that match, not part of their name, so it is ignored.) A global assignment guarantees two rows never claim the same person.
 - Matching leans on one hard rule: season **W and L only ever go up**. Your example fits it —
-  PlayerA. `4W-1L → 6W-3L` (+2W +2L) with RS unchanged; RS can move at most about +20 per win and −25 per loss (GM), and RS shows −20…99 within a division (below −20 you derank), so impossible changes are ruled out.
+  PlayerA. `4W-1L → 6W-3L` (+2W +2L) with RS unchanged; RS can move at most about ±25 per game (GM), and RS shows −20…99 within a division (below −20 you derank), so impossible changes are ruled out.
 - **Quick Play lobbies** only save players ranked **GM or above** (GM, Celestial, Eternity, One Above All) (everyone is saved in Ranked). Toggle in Database → Settings.
 - Hidden rows get a chip over the `****` (green ≥80 %, amber ≥ threshold, grey "(maybe)", dashed "no match"),
   and a **HUD** lists each recognised player's name, **last-known top heroes**, teammate/enemy history and your notes —
@@ -38,9 +38,9 @@ at the top of the database page (currently 0.2.0) so you can check you have the 
 
 ## Honest limits
 - It can only recognise people it has **seen with a visible name before**. New players show "no match".
-- With only rank tier visible (as in the Quick Play capture) matches rest on avatar + name-end + rank, so
-  confidence is lower. The extension **checks itself**: when names are revealed it compares its earlier guesses and
-  shows the running accuracy (Settings). If the name-end rule proves wrong it switches itself off.
+- With only rank tier visible (as in the Quick Play capture) matches rest on avatar + rank, so
+  confidence is lower and most rows will say "no match". The extension **checks itself**: when names are revealed it
+  compares its earlier guesses and shows the running accuracy (Settings).
 - It relies on rivalsdata's current page markup; if the site is redesigned, `content/scrape.js` is the only file to adjust.
 
 ## Tests

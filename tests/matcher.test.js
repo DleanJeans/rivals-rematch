@@ -5,21 +5,19 @@ const P1 = R.parseRank('P1', 'platinum'), P3 = R.parseRank('P3', 'platinum'), D3
 const cand = (uid, name, rk, rs, extra) => Object.assign({ uid, names: [name], abs: R.absScore(rk, rs), rankIdx: R.rankIdx(rk), season: 11, w: null, l: null, icon: null, heroes: null }, extra);
 const row = (rk, extra) => Object.assign({ rankIdx: R.rankIdx(rk), abs: null, w: null, l: null, season: 11, icon: null, suffix: null, heroes: null }, extra);
 
-console.log('\nQuick-Play style row: rank tier + avatar + name suffix only (no RS, no W/L)');
-let m = R.matchLobby([row(P1, { icon: '31053209', suffix: '7' })], [
-  cand('a', 'Foo7', P1, 40, { icon: '31053209' }),
-  cand('b', 'Bar9', P1, 40, { icon: '31053209' }),
-  cand('c', 'Baz7', P3, 40, { icon: '31053209' }),
-  cand('d', 'Qux7', P1, 60, { icon: '31000000' })]);
-ok(m[0].uid === 'a' && m[0].p > 0.5, `picks the one with same rank + icon + suffix (got ${m[0].uid} ${(m[0].p * 100).toFixed(0)}%)`);
-
-console.log('\nSame rank only, nothing else matches');
-m = R.matchLobby([row(P1, { suffix: '7' })], [cand('b', 'Bar9', P1, 40)]);
-ok(m[0].uid === null, 'suffix mismatch => not recognised (names do not end in 7)');
-m = R.matchLobby([row(P1, { suffix: '7' })], [cand('x', 'Old', P1, 40, { names: ['Old', 'NewName7'] })]);
-ok(m[0].uid === null || m[0].uid === 'x', 'name history is consulted for suffix');
-m = R.matchLobby([row(P1, { suffix: '7' })], [{ uid: 'x', names: ['Old', 'Prev7'], abs: R.absScore(P1, 40), season: 11 }]);
-ok(m[0].uid === 'x', 'a previous name ending in the suffix still matches');
+console.log('\nQuick-Play style row: rank tier + avatar only (no RS, no W/L). The "*****7" is a match slot number, NOT part of the name.');
+let m = R.matchLobby([row(P1, { icon: '31053209' })], [
+  cand('a', 'Foo', P1, 40, { icon: '31053209' }),
+  cand('b', 'Bar', P1, 40, { icon: '31000001' }),
+  cand('c', 'Baz', P3, 40, { icon: '31053209' }),
+  cand('d', 'Qux', P1, 60, { icon: '31000002' })], { iconFreq: { 31053209: 0.02 } });
+ok(m[0].uid === 'a' && m[0].p > 0.5, `picks the one with same rank + rare avatar (got ${m[0].uid} ${(m[0].p * 100).toFixed(0)}%)`);
+m = R.matchLobby([row(P1, { icon: '31053209' })], [cand('c', 'Baz', P3, 40, { icon: '31053209' })]);
+ok(m[0].uid === null, 'same avatar but two divisions away => not recognised');
+m = R.matchLobby([row(P1, {})], [cand('b', 'Bar', P1, 40)]);
+ok(m[0].uid === null || m[0].p < 0.9, `rank alone is never a confident match (${m[0].uid ? (m[0].p * 100).toFixed(0) + '%' : 'no match'})`);
+ok(!('suffix' in R.DEFAULTS) && R.pairCost(row(P1, { suffix: '7' }), cand('b', 'Bar9', P1, 40), Object.assign({}, R.DEFAULTS)) === R.pairCost(row(P1, {}), cand('b', 'Bar9', P1, 40), Object.assign({}, R.DEFAULTS)),
+  'a "name ends in 7" hint no longer influences anything (names are NOT matched on)');
 
 console.log('\nHard rules');
 m = R.matchLobby([row(P1, { abs: R.absScore(P1, 40), w: 5, l: 5 })], [cand('a', 'A', P1, 40, { w: 9, l: 3 })]);
@@ -43,8 +41,9 @@ const GM1 = R.parseRank('GM1', 'grandmaster');
 m = R.matchLobby([row(GM1, { abs: R.absScore(GM1, 70), w: 6, l: 3 })], [cand('inf', 'PlayerA.', GM1, 70, { w: 4, l: 1 })]);
 const bare = m[0].p;
 ok(m[0].uid === 'inf' && bare > 0.6 && bare < 0.85, `RS+W/L alone: recognised but only moderately sure, amber (${(bare * 100).toFixed(0)}%)`);
-m = R.matchLobby([row(GM1, { abs: R.absScore(GM1, 70), w: 6, l: 3, suffix: '.', icon: '30000283' })], [cand('inf', 'PlayerA.', GM1, 70, { w: 4, l: 1, icon: '30000283' })]);
-ok(m[0].uid === 'inf' && m[0].p > 0.9, `...plus visible name suffix + avatar: confident, green (${(m[0].p * 100).toFixed(0)}%)`);
+const H = ['emma-frost', 'magneto', 'devil-dinosaur', 'peni-parker'];
+m = R.matchLobby([row(GM1, { abs: R.absScore(GM1, 70), w: 6, l: 3, icon: '30000283', heroes: H })], [cand('inf', 'Infexious.', GM1, 70, { w: 4, l: 1, icon: '30000283', heroes: H })], { iconFreq: { 30000283: 0.05 } });
+ok(m[0].uid === 'inf' && m[0].p > 0.9, `...plus a visible avatar and top heroes: confident, green (${(m[0].p * 100).toFixed(0)}%)`);
 m = R.matchLobby([row(GM1, { abs: R.absScore(GM1, 70), w: 6, l: 3 })], [cand('x', 'Other', GM1, 20, { w: 4, l: 1 })]);
 ok(m[0].uid === null, 'same W/L change but +50 RS with no net wins => rejected');
 
@@ -53,8 +52,8 @@ const base = { abs: R.absScore(GM1, 70), w: 6, l: 3 };
 const same = (icon, freq) => R.matchLobby([row(GM1, Object.assign({ icon }, base))], [cand('inf', 'A', GM1, 70, { w: 4, l: 1, icon })], { iconFreq: freq })[0].p;
 const rare = same('rare', { rare: 0.01 }), common = same('common', { common: 0.4 });
 ok(rare > common + 0.1, `same RARE avatar is stronger evidence than same COMMON default avatar (${(rare * 100).toFixed(0)}% vs ${(common * 100).toFixed(0)}%)`);
-const swapped = R.matchLobby([row(GM1, Object.assign({ icon: 'new', suffix: '.' }, base))], [cand('inf', 'Infexious.', GM1, 70, { w: 4, l: 1, icon: 'old' })])[0];
-ok(swapped.uid === 'inf' && swapped.p > 0.5, `avatar swapped since last game still recognised via stats + name end (${(swapped.p * 100).toFixed(0)}%)`);
+const swapped = R.matchLobby([row(GM1, Object.assign({ icon: 'new', heroes: ['hulk', 'thor', 'venom', 'groot'] }, base))], [cand('inf', 'Infexious.', GM1, 70, { w: 4, l: 1, icon: 'old', heroes: ['hulk', 'thor', 'venom', 'groot'] })])[0];
+ok(swapped.uid === 'inf' && swapped.p > 0.5, `avatar swapped since last game still recognised via stats + heroes (${(swapped.p * 100).toFixed(0)}%)`);
 const sw = (k) => R.matchLobby([row(GM1, Object.assign({ icon: 'new' }, base))], [cand('inf', 'A', GM1, 70, { w: 4, l: 1, icon: 'old' })], { iconSwap: k })[0].p;
 ok(sw(0.8) > sw(0.1), 'learned swap rate matters: frequent swappers are penalised less for a changed avatar');
 const pick = R.matchLobby([row(GM1, Object.assign({ icon: 'zzz' }, base))], [
@@ -79,12 +78,12 @@ ok(R.matchLobby([row(GM1, { w: 5, l: 6 })], [cand('c', 'C', GM2, 85, { w: 5, l: 
 console.log('\nQuick Play lobbies (two rank columns: ranked + QP)');
 const S3 = R.parseRank('S3', 'silver');
 const qpCand = cand('q', 'Foo7', D3, 35, { qp: { abs: R.absScore(S3, 40), rankIdx: R.rankIdx(S3) } });
-const hidden = (qpLobby) => R.matchLobby([row(S3, { suffix: '7', qpLobby })], [qpCand])[0];
+const hidden = (qpLobby) => R.matchLobby([row(S3, { icon: 'av', qpLobby })], [Object.assign({}, qpCand, { icon: 'av' })], { iconFreq: { av: 0.02 } })[0];
 ok(hidden(false).uid === null, 'S3 hidden row does NOT match a D3-ranked player when the column is ranked');
 ok(hidden(true).uid === 'q', 'in a QP lobby the unlabelled S3 may be the QP rank => matches via the stored QP rank');
-ok(R.matchLobby([row(D3, { suffix: '7', qpLobby: true })], [qpCand])[0].p > hidden(true).p, 'but the ranked-column reading is preferred when it fits');
+ok(R.matchLobby([row(D3, { icon: 'av', qpLobby: true })], [Object.assign({}, qpCand, { icon: 'av' })], { iconFreq: { av: 0.02 } })[0].p > hidden(true).p, 'but the ranked-column reading is preferred when it fits');
 ok(R.matchLobby([row(null === 0 ? D3 : D3, { qpLobby: true })], [cand('z', 'Z', D3, 35)])[0].uid !== undefined, 'players with no stored QP rank are unaffected');
-const noRank = R.matchLobby([{ rankIdx: null, abs: null, w: null, l: null, season: 11, suffix: '7', icon: null, heroes: null }], [qpCand])[0];
-ok(noRank.uid === 'q', 'a row with NO readable rank still matches on name end alone, without crashing');
+const noRank = R.matchLobby([{ rankIdx: null, abs: null, w: null, l: null, season: 11, icon: null, heroes: null }], [qpCand])[0];
+ok(noRank.uid === null || noRank.uid === 'q', 'a row with NO readable rank does not crash the matcher');
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);
