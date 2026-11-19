@@ -36,3 +36,6 @@ td.st{width:34px;padding-right:0}
 .star{border:0;background:none;font-size:18px;line-height:1;padding:2px 6px;color:var(--dim);cursor:pointer}
 .star:hover{color:var(--acc)}.star.on{color:var(--acc)}
 tr.starred td{background:color-mix(in srgb,var(--acc) 9%,transparent)}
+
+.who{display:flex;align-items:center;gap:10px}
+img.av{width:30px;height:30px;border-radius:6px;background:var(--line);flex:none;object-fit:cover}

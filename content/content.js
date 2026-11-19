@@ -10,6 +10,7 @@
   const R = root.RDT, S = R.store;
   const doc = root.document;
   const HERO = (s) => 'https://rivalsdata.com/assets/heroes/' + encodeURIComponent(s) + '.webp';
+  const ICON = (s) => 'https://cdn.rivalsdata.com/assets/icons/' + encodeURIComponent(s) + '.webp';
   const PLAYER = (u) => 'https://rivalsdata.com/player/' + encodeURIComponent(u);
 
   let host = null, shadow = null, chipLayer = null, hud = null;
@@ -47,6 +48,7 @@
   .r{display:grid;grid-template-columns:22px 1fr auto;gap:2px 8px;padding:7px 10px;border-bottom:1px solid #22252d;align-items:center}
   .r:last-child{border-bottom:0}
   .t1{color:#6ea8ff}.t2{color:#ff7b7b}.tm{font-weight:700;text-align:center}
+  .who img.av{width:20px;height:20px;border-radius:4px;vertical-align:middle;margin-right:6px;background:#2a2d36}
   .who a{color:#fff;font-weight:600;text-decoration:none}.who a:hover{text-decoration:underline}
   .who .q{color:#8e94a4;font-weight:400}
   .meta{grid-column:2/4;color:#8e94a4;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
@@ -166,6 +168,7 @@
       const row = el('div', 'r');
       row.appendChild(el('div', 'tm t' + it.row.team, 'T' + it.row.team));
       const who = el('div', 'who');
+      if (it.match.uid && it.player.icon) { const av = doc.createElement('img'); av.className = 'av'; av.src = ICON(it.player.icon); av.alt = ''; who.appendChild(av); }
       if (it.match.uid) {
         const a = el('a', '', it.player.names[0] || it.player.uid); a.href = PLAYER(it.match.uid); a.target = '_blank'; a.rel = 'noopener';
         who.appendChild(a);

@@ -2,6 +2,7 @@
   'use strict';
   const S = RDT.store, $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const ICON = (s) => 'https://cdn.rivalsdata.com/assets/icons/' + encodeURIComponent(s) + '.webp';
   const HERO = (s) => 'https://rivalsdata.com/assets/heroes/' + encodeURIComponent(s) + '.webp';
   let data = { players: [], games: [], stats: {}, settings: {} };
   let sortKey = 'when', sortDir = -1;
@@ -51,9 +52,13 @@
       sb.addEventListener('click', async () => { await S.updatePlayer(p.uid, { starred: !p.starred }); p.starred = !p.starred; renderPlayers(); });
       st.appendChild(sb); tr.appendChild(st);
       const nm = el('td', 'nm');
+      const wrap = el('div', 'who');
+      if (p.icon) { const av = document.createElement('img'); av.className = 'av'; av.src = ICON(p.icon); av.alt = ''; av.title = 'Last avatar seen'; wrap.appendChild(av); }
+      const txt = el('div');
       const a = el('a', '', p.names[0] || p.uid); a.href = 'https://rivalsdata.com/player/' + p.uid; a.target = '_blank'; a.rel = 'noopener';
-      nm.appendChild(a);
-      if (p.names.length > 1) nm.appendChild(el('small', '', 'aka ' + p.names.slice(1, 4).join(', ')));
+      txt.appendChild(a);
+      if (p.names.length > 1) txt.appendChild(el('small', '', 'aka ' + p.names.slice(1, 4).join(', ')));
+      wrap.appendChild(txt); nm.appendChild(wrap);
       tr.appendChild(nm);
       tr.appendChild(el('td', '', l.rankLabel ? l.rankLabel + (l.rs != null ? ' · ' + l.rs + ' RS' : '') : '—'));
       tr.appendChild(el('td', '', l.w != null ? l.w + 'W-' + l.l + 'L · ' + Math.round(wr(l) * 100) + '%' : '—'));
