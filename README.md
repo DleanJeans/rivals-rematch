@@ -15,7 +15,7 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
 ## Updating
 An unpacked extension does not update itself. Download the repo again (or `git pull`), then press the **reload**
 button on the extension's card at `chrome://extensions`. The installed version is shown in the toolbar popup and
-at the top of the database page (currently 0.6.0) so you can check you have the latest.
+at the top of the database page (currently 0.7.0) so you can check you have the latest.
 
 ## How it works
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:
@@ -38,6 +38,9 @@ at the top of the database page (currently 0.6.0) so you can check you have the 
   background tabs (never your own; a team column has its own button). Each tab then checks itself: if the player is **In game (Competitive)**
   it opens their *Live Game* tab and reads it; otherwise the tab closes itself (a page that never finished loading is left alone).
   Shift-click opens the profiles plainly, with no checking and no closing.
+- **Deleting:** each lobby line has a **Delete** button (it rolls back the counts that lobby added, and offers to forget players who appear in
+  no other lobby; starred, tagged or noted players are always kept), and each player has ✕. Deletions are remembered in the data file, so
+  they survive Save to GitHub and loading the file on another machine; a player seen again later simply comes back.
 - Hidden rows get a chip over the `****` (green ≥80 %, amber ≥ threshold, grey "(maybe)", dashed "no match"),
   and a **HUD** lists each recognised player's name, **last-known top heroes**, teammate/enemy history and your notes —
   handy for deciding bans.

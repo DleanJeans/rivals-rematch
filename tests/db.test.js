@@ -87,7 +87,10 @@ seed.rdt_stats = { checked: 8, correct: 7, suffixChecked: 8, suffixOk: 8 };
   ok(exp.players.length === 4 && exp.version === 1, 'export has all stored players (incl. your own row)');
   await page.evaluate(() => RDT.store.deletePlayer('11'));
   const n = await page.evaluate(async (e) => RDT.store.importAll(e), exp);
-  ok(n === 4 && await page.evaluate(() => 'p:11' in window.__st), 'import restores a deleted player (merge)');
+  ok(n === 4 && !(await page.evaluate(() => 'p:11' in window.__st)), 'importing an older file does NOT bring back a player you deleted (the deletion is remembered)');
+  const back = Object.assign({}, exp.players.find((p) => p.uid === '11'), { lastSeen: Date.now() + 60000 });
+  await page.evaluate(async (r) => RDT.store.importAll({ players: [r] }), back);
+  ok(await page.evaluate(() => 'p:11' in window.__st), 'but the same player seen again afterwards is restored (merge)');
   // --- Lobbies tab: a list first, two teams side by side when a lobby is opened
   await page.click('[data-tab=lobbies]');
   const head = await page.textContent('#tab-lobbies .lobhead');

@@ -51,7 +51,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   const popup = await ctx.newPage(); popup.on('pageerror', (e) => { errs.push(e.message); });
   await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
   await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 5000 });
-  ok(/Version 0\.6\.0/.test(await popup.textContent('#ver')), 'popup shows the installed version');
+  ok(/Version 0\.7\.0/.test(await popup.textContent('#ver')), 'popup shows the installed version');
   ok(/Ready/.test(await popup.textContent('#where')), 'popup finds the rivalsdata tab and enables the button');
   ok(/12 players/.test(await popup.textContent('#counts')), `automatic save already stored the lobby: "${await popup.textContent('#counts')}"`);
 

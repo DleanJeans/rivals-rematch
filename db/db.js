@@ -152,6 +152,16 @@
     for (const u of list) await chrome.tabs.create({ url: 'https://rivalsdata.com/player/' + encodeURIComponent(u) + (check ? '#rdt-check' : ''), active: false });
     return list.length;
   }
+  /** Delete a lobby record (rolls back its counts); optionally forget players who appear in no other lobby. */
+  async function deleteLobby(g, n) {
+    const when = new Date(g.t).toLocaleString();
+    if (!confirm('Delete the lobby from ' + when + ' (' + n + ' players saved)?\n\nOnly the lobby record and the counts it added are removed; the players stay in your database.')) return;
+    const pre = await S.previewDeleteGame(g.id);
+    const forget = pre.orphans > 0 && confirm('Also forget the ' + pre.orphans + ' player' + (pre.orphans === 1 ? '' : 's') + ' ' + (pre.orphans === 1 ? 'who appears' : 'who appear') + ' in no other lobby?\n\nStarred, tagged or noted players are always kept.');
+    await S.deleteGame(g.id, { forgetOrphans: forget });
+    openLobbies.delete(g.id);
+    await reload();
+  }
   const openLobbies = new Set();                      // lobbies that are expanded (survives redraws)
   const avgOf = (rows) => { const v = rows.map((r) => r.abs).filter((x) => x != null); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null; };
   const signedSpan = (df) => { const sp = el('span', 'df', ' (' + (df >= 0 ? '+' : '') + df + ')'); sp.style.color = df >= 0 ? GOOD : BAD; return sp; };
@@ -229,6 +239,10 @@
         oa.addEventListener('keydown', (e) => e.stopPropagation());
         head.appendChild(oa);
       }
+      const del = el('button', 'dellobby', 'Delete'); del.title = 'Delete this lobby record'; del.setAttribute('aria-label', 'Delete this lobby');
+      del.addEventListener('click', (e) => { e.stopPropagation(); deleteLobby(g, rows.length); });
+      del.addEventListener('keydown', (e) => e.stopPropagation());
+      head.appendChild(del);
       d.appendChild(head);
 
       let body = null;
