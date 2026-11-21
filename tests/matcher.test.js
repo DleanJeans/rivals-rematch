@@ -86,4 +86,16 @@ ok(R.matchLobby([row(null === 0 ? D3 : D3, { qpLobby: true })], [cand('z', 'Z', 
 const noRank = R.matchLobby([{ rankIdx: null, abs: null, w: null, l: null, season: 11, icon: null, heroes: null }], [qpCand])[0];
 ok(noRank.uid === null || noRank.uid === 'q', 'a row with NO readable rank does not crash the matcher');
 
+console.log('\nRank range: only try to recognise players up to N ranks below you');
+const lab = (self, n) => R.rankLabelOf(R.minRankIdx(R.rankIdx(R.parseRank(self)), n));
+ok(lab('GM1', 3) === 'D1', 'GM1 with a range of 3 -> minimum D1 (as requested)');
+ok(lab('GM3', 3) === 'D3', 'GM3 -> D3: it follows your rank when you drop');
+ok(lab('C3', 3) === 'GM3', 'Celestial 3 -> GM3 (GM1, GM2, GM3 are the 3 ranks below it): and it follows you when you climb');
+ok(lab('GM1', 0) === 'GM1' && lab('B3', 3) === 'B3', 'range 0 = your own division only; never goes below Bronze 3');
+ok(R.minRankIdx(null, 3) === null && R.minRankIdx(17, null) === null, 'unknown own rank => no limit (nothing is wrongly skipped)');
+const idxOf = (l) => R.rankIdx(R.parseRank(l));
+ok(idxOf('D1') >= R.minRankIdx(idxOf('GM1'), 3) && idxOf('D2') < R.minRankIdx(idxOf('GM1'), 3) && idxOf('P3') < R.minRankIdx(idxOf('GM1'), 3), 'D1 is in range; D2, Platinum and below are out');
+ok(['B3', 'B1', 'S2', 'G3', 'P1', 'P3', 'D3', 'D2'].every((l) => idxOf(l) < R.minRankIdx(idxOf('GM1'), 3)), 'every rank below D1 is out');
+ok(['D1', 'GM3', 'GM2', 'GM1', 'C3', 'E1'].every((l) => idxOf(l) >= R.minRankIdx(idxOf('GM1'), 3)), 'D1 and everything above it is in');
+
 console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);

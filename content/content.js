@@ -175,8 +175,9 @@
     const hh = el('div', 'hh');
     const matched = items.filter((i) => i.match.uid && i.match.p >= settings.minShow).length;
     hh.appendChild(el('span', '', 'Rivals Rematch'));
-    hh.appendChild(el('span', 'sub', items.length ? matched + '/' + items.length + ' hidden players recognised'
-      : current.playersCount + ' players saved · ' + statusText));
+    const skipped = current.belowRange ? ' · ' + current.belowRange + ' below ' + current.minLabel + ' skipped' : '';
+    hh.appendChild(el('span', 'sub', items.length ? matched + '/' + items.length + ' hidden players recognised' + skipped
+      : current.playersCount + ' players saved' + skipped + ' · ' + statusText));
     hh.appendChild(el('span', 'sp'));
     hh.appendChild(el('span', 'sub', collapsed ? '▲' : '▼'));
     hh.addEventListener('click', () => { hudCollapsed = !collapsed; renderHud(items, settings); });
@@ -267,12 +268,21 @@
         : 'all ' + lobby.rows.length + ' names hidden — saved once revealed';
 
       const all = await S.loadPlayers();
-      const hidden = lobby.rows.filter((r) => r.masked);
+      const hiddenAll = lobby.rows.filter((r) => r.masked);
+      // Only try to recognise players near your own rank: `matchRankRange` ranks below you (GM1 + 3 -> D1).
+      const me = lobby.rows.find((r) => r.uid === settings.selfUid), meStored = all.find((p) => p.uid === settings.selfUid);
+      const selfIdx = me && me.rankIdx != null ? me.rankIdx : (meStored && meStored.last && meStored.last.rankIdx != null ? meStored.last.rankIdx : null);
+      const minIdx = R.minRankIdx(selfIdx, settings.matchRankRange);
+      const hidden = hiddenAll.filter((r) => minIdx == null || r.rankIdx == null || r.rankIdx >= minIdx);
+      const belowRange = hiddenAll.length - hidden.length, minLabel = minIdx != null ? R.rankLabelOf(minIdx) : null;
+      lastResult.belowRange = belowRange; lastResult.minLabel = minLabel;
       const visible = new Set(lobby.rows.filter((r) => r.uid).map((r) => r.uid));
       const maxAge = R.DEFAULTS.maxAgeDays * 86400e3;
-      const pool = all.filter((p) => !visible.has(p.uid) && Date.now() - (p.lastSeen || 0) < maxAge);
+      // stored players far below the cut-off can't be them either (one division of slack for people who have since climbed)
+      const pool = all.filter((p) => !visible.has(p.uid) && Date.now() - (p.lastSeen || 0) < maxAge &&
+        (minIdx == null || !p.last || p.last.rankIdx == null || p.last.rankIdx >= minIdx - 1));
       const byUid = {}; pool.forEach((p) => { byUid[p.uid] = p; });
-      current = { lobby, items: [], playersCount: all.length };
+      current = { lobby, items: [], playersCount: all.length, belowRange, minLabel };
       if (!settings.overlay) { clearOverlay(); return lastResult; }
 
       // Avatars count unless the site is clearly masking them (many hidden rows, all one placeholder).

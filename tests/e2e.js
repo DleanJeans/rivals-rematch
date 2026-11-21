@@ -124,7 +124,17 @@ const mockChrome = `
     mode: RDT.scrapeLive(document).mode, qpLobby: RDT.scrapeLive(document).qpLobby,
     chips: [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.chip')].map((c) => c.textContent),
   }));
-  ok(qp.host && qp.chips.length === 5, `5 masked rows detected and overlaid (got ${qp.chips.length}): ${JSON.stringify(qp.chips)}`);
+  const hudText = await page.evaluate(() => document.querySelector('#rdt-host').shadowRoot.querySelector('.hud').textContent);
+  ok(qp.host && qp.chips.length === 0, `hidden rows that are Platinum / Silver / Diamond-3 (below D1, you are GM1) get no chip at all (got ${qp.chips.length})`);
+  ok(/5 below D1 skipped/.test(hudText), `the panel says so instead of guessing: "${hudText.replace(/\s+/g, ' ').slice(0, 90)}"`);
+  await page.close();
+  store.set('rdt_settings', JSON.stringify({ matchRankRange: 15 }));       // widen the range => the same rows are matched again
+  page = await load('ban_qp.html');
+  const wide = await page.evaluate(() => [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.chip')].length);
+  ok(wide === 5, `with the range widened to 15 ranks (Silver 3 is 14 below GM1) the 5 hidden rows get chips again (got ${wide})`);
+  await page.close();
+  store.delete('rdt_settings');
+  page = await load('ban_qp.html');
   ok(qp.mode === 'quick play' && qp.qpLobby === true, `lobby recognised as Quick Play from the page header (mode="${qp.mode}")`);
   ok(!byName('PlayerM1') && !byName('PlayerX6'), 'Platinum / Gold players in a Quick Play lobby are NOT saved');
   ok(players().filter((p) => p.names.includes('PlayerM1') || p.names.includes('PlayerX6')).length === 0 && players().length === before, `database unchanged: still ${before} players (got ${players().length})`);

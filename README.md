@@ -14,7 +14,7 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
 ## Updating
 An unpacked extension does not update itself. Download the repo again (or `git pull`), then press the **reload**
 button on the extension's card at `chrome://extensions`. The installed version is shown in the toolbar popup and
-at the top of the database page (currently 0.3.0) so you can check you have the latest.
+at the top of the database page (currently 0.3.1) so you can check you have the latest.
 
 ## How it works
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:
@@ -29,6 +29,8 @@ at the top of the database page (currently 0.3.0) so you can check you have the 
   level), and open the ▾ dropdown under a player for **Heroes** (games + win rate), **Proficiency** (levels) and **Match history**.
   The data comes from rivalsdata's own expanded row: press **Read hero details** in the toolbar popup (it briefly opens each
   player's row and closes it again), or tick *Read hero details automatically* in Settings.
+- **Rank range:** hidden players are only matched if they are within a few ranks of you (default 3 below: GM1 → D1; it follows
+  your rank). Rows below that get no chip, and the panel says how many were skipped. Change it in Settings.
 - Hidden rows get a chip over the `****` (green ≥80 %, amber ≥ threshold, grey "(maybe)", dashed "no match"),
   and a **HUD** lists each recognised player's name, **last-known top heroes**, teammate/enemy history and your notes —
   handy for deciding bans.
