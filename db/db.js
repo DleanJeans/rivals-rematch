@@ -94,6 +94,21 @@
     return b;
   }
 
+  // the player Auto Discover is checking right now is highlighted (and scrolled to)
+  let autoNow = null;
+  function markAuto(uid) {
+    if (uid === autoNow) return;
+    autoNow = uid;
+    let hit = null;
+    document.querySelectorAll('#tbl tbody tr[data-uid]').forEach((r) => { const on = !!uid && r.dataset.uid === uid; r.classList.toggle('auto-now', on); if (on) hit = r; });
+    if (hit && hit.scrollIntoView) hit.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+  try {
+    const cur = (st) => (st && st.running && st.current ? st.current.uid : null);
+    chrome.storage.local.get('rdt_auto', (r) => markAuto(cur(r && r.rdt_auto)));
+    chrome.storage.onChanged.addListener((ch, area) => { if (area === 'local' && ch.rdt_auto) markAuto(cur(ch.rdt_auto.newValue)); });
+  } catch (_) { /* tests without the extension APIs */ }
+
   function renderPlayers() {
     const q = $('q').value.trim().toLowerCase(), role = $('role').value;
     let list = data.players.filter((p) => {
@@ -112,7 +127,7 @@
     const tb = document.querySelector('#tbl tbody'); tb.textContent = '';
     list.slice(0, 500).forEach((p) => {
       const l = p.last || {};
-      const tr = el('tr'); if (p.starred) tr.className = 'starred';
+      const tr = el('tr'); if (p.starred) tr.className = 'starred'; tr.dataset.uid = p.uid; if (p.uid === autoNow) tr.classList.add('auto-now');
       const st = el('td', 'st'); const sb = el('button', 'star' + (p.starred ? ' on' : ''), p.starred ? '★' : '☆');
       sb.title = p.starred ? 'Unstar' : 'Star this player'; sb.setAttribute('aria-pressed', String(!!p.starred));
       sb.addEventListener('click', async () => { await S.updatePlayer(p.uid, { starred: !p.starred }); p.starred = !p.starred; renderPlayers(); });
@@ -283,6 +298,7 @@
   ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sQp', 'sQpSave', 'sSavedHeroes', 'sAuto', 'sDetails', 'sRange'].forEach((id) => $(id).addEventListener('change', saveSettings));
 
   try { $('ver').textContent = 'v' + chrome.runtime.getManifest().version; } catch (_) { /* no manifest in tests */ }
+  try { RDT.autoUI.init({ toggle: $('autotoggle'), delay: $('autodelay'), status: $('autostatus') }); } catch (_) { /* tests without the extension APIs */ }
 
 
   // ---- write the database into <repo>/data/players.json

@@ -1,7 +1,7 @@
 // Background worker. Two jobs:
 //  1. Close a rivalsdata tab when that tab's own page asks for it ("Open all profiles" found that the player is not in a
 //     Competitive game). Content scripts cannot close tabs themselves.
-//  2. "Auto Expand": walk through the saved players slowly, one at a time. Each player's profile is opened in a background
+//  2. "Auto Discover": walk through the saved players slowly, one at a time. Each player's profile is opened in a background
 //     tab; the page checks "In game (Competitive)", opens its Live Game tab and saves the lobby (so new players appear),
 //     then reports back and this worker closes the tab and waits before the next one. Work is driven by chrome.alarms and the
 //     state lives in chrome.storage.local (key rdt_auto), so it survives the worker being put to sleep.
@@ -30,7 +30,10 @@ const waitFor = (st) => {                                        // delay, +-20 
 async function pick(st) {
   const settings = await S.getSettings();
   const now = Date.now(), fresh = DEFAULTS.recheckMin * 60e3;
-  const todo = (await S.loadPlayers()).filter((p) => p.uid && p.uid !== settings.selfUid && !(st.checked[p.uid] && now - st.checked[p.uid] < fresh));
+  const all = await S.loadAll();
+  const inMatch = new Set();                                      // saved players in a lobby from the last while: they are in (or just left) a match we already read
+  all.games.filter((g) => now - (g.last || 0) < fresh).forEach((g) => Object.keys(g.players || {}).forEach((u) => inMatch.add(u)));
+  const todo = all.players.filter((p) => p.uid && p.uid !== settings.selfUid && !inMatch.has(p.uid) && !(st.checked[p.uid] && now - st.checked[p.uid] < fresh));
   todo.sort((a, b) => {
     const ca = st.checked[a.uid] || 0, cb = st.checked[b.uid] || 0;
     if (!ca !== !cb) return ca ? 1 : -1;                         // never checked first

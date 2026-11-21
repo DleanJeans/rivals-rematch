@@ -1,4 +1,4 @@
-// Auto Expand in the real extension: the worker walks the saved players one by one, each profile tab reports back and is closed.
+// Auto Discover in the real extension: the worker walks the saved players one by one, each profile tab reports back and is closed.
 // rivalsdata.com is a local HTTPS fixture server (see popup.test.js).
 const { chromium } = require('playwright'); const path = require('path'); const os = require('os'); const fs = require('fs'); const crypto = require('crypto');
 // Run against a COPY of the extension without data/players.json, so the repo's real data never leaks into the test profile.
@@ -34,7 +34,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
     const m = /^\/player\/(\d+)/.exec(req.url);
     if (!m) { res.writeHead(404); res.end(); return; }
     const k = kind(m[1]);
-    const body = k === 'quickplay' ? fx('ban_qp.html') : k === 'offline' ? fx('game2.html').replace('In game (Competitive)', 'Offline') : fx('game2.html');
+    const body = k === 'quickplay' ? fx('ban_qp.html') : k === 'offline' ? fx('game2.html').replace('In game (Competitive)', 'Offline').replace(/aria-labelledby="live-game"/g, 'aria-labelledby="none"') : fx('game2.html');
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(body.replace(/data-elapsed-start="\d+"[^>]*>- [\d:]+/, (m) => m.replace(/data-elapsed-start="\d+"/, `data-elapsed-start="${Math.floor(Date.now() / 1000) - 1716}"`).replace(/- [\d:]+$/, '- 28:36')));
   });
   await new Promise((r) => server.listen(8443, '127.0.0.1', r));
@@ -49,25 +49,34 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   const popup = await ctx.newPage(); popup.on('pageerror', (e) => { errs.push(e.message); });
   await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
   await popup.waitForFunction(() => /12 players/.test(document.getElementById('counts').textContent), null, { timeout: 8000 });
-  await site.close();                                               // Auto Expand needs no rivalsdata tab open
-  ok(/Start Auto Expand/.test(await popup.textContent('#autotoggle')) && (await popup.inputValue('#autodelay')) === '60', 'popup offers "Start Auto Expand" with a conservative 60 s delay');
+  await site.close();                                               // Auto Discover needs no rivalsdata tab open
+  ok(/Start Auto Discover/.test(await popup.textContent('#autotoggle')) && (await popup.inputValue('#autodelay')) === '60', 'popup offers "Start Auto Discover" with a conservative 60 s delay');
 
-  const opened = []; ctx.on('page', (p) => { if (/\/player\/\d+/.test(p.url()) || p.url() === 'about:blank') opened.push(p); });
+  // Players of a lobby saved in the last 30 min are in the same match: Auto Discover must skip them. Age the lobby we just
+  // saved (as if it ended long ago) so the walk starts; the first Competitive profile it reads then brings the others back into "same match".
+  await popup.evaluate(() => new Promise((r) => chrome.storage.local.get('rdt_games', (x) => { const g = x.rdt_games; g.forEach((m) => { m.last -= 2 * 3600e3; }); chrome.storage.local.set({ rdt_games: g }, r); })));
+  const dbp = await ctx.newPage(); dbp.on('pageerror', (e) => errs.push(e.message));
+  await dbp.goto(`chrome-extension://${extId}/db/db.html`); await dbp.waitForSelector('#tbl tbody tr[data-uid]');
+  await dbp.evaluate(() => { window.__hl = new Set(); new MutationObserver(() => document.querySelectorAll('tr.auto-now').forEach((r) => window.__hl.add(r.dataset.uid))).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] }); });
   await popup.fill('#autodelay', '0.1'); await popup.waitForTimeout(1600);               // the popup refreshes itself every second: it must not undo the typed value
   ok((await popup.inputValue('#autodelay')) === '0.1', 'the typed delay stays in the box');
   await popup.click('#autotoggle');
-  await popup.waitForFunction(() => /Stop Auto Expand/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
-  ok(true, 'the button turns into "Stop Auto Expand"');
-  await popup.waitForFunction(() => /Checking /.test(document.getElementById('autostatus').textContent), null, { timeout: 8000 });
-  ok(true, 'a status line shows which player is being checked');
+  await popup.waitForFunction(() => /Stop Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
+  ok(true, 'the button turns into "Stop Auto Discover"');
   const st = () => popup.evaluate(() => new Promise((r) => chrome.storage.local.get('rdt_auto', (x) => r(x.rdt_auto))));
+  // the same controls on the database page's Players tab show the running state and can stop it
+  await dbp.waitForFunction(() => /Stop Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
+  ok(/checked|Checking/.test(await dbp.textContent('#autostatus')), 'the Players tab shows Auto Discover running, with its status');
   const t0 = Date.now(); let s;
-  while (Date.now() - t0 < 150000) { s = await st(); if (s.stats.checked >= 11) break; await popup.waitForTimeout(1000); }
+  while (Date.now() - t0 < 150000) { s = await st(); if (s.running && /Every saved player/.test(s.status || '')) break; await popup.waitForTimeout(500); }
   s = await st();
-  ok(s.stats.checked >= 11, `every saved player but you was checked (${s.stats.checked})`);
+  ok(/Every saved player/.test(s.status || ''), `it finished once nobody was left to check: "${s.status}"`);
   ok(!(s.checked['520435205']), 'you are never checked');
-  ok(s.stats.inGame === 4, `4 of them were in a Competitive game and their lobby was read (${s.stats.inGame})`);
-  ok(s.stats.saved >= 4 * 12 && s.stats.newPlayers === 0, `each lobby read saved its players, none new since they were already known (${s.stats.saved} saved, ${s.stats.newPlayers} new)`);
+  const comp = Object.keys(s.checked).filter((u) => kind(u) === 'competitive');
+  ok(s.stats.inGame === 1 && comp.length === 1, `only ONE Competitive profile was opened; the others were in the same match and skipped (in game: ${s.stats.inGame}, competitive checked: ${comp.length}, total checked: ${s.stats.checked})`);
+  ok(s.stats.saved === 12 && s.stats.newPlayers === 0, `the lobby read saved its players, none new since they were already known (${s.stats.saved} saved, ${s.stats.newPlayers} new)`);
+  const hl = await dbp.evaluate(() => [...window.__hl]);
+  ok(hl.length >= 1 && hl.every((u) => Object.keys({}).concat(hl).includes(u)), `the Players tab highlighted the row being checked (${hl.length} different rows lit up)`);
   const games = await popup.evaluate(() => new Promise((r) => chrome.storage.local.get('rdt_games', (x) => r(x.rdt_games || []))));
   const ageMin = games.map((g) => (Date.now() - g.t) / 60e3);
   ok(games.length > 0 && ageMin.every((m) => m > 27 && m < 31), `lobbies are stamped with when the match started (28:36 ago), not when they were saved: ${ageMin.map((m) => m.toFixed(1) + ' min ago').join(', ')}`);
@@ -76,11 +85,11 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   await popup.waitForTimeout(1500);
   const left = await popup.evaluate(async () => (await chrome.tabs.query({ url: 'https://rivalsdata.com/player/*' })).length);
   ok(left <= 1, `the profile tabs were closed again (${left} still open)`);
-  ok(/checked · 4 in Competitive/.test(await popup.textContent('#autostatus')), `the popup shows the totals: "${(await popup.textContent('#autostatus')).replace(/\s+/g, ' ')}"`);
+  ok(/checked · 1 in Competitive/.test(await popup.textContent('#autostatus')), `the popup shows the totals: "${(await popup.textContent('#autostatus')).replace(/\s+/g, ' ')}"`);
 
-  await popup.click('#autotoggle'); await popup.waitForFunction(() => /Start Auto Expand/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
+  await dbp.click('#autotoggle'); await popup.waitForFunction(() => /Start Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
   const before = (await st()).stats.checked; await popup.waitForTimeout(5000);
-  ok((await st()).running === false && (await st()).stats.checked === before, 'Stop really stops: nothing more is checked');
+  ok((await st()).running === false && (await st()).stats.checked === before, 'Stop (pressed on the Players tab) really stops: nothing more is checked, and the popup follows');
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await ctx.close(); server.close(); console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.log('  ✗', e.message); process.exit(1); });

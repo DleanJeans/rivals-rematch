@@ -430,7 +430,7 @@
    * It never closes a page that did not finish loading (error, rate limit): that is left for the user to look at.
    */
   async function profileCheck() {
-    const auto = /rdt-auto/.test(root.location.hash);                                 // opened by "Auto Expand": report back, the worker closes us
+    const auto = /rdt-auto/.test(root.location.hash);                                 // opened by "Auto Discover": report back, the worker closes us
     const report = (outcome, extra) => { try { root.chrome.runtime.sendMessage(Object.assign({ type: 'rdt-auto-done', outcome }, extra || {})); } catch (_) { /* extension reloaded */ } };
     const dbg = (m) => { try { root.console.log('[Rivals Rematch] profile check: ' + m); const t = (doc.title || '').replace(/^\[RR[^\]]*\] /, ''); doc.title = '[RR ' + m + '] ' + t; } catch (_) { /* cosmetic */ } };
     dbg('waiting for the page');

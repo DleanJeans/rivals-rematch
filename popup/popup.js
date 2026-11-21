@@ -118,32 +118,8 @@
     $('openall').disabled = false;
   }
 
-  // ---- Auto Expand: the worker does the walking; this only starts/stops it and shows its status
-  let autoState = null, autoTimer = null, delayShown = false;
-  function paintAuto() {
-    const st = autoState || {};
-    $('autotoggle').textContent = st.running ? 'Stop Auto Expand' : 'Start Auto Expand';
-    $('autodelay').disabled = !!st.running;
-    if (st.delaySec && (st.running || !delayShown)) { $('autodelay').value = st.delaySec; delayShown = true; }   // never overwrite what the user is typing
-    const sx = st.stats || {};
-    const lines = [];
-    if (st.status) lines.push(st.status + (st.running && st.nextAt && !st.current ? ' · next in ' + Math.max(0, (st.nextAt - Date.now()) / 1000).toFixed(st.delaySec < 10 ? 1 : 0) + ' s' : ''));
-    if (sx.checked) lines.push(sx.checked + ' checked · ' + sx.inGame + ' in Competitive · ' + sx.newPlayers + ' new players found');
-    $('autostatus').textContent = lines.join('\n'); $('autostatus').style.whiteSpace = 'pre-line';
-  }
-  async function initAuto() {
-    const load = () => new Promise((res) => chrome.storage.local.get('rdt_auto', (r) => res(r.rdt_auto || null)));
-    autoState = await load(); paintAuto();
-    chrome.storage.onChanged.addListener((ch, area) => { if (area === 'local' && ch.rdt_auto) { autoState = ch.rdt_auto.newValue || null; paintAuto(); } });
-    autoTimer = setInterval(paintAuto, 1000);
-    $('autotoggle').addEventListener('click', () => {
-      const running = autoState && autoState.running;
-      chrome.runtime.sendMessage(running ? { type: 'rdt-auto-stop' } : { type: 'rdt-auto-start', delaySec: Number($('autodelay').value) });
-    });
-  }
-
   async function init() {
-    initAuto();
+    RDT.autoUI.init({ toggle: $('autotoggle'), delay: $('autodelay'), status: $('autostatus') });
     try { $('ver').textContent = 'Version ' + chrome.runtime.getManifest().version; } catch (_) { /* optional */ }
     try { await RDT.store.loadSeed(chrome.runtime.getURL('data/players.json')); } catch (_) { /* optional */ }
     refreshCounts();
