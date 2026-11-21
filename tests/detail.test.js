@@ -200,6 +200,20 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
   ok(/saved 12/.test(st.hud) && st.hash === '', `...and the lobby was read and saved ("${st.hud.slice(-70)}"); the #rdt-check tag is removed from the address`);
   await c.close();
 
+  // a match only a minute or two in: names still hidden. The tab must wait for them, keep the worker informed, and only then read + report.
+  const HIDE = `(() => { const hide = () => document.querySelectorAll('[role=tabpanel][aria-labelledby=live-game] a[href*="/player/"]').forEach((a) => { a.setAttribute('data-h', a.getAttribute('href')); a.removeAttribute('href'); });
+    hide(); setTimeout(() => document.querySelectorAll('[data-h]').forEach((a) => a.setAttribute('href', a.getAttribute('data-h'))), 3000); })();`;
+  const WAITFAST = FAST.replace('live: 1500', 'live: 1500, reveal: 9000, beat: 600');
+  c = await page(fx, null, WAITFAST + HIDE + ` location.hash = 'rdt-auto';`); await c.waitForTimeout(2200);
+  let mid = await c.evaluate(() => window.__sent.map((m) => m.type + (m.outcome ? ':' + m.outcome : '')));
+  ok(!mid.some((t) => /rdt-auto-done|rdt-close-me/.test(t)), `names still hidden: the tab waits instead of reading and closing (${JSON.stringify(mid)})`);
+  await c.waitForTimeout(3500);
+  const late = await c.evaluate(() => window.__sent.map((m) => m.type + (m.outcome ? ':' + m.outcome : '')));
+  ok(late.includes('rdt-auto-alive') && late[late.length - 1] === 'rdt-auto-done:competitive', `it kept the worker informed while waiting, then reported the lobby once the names appeared (${JSON.stringify(late)})`);
+  st = await state(c);
+  ok(/saved 12/.test(st.hud), `...and all 12 players were saved ("${st.hud.slice(-60)}")`);
+  await c.close();
+
   c = await page(read('tests/fixtures/ban_qp.html'), null, FAST + HASH); await c.waitForTimeout(2000);
   st = await state(c);
   ok(JSON.stringify(st.sent) === '["rdt-close-me"]' && st.clicks === 0, `In game (Quick Play): not Competitive, so it asks to be closed and does not open Live Game (${JSON.stringify(st.sent)})`);

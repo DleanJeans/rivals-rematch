@@ -474,8 +474,21 @@
       if (i % 4 === 3 && !selected()) { try { tab.focus(); for (const t of ['keydown', 'keyup']) fire(t, 'KeyboardEvent', { key: 'Enter', code: 'Enter' }); } catch (_) { /* ignore */ } }
       await sleep(250);
     }
-    dbg(selected() ? 'Live Game open, reading' : 'could not open Live Game');
-    if (await until(() => R.scrapeLive(doc), T.live)) { const r = await scanNow(); dbg('read ' + ((r && r.saved) || 0) + ' players'); if (auto) report('competitive', { saved: (r && r.saved) || 0, newPlayers: (r && r.added) || 0 }); }   // ... and read (save) it
+    dbg(selected() ? 'Live Game open' : 'could not open Live Game');
+    if (await until(() => R.scrapeLive(doc), T.live)) {
+      // A match only 1-2 minutes in (ban / hero-pick phase) still hides the names: stay on the page until they are revealed, instead
+      // of saving a handful and closing. While waiting, tell the worker we are alive so it does not give up on this tab.
+      const hidden = () => { const l = R.scrapeLive(doc); return !!l && l.rows.some((r) => r.masked); };
+      const t0 = Date.now(), beat = T.beat || 15000; let lastBeat = 0;
+      if (hidden()) dbg('names are still hidden, waiting for the match to start');
+      while (hidden() && Date.now() - t0 < (T.reveal || 8 * 60e3) && !gone()) {
+        if (auto && Date.now() - lastBeat >= beat) { lastBeat = Date.now(); try { root.chrome.runtime.sendMessage({ type: 'rdt-auto-alive' }); } catch (_) { /* reloaded */ } }
+        await sleep(500);
+      }
+      const stillHidden = hidden();
+      const r = await scanNow(); dbg('read ' + ((r && r.saved) || 0) + ' players' + (stillHidden ? ', some names never appeared' : ''));
+      if (auto) report(stillHidden ? 'hidden' : 'competitive', { saved: (r && r.saved) || 0, newPlayers: (r && r.added) || 0 });   // ... and read (save) it
+    }
     else if (auto) report('nolive');
   }
 

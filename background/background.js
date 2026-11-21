@@ -78,6 +78,7 @@ function finish(tabId, outcome, info) {
     const st = await rd();
     const cur = st.inflight && st.inflight[tabId];
     if (!cur) return;
+    const fresh = DEFAULTS.recheckMin * 60e3;
     delete st.inflight[tabId];
     closeTab(cur.tabId);
     st.checked[cur.uid] = Date.now();
@@ -87,6 +88,10 @@ function finish(tabId, outcome, info) {
     if (outcome === 'competitive') {
       st.stats.inGame++; st.stats.saved += (info && info.saved) || 0; st.stats.newPlayers += (info && info.newPlayers) || 0;
       line = cur.name + ': in a Competitive game, read ' + ((info && info.saved) || 0) + ' players, ' + ((info && info.newPlayers) || 0) + ' new';
+    } else if (outcome === 'hidden') {
+      st.checked[cur.uid] = Date.now() - fresh + 3 * 60e3;                   // names never appeared: look again in 3 minutes
+      st.stats.saved += (info && info.saved) || 0; st.stats.newPlayers += (info && info.newPlayers) || 0;
+      line = cur.name + ': match still in its ban phase, will look again soon';
     } else if (outcome === 'offline') line = cur.name + ': not in a Competitive game';
     else if (outcome === 'nolive') line = cur.name + ': in a Competitive game but the Live Game never appeared';
     else line = cur.name + ': page did not load (rate limited?)';
@@ -98,6 +103,17 @@ function finish(tabId, outcome, info) {
       schedule(st, waitFor(st));
       st.status = line + (st.errors ? ' · slowing down' : '');
     }
+    await wr(st);
+  });
+}
+
+/** A tab that is waiting for hidden names to be revealed says so now and then: give it more time. */
+function alive(tabId) {
+  return locked(async () => {
+    const st = await rd();
+    if (!st.inflight || !st.inflight[tabId]) return;
+    st.inflight[tabId].t = Date.now();
+    chrome.alarms.create(LIMIT, { when: Date.now() + DEFAULTS.tabTimeoutSec * 1000 });
     await wr(st);
   });
 }
@@ -145,6 +161,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   } else if (msg.type === 'rdt-auto-done' && sender.tab && /^https:\/\/(www\.)?rivalsdata\.com\//.test(url)) {
     finish(sender.tab.id, msg.outcome, msg).then(() => reply({ ok: true }), () => reply({ ok: false }));
     return true;
+  } else if (msg.type === 'rdt-auto-alive' && sender.tab) {
+    alive(sender.tab.id);
   } else if (msg.type === 'rdt-auto-start') { start(msg.delaySec, msg.parallel).then(() => reply({ ok: true })); return true; }
   else if (msg.type === 'rdt-auto-stop') { stop().then(() => reply({ ok: true })); return true; }
 });
