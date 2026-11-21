@@ -55,6 +55,8 @@
     </div>
     <div class="card">
       <h3>What gets saved</h3>
+      <label><input type="checkbox" id="sDetails"> Also read every player's hero details (Heroes / Proficiency / Match history) automatically for each new lobby</label>
+      <p class="dim">Slower: it briefly opens each player's row on rivalsdata.com. You can always do it on demand with <b>Read hero details</b> in the toolbar popup.</p>
       <label><input type="checkbox" id="sQp"> In Quick Play, only save players ranked GM or above (GM, Celestial, Eternity, One Above All)</label>
       <p class="dim">Ranked (Competitive) lobbies always save everyone. Hidden-name matching still works against everything already saved.</p>
     </div>
@@ -84,6 +86,7 @@
 <script src="../lib/shared.js"></script>
 <script src="../lib/store.js"></script>
 <script src="../lib/filesave.js"></script>
+<script src="../lib/detailui.js"></script>
 <script src="db.js"></script>
 </body>
 </html>

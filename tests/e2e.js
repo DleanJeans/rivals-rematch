@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
-const SCRIPTS = ['lib/shared.js', 'lib/store.js', 'content/scrape.js', 'content/content.js'].map(read);
+const SCRIPTS = ['lib/shared.js', 'lib/store.js', 'lib/detailui.js', 'content/scrape.js', 'content/content.js'].map(read);
 let fail = 0;
 const ok = (c, msg) => { console.log((c ? '  ✓ ' : '  ✗ ') + msg); if (!c) fail++; };
 

@@ -27,7 +27,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   const popup = await ctx.newPage(); popup.on('pageerror', (e) => { errs.push(e.message); });
   await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
   await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 5000 });
-  ok(/Version 0\.2\.0/.test(await popup.textContent('#ver')), 'popup shows the installed version');
+  ok(/Version 0\.3\.0/.test(await popup.textContent('#ver')), 'popup shows the installed version');
   ok(/Ready/.test(await popup.textContent('#where')), 'popup finds the rivalsdata tab and enables the button');
   ok(/12 players/.test(await popup.textContent('#counts')), `automatic save already stored the lobby: "${await popup.textContent('#counts')}"`);
 
@@ -38,7 +38,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
 
   // injecting a second copy must be harmless (popup injects when the page predates the install)
   await popup.evaluate(async () => { const [t] = await chrome.tabs.query({ url: 'https://rivalsdata.com/*' });
-    await chrome.scripting.executeScript({ target: { tabId: t.id }, files: ['lib/shared.js', 'lib/store.js', 'content/scrape.js', 'content/content.js'] }); });
+    await chrome.scripting.executeScript({ target: { tabId: t.id }, files: ['lib/shared.js', 'lib/store.js', 'lib/detailui.js', 'content/scrape.js', 'content/content.js'] }); });
   await popup.click('#scan'); await popup.waitForTimeout(600);
   ok(await site.evaluate(() => document.querySelectorAll('#rdt-host').length) === 1, 'double injection leaves exactly one overlay');
 

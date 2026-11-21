@@ -65,6 +65,8 @@
   .badge{padding:0 5px;border-radius:4px;background:#2a2d36;color:#cdd}
   .badge.tag{background:#5a2a2a;color:#ffd0d0}
   .badge.star{background:#5a4a12;color:#ffe08a}
+  .hud .dp{grid-template-columns:1fr}.hud .dp .col+.col{border-left:0;border-top:1px solid #2a2d36}.hud{--line:#2a2d36;--card:#171a21;--tx:#e4e7ee;--dim:#8e94a4;--acc:#ffd050}
+  .dpwrap{grid-column:1/-1;margin:4px -10px -7px}.heroes .dtile{width:26px;height:26px}
   .foot{padding:7px 10px;color:#8e94a4;border-top:1px solid #22252d}
   `;
 
@@ -72,13 +74,15 @@
     if (host && host.isConnected) return;
     host = doc.createElement('div'); host.id = 'rdt-host';
     shadow = host.attachShadow({ mode: 'open' });
-    const st = doc.createElement('style'); st.textContent = CSS; shadow.appendChild(st);
+    const st = doc.createElement('style'); st.textContent = CSS + R.ui.css; shadow.appendChild(st);
     chipLayer = doc.createElement('div'); chipLayer.className = 'layer'; shadow.appendChild(chipLayer);
     hud = doc.createElement('div'); hud.className = 'hud'; shadow.appendChild(hud);
     doc.body.appendChild(host);
     tip = doc.createElement('div'); tip.className = 'tip'; tip.setAttribute('popover', 'manual'); shadow.appendChild(tip); // top layer: always above the chips
+    dtip = R.ui.makeTip(shadow);                                  // hero-tile tooltip (name + record / level)
   }
-  let tip = null;
+  let tip = null, dtip = null;
+  const hudOpen = new Set();   // players whose dropdown is open in the panel
   function clearOverlay() { if (host) { host.remove(); host = null; } }
 
   const el = (tag, cls, text) => { const e = doc.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -196,11 +200,12 @@
         const meta = el('div', 'meta');
         if (l.heroes && l.heroes.length) {
           const hs = el('span', 'heroes');
-          l.heroes.slice(0, 4).forEach((h) => {
-            const im = doc.createElement('img'); im.src = HERO(h); im.alt = (l.heroLabels && l.heroLabels[h]) || h; im.title = im.alt; hs.appendChild(im);
-          });
+          l.heroes.slice(0, 4).forEach((h) => hs.appendChild(R.ui.heroTile(h, p.detail, dtip, l.heroLabels)));
           meta.appendChild(hs);
         }
+        const chev = el('button', 'chev', hudOpen.has(p.uid) ? '▴ details' : '▾ details'); chev.title = 'Heroes, proficiency and match history';
+        chev.addEventListener('click', () => { if (hudOpen.has(p.uid)) hudOpen.delete(p.uid); else hudOpen.add(p.uid); renderHud(items, settings); });
+        meta.appendChild(chev);
         const rel = [];
         if (p.asTeammate) rel.push('teammate ×' + p.asTeammate);
         if (p.asEnemy) rel.push('enemy ×' + p.asEnemy);
@@ -211,6 +216,7 @@
         if (p.tag) meta.appendChild(el('span', 'badge tag', p.tag));
         if (p.note) meta.appendChild(el('span', '', '“' + p.note + '”'));
         row.appendChild(meta);
+        if (hudOpen.has(p.uid)) { const w = el('div', 'dpwrap'); w.appendChild(R.ui.detailPanel(p.detail)); row.appendChild(w); }
       }
       hud.appendChild(row);
     });
@@ -252,6 +258,7 @@
       const settings = await S.getSettings();
       await verifyGuesses(lobby);
       const ing = await S.ingest(lobby, settings);
+      if (settings.autoDetails && ing.newGame && !detailing) readDetails().catch(() => {});
       const hiddenN = lobby.rows.filter((r) => r.masked).length;
       lastResult = { noPanel: false, total: lobby.rows.length, saved: ing.saved, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
       statusText = ing.saved
@@ -301,6 +308,44 @@
     }
   }
 
+  // ---- hero panels: open each row's chevron, read Heroes / Proficiency / Match history, close it again
+  let detailing = false;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function readOneDetail(row) {
+    const li = row.el;
+    const btn = li.querySelector('button[aria-label^="Toggle details"]') || li.querySelector('button[aria-expanded]');
+    if (!btn) return null;
+    const wasOpen = btn.getAttribute('aria-expanded') === 'true';
+    if (!wasOpen) btn.click();
+    let d = null;
+    for (let i = 0; i < 40; i++) {                                   // wait up to ~4 s for the panel to load
+      await sleep(100);
+      d = R.scrapeDetail([li, li.nextElementSibling]);
+      if (d && d.heroes.length && d.proficiency.length) break;       // every column is there
+      if (i >= 15 && d) break;                                       // partial after 1.5 s: keep what we have
+    }
+    if (!wasOpen && btn.getAttribute('aria-expanded') === 'true') btn.click();   // leave the page as we found it
+    return d;
+  }
+  async function readDetails() {
+    if (detailing) return { busy: true };
+    detailing = true;
+    try {
+      const lobby = R.scrapeLive(doc);
+      if (!lobby) return { noPanel: true };
+      const have = new Set((await S.loadPlayers()).map((p) => p.uid));       // players that were actually saved (Quick Play filter!)
+      const rows = lobby.rows.filter((r) => r.uid && have.has(r.uid));
+      let read = 0, failed = 0;
+      for (const row of rows) {
+        const d = await readOneDetail(row);
+        if (d && await S.saveDetail(row.uid, d)) read++; else failed++;
+        await sleep(150);
+      }
+      lastSig = ''; schedule();                                              // redraw the panel with the new data
+      return { total: rows.length, read, failed };
+    } finally { detailing = false; }
+  }
+
   /** Force a fresh read + save right now (used by the toolbar popup). */
   async function scanNow() {
     for (let i = 0; i < 40 && running; i++) await new Promise((r) => setTimeout(r, 50));
@@ -327,6 +372,7 @@
     });
     if (root.chrome.runtime && root.chrome.runtime.onMessage) root.chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
       if (msg && msg.type === 'rdt-ping') { reply({ ok: true }); return; }
+      if (msg && msg.type === 'rdt-detail') { scanNow().then(() => readDetails()).then(reply, (e) => reply({ error: String(e) })); return true; }
       if (msg && msg.type === 'rdt-scan') { scanNow().then(reply, (e) => reply({ error: String(e) })); return true; }
     });
     schedule();

@@ -6,6 +6,9 @@
   const HERO = (s) => 'https://rivalsdata.com/assets/heroes/' + encodeURIComponent(s) + '.webp';
   let data = { players: [], games: [], stats: {}, settings: {} };
   let sortKey = 'when', sortDir = -1;
+  document.head.appendChild(Object.assign(document.createElement('style'), { textContent: RDT.ui.css }));
+  const tip = RDT.ui.makeTip(document.body);          // hero tooltip (name + record / level)
+  const openRows = new Set();                          // rows whose dropdown is open (survives redraws)
 
   const ago = (t) => {
     if (!t) return '';
@@ -69,10 +72,26 @@
     td.appendChild(el('div', 'wl', w + 'W - ' + l + 'L'));
     const p = el('div', 'pc', pc + '%'); p.style.color = pc >= 50 ? GOOD : BAD; td.appendChild(p); return td;
   }
-  function heroesCell(slugs, labels) {
+  function heroesCell(slugs, labels, detail) {
     const td = el('td'); const hw = el('div', 'heroes');
-    (slugs || []).slice(0, 4).forEach((h) => { const im = document.createElement('img'); im.src = HERO(h); im.title = (labels && labels[h]) || h; im.alt = im.title; hw.appendChild(im); });
+    (slugs || []).slice(0, 4).forEach((h) => hw.appendChild(RDT.ui.heroTile(h, detail, tip, labels)));
     td.appendChild(hw); return td;
+  }
+  /** Chevron that opens/closes the Heroes | Proficiency | Match history dropdown under `tr`. */
+  function chevron(tr, key, detail, ncols) {
+    const b = el('button', 'chev', openRows.has(key) ? '▴' : '▾'); b.title = 'Heroes, proficiency and match history';
+    b.setAttribute('aria-expanded', String(openRows.has(key)));
+    const draw = () => {
+      const nxt = tr.nextElementSibling;
+      if (nxt && nxt.classList.contains('detail')) nxt.remove();
+      if (openRows.has(key)) {
+        const dr = el('tr', 'detail'); const td = el('td'); td.colSpan = ncols; td.appendChild(RDT.ui.detailPanel(detail)); dr.appendChild(td); tr.after(dr);
+      }
+      b.textContent = openRows.has(key) ? '▴' : '▾'; b.setAttribute('aria-expanded', String(openRows.has(key)));
+    };
+    b.addEventListener('click', () => { if (openRows.has(key)) openRows.delete(key); else openRows.add(key); draw(); });
+    b.restore = () => { if (openRows.has(key)) draw(); };
+    return b;
   }
 
   function renderPlayers() {
@@ -101,7 +120,7 @@
       tr.appendChild(whoCell({ uid: p.uid, name: p.names[0] || p.uid, icon: p.icon, aka: p.names.slice(1, 4), party: l.party, partyColor: l.partyColor }));
       tr.appendChild(rankCell(l.rankLabel, l.rs));
       tr.appendChild(recordCell(l.w, l.l));
-      tr.appendChild(heroesCell(l.heroes, l.heroLabels));
+      const hcell = heroesCell(l.heroes, l.heroLabels, p.detail); const chev = chevron(tr, 'P' + p.uid, p.detail, 10); hcell.firstChild.appendChild(chev); tr.appendChild(hcell);
       const seen = el('td'); seen.appendChild(el('div', '', '×' + p.seen));
       const rel = el('div', 'rel');
       if (p.asTeammate) rel.appendChild(el('b', 'm', 'mate ' + p.asTeammate));
@@ -114,7 +133,7 @@
       const del = el('td'); const x = el('button', 'x', '✕'); x.title = 'Forget this player';
       x.addEventListener('click', async () => { if (confirm('Forget ' + (p.names[0] || p.uid) + '?')) { await S.deletePlayer(p.uid); reload(); } });
       del.appendChild(x); tr.appendChild(del);
-      tb.appendChild(tr);
+      tb.appendChild(tr); chev.restore();
     });
   }
   function editCell(p, field, cls, ph) {
@@ -154,8 +173,10 @@
         trs.forEach((r) => {
           const tr = el('tr');
           tr.appendChild(whoCell({ uid: r.uid, name: r.name, icon: r.icon, party: r.party, partyColor: r.partyColor, self: r.uid === data.settings.selfUid }));
-          tr.appendChild(rankCell(r.rankLabel, r.rs)); tr.appendChild(recordCell(r.w, r.l)); tr.appendChild(heroesCell(r.heroes, r.heroLabels));
-          tb.appendChild(tr);
+          tr.appendChild(rankCell(r.rankLabel, r.rs)); tr.appendChild(recordCell(r.w, r.l));
+          const det = (byUid[r.uid] || {}).detail; const hcell = heroesCell(r.heroes, r.heroLabels, det); const chev = chevron(tr, 'L' + g.id + r.uid, det, 4);
+          hcell.firstChild.appendChild(chev); tr.appendChild(hcell);
+          tb.appendChild(tr); chev.restore();
         });
         tbl.appendChild(hd.parentNode); tbl.appendChild(tb); d.appendChild(tbl);
       });
@@ -166,7 +187,7 @@
   function renderSettings() {
     const s = data.settings;
     $('sSelf').value = s.selfUid; $('sOverlay').checked = s.overlay;
-    $('sIcons').checked = s.useIcons; $('sQp').checked = s.qpHighRankOnly; $('sAuto').checked = s.autoSaveFile; $('sMin').value = Math.round(s.minShow * 100);
+    $('sIcons').checked = s.useIcons; $('sQp').checked = s.qpHighRankOnly; $('sAuto').checked = s.autoSaveFile; $('sDetails').checked = s.autoDetails; $('sMin').value = Math.round(s.minShow * 100);
     const st = data.stats;
     $('accuracy').textContent = st.checked
       ? 'Track record: ' + st.correct + ' of ' + st.checked + ' ban-phase guesses were confirmed correct once names were revealed.'
@@ -175,11 +196,11 @@
   async function saveSettings() {
     const s = Object.assign({}, data.settings, {
       selfUid: $('sSelf').value.trim(), overlay: $('sOverlay').checked,
-      useIcons: $('sIcons').checked, qpHighRankOnly: $('sQp').checked, autoSaveFile: $('sAuto').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
+      useIcons: $('sIcons').checked, qpHighRankOnly: $('sQp').checked, autoSaveFile: $('sAuto').checked, autoDetails: $('sDetails').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
     });
     await S.saveSettings(s); data.settings = s;
   }
-  ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sQp', 'sAuto'].forEach((id) => $(id).addEventListener('change', saveSettings));
+  ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sQp', 'sAuto', 'sDetails'].forEach((id) => $(id).addEventListener('change', saveSettings));
 
   try { $('ver').textContent = 'v' + chrome.runtime.getManifest().version; } catch (_) { /* no manifest in tests */ }
 

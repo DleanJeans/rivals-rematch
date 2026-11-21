@@ -70,3 +70,7 @@ tr.starred td{background:color-mix(in srgb,var(--acc) 9%,transparent)}
 button.primary{background:var(--acc);border-color:var(--acc);color:var(--onacc);font-weight:600}
 #fileStatus{max-width:34ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
 #fileStatus.bad{color:var(--bad)}
+
+tr.detail,tr.detail:hover{background:none!important}
+tr.detail>td{padding:0!important;border-bottom:1px solid var(--line)}
+.heroes{align-items:center}.heroes .chev{margin-left:4px}

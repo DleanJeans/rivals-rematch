@@ -2,7 +2,7 @@
   'use strict';
   const $ = (id) => document.getElementById(id);
   const URLS = ['https://rivalsdata.com/*', 'https://www.rivalsdata.com/*'];
-  const FILES = ['lib/shared.js', 'lib/store.js', 'content/scrape.js', 'content/content.js'];
+  const FILES = ['lib/shared.js', 'lib/store.js', 'lib/detailui.js', 'content/scrape.js', 'content/content.js'];
   let tab = null;
 
   async function findTab() {
@@ -58,6 +58,20 @@
     refreshCounts();
   }
 
+  async function details() {
+    const b = $('details'); b.disabled = true; $('scan').disabled = true; b.textContent = 'Reading… (about 1 s per player)';
+    try {
+      const r = await send(tab.id, { type: 'rdt-detail' });
+      if (!r) show('err', ['No response from the page. Reload the tab and try again.']);
+      else if (r.error) show('err', ['Error: ' + r.error]);
+      else if (r.noPanel) show('err', ['No Live Game found on this page.']);
+      else if (r.busy) show('err', ['Already reading — wait a moment.']);
+      else show(r.read ? 'ok' : 'err', [r.read ? 'Read ' + r.read + ' of ' + r.total + ' players' : 'Could not read any player panel',
+        r.failed ? r.failed + ' could not be read (panel did not open or has no data yet).' : 'Hover a hero in the database to see their stats.']);
+    } catch (e) { show('err', ['Could not reach the page: ' + (e && e.message || e)]); }
+    b.disabled = false; $('scan').disabled = false; b.textContent = 'Read hero details'; refreshCounts();
+  }
+
   async function init() {
     try { $('ver').textContent = 'Version ' + chrome.runtime.getManifest().version; } catch (_) { /* optional */ }
     try { await RDT.store.loadSeed(chrome.runtime.getURL('data/players.json')); } catch (_) { /* optional */ }
@@ -67,8 +81,9 @@
     tab = await findTab();
     if (!tab) { $('where').textContent = 'Open a rivalsdata.com player page with the Live Game tab to read a lobby.'; return; }
     $('where').textContent = 'Ready: ' + (tab.title || 'rivalsdata.com').slice(0, 60);
-    $('scan').disabled = false;
+    $('scan').disabled = false; $('details').disabled = false;
     $('scan').addEventListener('click', scan);
+    $('details').addEventListener('click', details);
   }
   init();
 })();

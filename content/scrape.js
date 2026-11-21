@@ -79,6 +79,51 @@
     };
   }
 
+  // ---- the expanded row (chevron): Heroes (games + win%), Proficiency (Lv) and Match history (W/L + RS change) ----
+  const HERO_IMG = 'img[src*="/assets/heroes/"]';
+  function leafTexts(node) {
+    const out = [], w = node.ownerDocument.createTreeWalker(node, 4 /* SHOW_TEXT */);
+    let n;
+    while ((n = w.nextNode())) { const t = n.textContent.replace(/\s+/g, ' ').trim(); if (t) out.push(t); }
+    return out;
+  }
+  /** Smallest ancestor of a hero icon that still holds only that one icon = that icon's row. */
+  function rowOf(img, scope) {
+    let row = img;
+    while (row.parentElement && row !== scope && row.parentElement !== scope && row.parentElement.querySelectorAll(HERO_IMG).length === 1) row = row.parentElement;
+    return row;
+  }
+  const signed = (t) => { const m = /^([+\-−–])\s*(\d+)$/.exec(t); return m ? (m[1] === '+' ? 1 : -1) * +m[2] : null; };
+
+  /**
+   * Rows are told apart by what they contain, not by class names:
+   *   "Lv 51"                      -> proficiency      "12" + "67%"        -> hero record
+   *   "W"/"L" (+ "+14"/"-22")      -> match history
+   * `scopes` = the elements that may hold the panel (the row itself, and the node after it).
+   */
+  function scrapeDetail(scopes) {
+    const d = { season: null, heroes: [], proficiency: [], matches: [] };
+    const seen = new Set();
+    (Array.isArray(scopes) ? scopes : [scopes]).filter(Boolean).forEach((scope) => {
+      if (d.season == null) { const m = leafTexts(scope).map((t) => /^Season\s+(\d+)$/.exec(t)).find(Boolean); if (m) d.season = +m[1]; }
+      scope.querySelectorAll(HERO_IMG).forEach((img) => {
+        const row = rowOf(img, scope);
+        if (seen.has(row)) return;
+        seen.add(row);
+        const t = leafTexts(row);
+        if (!t.length) return;                                              // a plain hero icon (e.g. the Top Heroes tiles)
+        const slug = last(img.getAttribute('src')), name = (img.getAttribute('alt') || img.getAttribute('title') || '').trim() || null;
+        const lv = t.map((x) => /^(?:Lv\.?|Level)\s*(\d+)$/i.exec(x)).find(Boolean);
+        const res = t.find((x) => /^(W|L|Win|Loss|Victory|Defeat)$/i.test(x));
+        const pc = t.map((x) => /^(\d+(?:\.\d+)?)\s*%$/.exec(x)).find(Boolean);
+        if (lv) d.proficiency.push({ slug, name, level: +lv[1] });
+        else if (res) d.matches.push({ slug, name, result: /^(W|Win|Victory)$/i.test(res) ? 'W' : 'L', rs: t.map(signed).find((v) => v != null) ?? null });
+        else if (pc) { const g = t.find((x) => /^\d+$/.test(x)); d.heroes.push({ slug, name, games: g != null ? +g : null, wr: Math.round(+pc[1]) }); }
+      });
+    });
+    return d.heroes.length || d.proficiency.length || d.matches.length ? d : null;
+  }
+
   /** @returns {null | {season, teams:[{label, avg}], rows:[row]}} */
   function scrapeLive(doc) {
     const panel = findPanel(doc);
@@ -107,6 +152,6 @@
     return { season, teams, rows, qpLobby, mode };
   }
 
-  root.RDT = Object.assign(root.RDT || {}, { scrapeLive });
-  if (typeof module !== 'undefined' && module.exports) module.exports = { scrapeLive };
+  root.RDT = Object.assign(root.RDT || {}, { scrapeLive, scrapeDetail });
+  if (typeof module !== 'undefined' && module.exports) module.exports = { scrapeLive, scrapeDetail };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
