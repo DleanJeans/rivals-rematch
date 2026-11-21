@@ -144,6 +144,14 @@
   }
 
   // ---- Lobbies tab: a list first; clicking a lobby opens its two teams side by side
+  /** Open the rivalsdata profile of each player in new background tabs (never your own). */
+  async function openProfiles(uids, check) {
+    const list = Array.from(new Set(uids)).filter((u) => u && u !== data.settings.selfUid);
+    if (!list.length) return 0;
+    if (list.length > 14 && !confirm('Open ' + list.length + ' tabs?')) return 0;
+    for (const u of list) await chrome.tabs.create({ url: 'https://rivalsdata.com/player/' + encodeURIComponent(u) + (check ? '#rdt-check' : ''), active: false });
+    return list.length;
+  }
   const openLobbies = new Set();                      // lobbies that are expanded (survives redraws)
   const avgOf = (rows) => { const v = rows.map((r) => r.abs).filter((x) => x != null); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null; };
   const signedSpan = (df) => { const sp = el('span', 'df', ' (' + (df >= 0 ? '+' : '') + df + ')'); sp.style.color = df >= 0 ? GOOD : BAD; return sp; };
@@ -154,7 +162,10 @@
     teams.forEach((trs, i) => {
       const col = el('div', 'teamcol');
       const tbl = el('table', 'team'); const hd = el('thead').appendChild(el('tr'));
-      hd.appendChild(el('th', 'tname', 'Team ' + (i + 1)));
+      const tn = el('th', 'tname'); tn.appendChild(document.createTextNode('Team ' + (i + 1) + ' '));
+      const ot = el('button', 'openteam', '↗'); ot.title = 'Open this team\'s profiles in new tabs (tabs of players not in a Competitive game close themselves; Shift-click: just open)'; ot.setAttribute('aria-label', 'Open team ' + (i + 1) + ' profiles in new tabs');
+      ot.addEventListener('click', (e) => openProfiles(trs.map((r) => r.uid), !e.shiftKey));
+      tn.appendChild(ot); hd.appendChild(tn);
       const th = el('th', 'avg'); th.appendChild(el('span', 'dim', 'Avg: ')); th.appendChild(document.createTextNode(avgs[i] != null ? avgs[i] + ' RS' : '—'));
       if (avgs[i] != null && avgs[1 - i] != null) th.appendChild(signedSpan(avgs[i] - avgs[1 - i]));
       hd.appendChild(th); hd.appendChild(el('th', '', 'Winrate')); hd.appendChild(el('th', '', 'Top Heroes'));
@@ -212,6 +223,12 @@
       head.appendChild(sides);
       if (returning) head.appendChild(el('span', 'badge', returning + ' seen before'));
       if (starred) head.appendChild(el('span', 'badge star', '★ ' + starred));
+      if (others.length) {
+        const oa = el('button', 'openall', 'Open ' + others.length + ' profiles ↗'); oa.title = 'Open every player in this lobby in new tabs (not you). A tab closes itself if that player is not in a Competitive game right now; otherwise it opens their Live Game. Shift-click: just open them.';
+        oa.addEventListener('click', (e) => { e.stopPropagation(); openProfiles(others.map((r) => r.uid), !e.shiftKey); });
+        oa.addEventListener('keydown', (e) => e.stopPropagation());
+        head.appendChild(oa);
+      }
       d.appendChild(head);
 
       let body = null;
@@ -223,7 +240,7 @@
       };
       const toggle = () => { if (openLobbies.has(g.id)) openLobbies.delete(g.id); else openLobbies.add(g.id); apply(); };
       head.addEventListener('click', toggle);
-      head.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+      head.addEventListener('keydown', (e) => { if (e.target !== head) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
       apply();
       box.appendChild(d);
     });

@@ -19,13 +19,27 @@ const SIM = `<script>document.querySelectorAll('[role=tabpanel][aria-labelledby=
     if (b.getAttribute('aria-expanded') === 'true') { b.setAttribute('aria-expanded', 'false'); const d = li.querySelector('.panel'); if (d) d.remove(); }
     else { b.setAttribute('aria-expanded', 'true'); setTimeout(() => { const w = document.createElement('div'); w.innerHTML = ${JSON.stringify(PANEL)}; li.appendChild(w.firstElementChild); }, 200); }
   }); });</script>`;
+// Tabs the extension opens itself start loading before a test framework could intercept them, so the fixtures are served by a
+// real local HTTPS server and Chrome is told that rivalsdata.com lives there (host-resolver-rules + a self-signed certificate).
+const https = require('https'); const { execFileSync } = require('child_process');
+const certDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rdt-cert-'));
+execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', certDir + '/k.pem', '-out', certDir + '/c.pem', '-days', '1', '-subj', '/CN=rivalsdata.com', '-addext', 'subjectAltName=DNS:rivalsdata.com'], { stdio: 'ignore' });
+// Three kinds of player: Competitive (uid % 3 == 0, and you), Quick Play (== 1), offline (== 2)
+const kind = (uid) => (uid === '520435205' || Number(uid) % 3 === 0 ? 'competitive' : Number(uid) % 3 === 1 ? 'quickplay' : 'offline');
 const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<link[^>]*stylesheet[^>]*>/g, '')
   .replace('</head>', '<style>' + fs.readFileSync(path.join(ext, 'tests/fixtures/site.css'), 'utf8') + '</style></head>').replace('</body>', SIM + '</body>');
 
 (async () => {
+  const server = https.createServer({ key: fs.readFileSync(certDir + '/k.pem'), cert: fs.readFileSync(certDir + '/c.pem') }, (req, res) => {
+    const m = /^\/player\/(\d+)/.exec(req.url);
+    if (!m) { res.writeHead(404); res.end(); return; }
+    const k = kind(m[1]);
+    const body = k === 'quickplay' ? fx('ban_qp.html') : k === 'offline' ? fx('game2.html').replace('In game (Competitive)', 'Offline') : fx('game2.html');
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(body);
+  });
+  await new Promise((r) => server.listen(8443, '127.0.0.1', r));
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rdt-'));
-  const ctx = await chromium.launchPersistentContext(dir, { headless: false, args: ['--headless=new', '--no-sandbox', `--disable-extensions-except=${ext}`, `--load-extension=${ext}`] });
-  await ctx.route('https://rivalsdata.com/**', (r) => r.request().url().includes('/player/') ? r.fulfill({ contentType: 'text/html', body: fx('game2.html') }) : r.fulfill({ status: 204, body: '' }));
+  const ctx = await chromium.launchPersistentContext(dir, { headless: false, args: ['--headless=new', '--no-sandbox', `--disable-extensions-except=${ext}`, `--load-extension=${ext}`, '--host-resolver-rules=MAP rivalsdata.com 127.0.0.1:8443', '--ignore-certificate-errors', '--no-proxy-server'] });
   await ctx.route('https://cdn.rivalsdata.com/**', (r) => r.abort());
   const errs = []; ctx.on('weberror', (e) => errs.push(e.error().message));
 
@@ -37,7 +51,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   const popup = await ctx.newPage(); popup.on('pageerror', (e) => { errs.push(e.message); });
   await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
   await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 5000 });
-  ok(/Version 0\.5\.0/.test(await popup.textContent('#ver')), 'popup shows the installed version');
+  ok(/Version 0\.6\.0/.test(await popup.textContent('#ver')), 'popup shows the installed version');
   ok(/Ready/.test(await popup.textContent('#where')), 'popup finds the rivalsdata tab and enables the button');
   ok(/12 players/.test(await popup.textContent('#counts')), `automatic save already stored the lobby: "${await popup.textContent('#counts')}"`);
 
@@ -72,6 +86,33 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   await popup.click('#scan'); await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 40000 });
   ok(await site.evaluate(() => document.querySelectorAll('#rdt-host').length) === 1, 'double injection leaves exactly one overlay');
 
+  // open every player's profile: each tab checks itself, tabs whose player is not in a Competitive game close
+  const created = []; ctx.on('page', (p) => created.push(p));
+  await popup.click('#openall');
+  await popup.waitForFunction(() => /Opened \d+ profile/.test(document.getElementById('result').textContent), null, { timeout: 15000 });
+  ok(/Opened 11 profiles/.test(await popup.textContent('#result')) && /close themselves/.test(await popup.textContent('#result')), `the popup says so: "${(await popup.textContent('#result')).replace(/\s+/g, ' ')}"`);
+  await site.waitForTimeout(11000);                                   // offline pages wait ~6 s for a status before they close
+  const profiles = created.filter((p) => /\/player\/\d+/.test(p.url()));
+  const uidOf = (p) => /\/player\/(\d+)/.exec(p.url())[1];
+  const want = { competitive: [], quickplay: [], offline: [] }; profiles.forEach((p) => want[kind(uidOf(p))].push(p));
+  ok(profiles.length === 11 && new Set(profiles.map(uidOf)).size === 11 && !profiles.some((p) => uidOf(p) === '520435205'), `11 profile tabs were opened, one per other player, not you (${want.competitive.length} Competitive, ${want.quickplay.length} Quick Play, ${want.offline.length} offline)`);
+  ok(want.quickplay.length > 0 && want.offline.length > 0 && want.quickplay.concat(want.offline).every((p) => p.isClosed()), `every tab whose player is NOT in a Competitive game closed itself (${want.quickplay.length} Quick Play + ${want.offline.length} offline)`);
+  ok(want.competitive.length > 0 && want.competitive.every((p) => !p.isClosed()), `every Competitive tab stayed open (${want.competitive.length})`);
+  const live = await Promise.all(want.competitive.map((p) => p.evaluate(() => ({ sel: document.getElementById('live-game').getAttribute('aria-selected'), hud: !!document.querySelector('#rdt-host'), vis: document.visibilityState }))));
+  ok(live.every((x) => x.sel === 'true' && x.hud), 'those tabs show their Live Game and the extension is running on them');
+  const act = await popup.evaluate(async () => (await chrome.tabs.query({ url: 'https://rivalsdata.com/player/*' })).filter((t) => !/520435205/.test(t.url)).map((t) => t.active));
+  ok(act.length === want.competitive.length && act.every((x) => x === false), `they opened in the background: Chrome reports none of the ${act.length} tabs as active, so the tab you are on keeps focus`);
+  for (const p of want.competitive) await p.close();
+
+  // Shift-click: open them plainly, nothing closes itself
+  created.length = 0;
+  await popup.click('#openall', { modifiers: ['Shift'] });
+  await popup.waitForFunction(() => /Opened 11 profiles/.test(document.getElementById('result').textContent), null, { timeout: 15000 });
+  await site.waitForTimeout(9000);
+  const plain = created.filter((p) => /\/player\/\d+/.test(p.url()));
+  ok(plain.length === 11 && plain.every((p) => !p.isClosed()) && !/close themselves/.test(await popup.textContent('#result')), `Shift-click opened 11 profiles and none closed (${plain.filter((p) => !p.isClosed()).length} still open)`);
+  for (const p of plain) await p.close();
+
   // a tab without a live game
   await site.evaluate(() => document.querySelector('[role=tabpanel][aria-labelledby=live-game]').remove());
   await popup.click('#scan'); await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 40000 });
@@ -82,5 +123,5 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   await popup.click('#open'); await site.waitForTimeout(700);     // the popup closes itself, like a real one
   ok(ctx.pages().some((p) => p.url().endsWith('/db/db.html')), '"Open database" opens the database page');
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
-  await ctx.close(); console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);
+  await ctx.close(); server.close(); console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.log('  ✗', e.message); process.exit(1); });

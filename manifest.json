@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Rivals Rematch",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Remembers the players in your Marvel Rivals lobbies (from rivalsdata.com) and recognises them again when their names are hidden during the ban phase. All data stays on your machine.",
   "permissions": [
     "storage",
@@ -48,5 +48,8 @@
         "https://www.rivalsdata.com/*"
       ]
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "background/background.js"
+  }
 }

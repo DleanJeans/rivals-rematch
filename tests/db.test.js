@@ -26,7 +26,7 @@ seed.rdt_stats = { checked: 8, correct: 7, suffixChecked: 8, suffixOk: 8 };
       set(o, cb) { Object.assign(st, JSON.parse(JSON.stringify(o))); if (cb) { cb(); return; } return Promise.resolve(); },
       remove(k, cb) { [].concat(k).forEach((x) => delete st[x]); if (cb) { cb(); return; } return Promise.resolve(); },
       clear(cb) { for (const k in st) delete st[k]; if (cb) { cb(); return; } return Promise.resolve(); } };
-    window.chrome = { storage: { local: area, session: Object.assign({}, area, { get: () => Promise.resolve({}), set: () => Promise.resolve(), remove: () => Promise.resolve() }), onChanged: { addListener() {} } } }; window.__st = st; })();`);
+    window.chrome = { storage: { local: area, session: Object.assign({}, area, { get: () => Promise.resolve({}), set: () => Promise.resolve(), remove: () => Promise.resolve() }), onChanged: { addListener() {} } }, tabs: { create: (o) => { (window.__tabs = window.__tabs || []).push(o); return Promise.resolve({}); } } }; window.__st = st; })();`);
   await page.goto('file://' + path.join(root, 'db/db.html'));
   await page.waitForSelector('#tbl tbody tr');
   const rows = () => page.$$eval('#tbl tbody tr', (r) => r.map((x) => x.querySelector('td.nm a').textContent));
@@ -96,10 +96,31 @@ seed.rdt_stats = { checked: 8, correct: 7, suffixChecked: 8, suffixOk: 8 };
   ok((await page.$$('#tab-lobbies .side.t1 .mini')).length === 1 && (await page.$$('#tab-lobbies .side.t2 .mini')).length === 1, 'and a strip of avatars per team');
   ok(/2 seen before/.test(head), 'and how many players you have seen before');
   ok((await page.$$('#tab-lobbies table.team')).length === 0 && (await page.getAttribute('#tab-lobbies .lobhead', 'aria-expanded')) === 'false', 'collapsed by default: no team tables yet');
+
+  // --- open every player's profile in new tabs
+  const tabs = () => page.evaluate(() => (window.__tabs || []).map((t) => t.url + (t.active === false ? ' (background)' : ' (ACTIVE)')));
+  ok(/Open 2 profiles/.test(await page.textContent('#tab-lobbies .openall')), 'each lobby line has an "Open N profiles" button');
+  await page.click('#tab-lobbies .openall');
+  await page.waitForTimeout(100);
+  ok(JSON.stringify(await tabs()) === JSON.stringify(['https://rivalsdata.com/player/11#rdt-check (background)', 'https://rivalsdata.com/player/222#rdt-check (background)']), `opens each player's profile in a background tab: ${JSON.stringify(await tabs())}`);
+  ok((await page.getAttribute('#tab-lobbies .lobhead', 'aria-expanded')) === 'false', 'and pressing it does not also expand the lobby');
+  await page.focus('#tab-lobbies .openall'); await page.keyboard.press('Enter'); await page.waitForTimeout(100);
+  ok((await page.getAttribute('#tab-lobbies .lobhead', 'aria-expanded')) === 'false' && (await tabs()).length === 4, 'keyboard Enter on the button opens the tabs without toggling the lobby either');
+  await page.evaluate(() => { window.__tabs = []; });
+  await page.click('#tab-lobbies .openall', { modifiers: ['Shift'] }); await page.waitForTimeout(100);
+  ok(JSON.stringify(await tabs()) === JSON.stringify(['https://rivalsdata.com/player/11 (background)', 'https://rivalsdata.com/player/222 (background)']), 'Shift-click opens the profiles plainly (no check, nothing closes itself)');
+  await page.evaluate(() => { window.__tabs = []; });
+  await page.click('[data-tab=settings]'); await page.fill('#sSelf', '222'); await page.dispatchEvent('#sSelf', 'change'); await page.waitForTimeout(80);
+  await page.click('[data-tab=lobbies]'); await page.click('#tab-lobbies .openall'); await page.waitForTimeout(100);
+  ok(JSON.stringify(await tabs()) === JSON.stringify(['https://rivalsdata.com/player/11#rdt-check (background)']), `your own profile is never opened (you = 222): ${JSON.stringify(await tabs())}`);
+  await page.click('[data-tab=settings]'); await page.fill('#sSelf', '520435205'); await page.dispatchEvent('#sSelf', 'change'); await page.waitForTimeout(80);
+  await page.click('[data-tab=lobbies]'); await page.evaluate(() => { window.__tabs = []; });
   await page.click('#tab-lobbies .lobhead'); await page.waitForSelector('#tab-lobbies .teamcol');
   ok((await page.$$('#tab-lobbies .teamcol')).length === 2 && (await page.getAttribute('#tab-lobbies .lobhead', 'aria-expanded')) === 'true', 'clicking the lobby opens two team columns');
   const [c1, c2] = await page.$$eval('#tab-lobbies .teamcol', (c) => c.map((x) => { const r = x.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; }));
   ok(c2.x >= c1.x + c1.w - 2 && Math.abs(c2.y - c1.y) < 4, `teams are side by side (team 2 starts at x=${Math.round(c2.x)} right of team 1 which ends at x=${Math.round(c1.x + c1.w)}, same top)`);
+  await page.click('#tab-lobbies .teamcol:nth-child(1) .openteam'); await page.waitForTimeout(100);
+  ok(JSON.stringify(await tabs()) === JSON.stringify(['https://rivalsdata.com/player/222#rdt-check (background)']), `each team column can open just its own players: ${JSON.stringify(await tabs())}`);
   ok(/Team 1/.test(await page.textContent('#tab-lobbies .teamcol:nth-child(1) thead')) && /PlayerC42/.test(await page.textContent('#tab-lobbies .teamcol:nth-child(1)')) && /PlayerA\./.test(await page.textContent('#tab-lobbies .teamcol:nth-child(2)')), 'each player is in the right column');
   await page.click('#tab-lobbies tr:has(a:text-is("PlayerA.")) .chev'); await page.waitForSelector('#tab-lobbies tr.detail .dp .col');
   ok((await page.$$('#tab-lobbies tr.detail .dp .col')).length === 3, 'players inside still have the Heroes / Proficiency / Match history dropdown');

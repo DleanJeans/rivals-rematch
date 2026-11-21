@@ -106,4 +106,7 @@ tr.detail>td{padding:0!important;border-bottom:1px solid var(--line)}
 .lob .teamcol .dp{grid-template-columns:1fr}
 .lob .teamcol .dp .col+.col{border-left:0;border-top:1px solid var(--line)}
 p.hint{margin:0 0 10px}
+.openall{font-size:12px;padding:2px 10px;border-radius:6px}
+.openteam{border:0;background:none;color:var(--dim);cursor:pointer;font-size:14px;padding:0 4px}
+.openteam:hover{color:var(--acc)}
 @media (max-width:1000px){.lobbody{grid-template-columns:1fr}.teamcol+.teamcol{border-left:0;border-top:1px solid var(--line)}.sides{margin-left:0;width:100%}}

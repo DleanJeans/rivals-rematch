@@ -49,11 +49,12 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
   await ctx.exposeFunction('__clear', () => store.clear());
   const errs = [];
 
-  const page = async (html, mutateAfterScripts) => {
+  const page = async (html, mutateAfterScripts, pre) => {
     const p = await ctx.newPage();
     p.on('pageerror', (e) => errs.push(e.message));
     await p.setContent(html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<link[^>]*stylesheet[^>]*>/g, ''));
     await p.evaluate(mock);
+    if (pre) await p.evaluate(pre);
     for (const s of SCRIPTS) await p.evaluate(s);
     if (mutateAfterScripts) await p.evaluate(mutateAfterScripts);
     return p;
@@ -169,6 +170,60 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
   ok(dq.qpSkipped === true && !('read' in dq), `hero details are skipped too (${JSON.stringify(dq)})`);
   ok(nPlayers() === nBefore && !(await pq.evaluate(() => (window.__opened || []).length)), 'nothing was stored and no row was opened');
   await pq.close();
+
+  console.log('\n[5] Which profiles to open (popup "Open all profiles in this lobby")');
+  const who = (page) => page.evaluate(() => new Promise((res) => window.__msg({ type: 'rdt-profiles' }, null, res)));
+  const pl = await page(fx, sim); await pl.waitForTimeout(900);
+  const w1 = await who(pl);
+  ok(w1.uids.length === 11 && !w1.uids.includes('520435205') && w1.hidden === 0 && new Set(w1.uids).size === 11, `all 11 other players, not you, no duplicates (${w1.uids.length} uids, ${w1.hidden} hidden)`);
+  await pl.close();
+  const pb = await page(read('tests/fixtures/ban_qp.html')); await pb.waitForTimeout(900);
+  const w2 = await who(pb);
+  ok(w2.hidden === 5 && w2.uids.length === 6 && !w2.uids.includes('520435205'), `ban phase: the 6 visible players are listed, the 5 hidden ones are reported but skipped (${JSON.stringify({ n: w2.uids.length, hidden: w2.hidden })})`);
+  await pb.close();
+
+  console.log('\n[6] A profile tab opened by "Open all profiles" (#rdt-check) decides for itself');
+  const FAST = `window.__rdtCheckTimes = { load: 1500, status: 700, live: 1500 }; window.__sent = []; window.__clicks = 0;
+    window.chrome.runtime.sendMessage = (m) => { window.__sent.push(m); };
+    (() => { const t = document.getElementById('live-game'); if (t) t.addEventListener('click', () => { window.__clicks++; }); })();`;
+  const HASH = ` location.hash = 'rdt-check';`;
+  // like a profile that opens on another tab: the Live Game tab is not selected and its panel only appears after a click
+  const LAZY = `(() => { const tab = document.getElementById('live-game'), panel = document.querySelector('[role=tabpanel][aria-labelledby=live-game]');
+    const parent = panel.parentElement, next = panel.nextSibling; panel.remove(); tab.setAttribute('aria-selected', 'false');
+    tab.addEventListener('click', () => { tab.setAttribute('aria-selected', 'true'); setTimeout(() => parent.insertBefore(panel, next), 200); }); })();`;
+  const state = (p) => p.evaluate(() => ({ sent: window.__sent.map((m) => m.type), clicks: window.__clicks, hash: location.hash, selected: (document.getElementById('live-game') || { getAttribute: () => null }).getAttribute('aria-selected'),
+    hud: (document.querySelector('#rdt-host') || { shadowRoot: { textContent: '' } }).shadowRoot.textContent.replace(/\s+/g, ' ') }));
+
+  let c = await page(fx, null, FAST + LAZY + HASH); await c.waitForTimeout(3000);
+  let st = await state(c);
+  ok(st.clicks === 1 && st.selected === 'true' && !st.sent.length, `in a Competitive game: its Live Game tab is opened (clicked ${st.clicks}x) and the tab is NOT closed`);
+  ok(/saved 12/.test(st.hud) && st.hash === '', `...and the lobby was read and saved ("${st.hud.slice(-70)}"); the #rdt-check tag is removed from the address`);
+  await c.close();
+
+  c = await page(read('tests/fixtures/ban_qp.html'), null, FAST + HASH); await c.waitForTimeout(2000);
+  st = await state(c);
+  ok(JSON.stringify(st.sent) === '["rdt-close-me"]' && st.clicks === 0, `In game (Quick Play): not Competitive, so it asks to be closed and does not open Live Game (${JSON.stringify(st.sent)})`);
+  await c.close();
+
+  c = await page(fx.replace('In game (Competitive)', 'Offline'), null, FAST + HASH); await c.waitForTimeout(2300);
+  st = await state(c);
+  ok(JSON.stringify(st.sent) === '["rdt-close-me"]' && st.clicks === 0, `no "In game" status at all (offline): asks to be closed (${JSON.stringify(st.sent)})`);
+  await c.close();
+
+  c = await page(fx, null, FAST + `document.getElementById('live-game').remove();` + HASH); await c.waitForTimeout(2600);
+  st = await state(c);
+  ok(!st.sent.length, 'a page that never finished loading (no tabs) is left alone: it is never closed blindly');
+  await c.close();
+
+  c = await page(fx, null, FAST + `(() => { const p = document.querySelector('[role=tabpanel][aria-labelledby=live-game]'); p.remove(); document.getElementById('live-game').setAttribute('aria-selected', 'false'); })();` + HASH); await c.waitForTimeout(3500);
+  st = await state(c);
+  ok(st.clicks === 1 && !st.sent.length, 'Competitive but the Live Game panel never appears: it tried once, did not crash, and left the tab open');
+  await c.close();
+
+  c = await page(fx.replace('In game (Competitive)', 'Offline'), null, FAST); await c.waitForTimeout(2300);
+  st = await state(c);
+  ok(!st.sent.length && st.clicks === 0, 'a profile opened WITHOUT the tag (you browsing normally) is never touched or closed');
+  await c.close();
 
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await browser.close();

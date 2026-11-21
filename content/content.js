@@ -406,6 +406,32 @@
     } finally { detailing = false; }
   }
 
+  /**
+   * A profile tab opened by "Open all profiles" (URL tagged #rdt-check) decides for itself:
+   *   in a Competitive game -> open its Live Game tab and read it;  anything else -> close the tab.
+   * It never closes a page that did not finish loading (error, rate limit): that is left for the user to look at.
+   */
+  async function profileCheck() {
+    const T = root.__rdtCheckTimes || { load: 20000, status: 6000, live: 10000 };    // overridable so tests need not wait
+    const gone = () => dead || !alive();
+    const until = async (fn, ms) => {
+      const t0 = Date.now();
+      for (;;) { const v = fn(); if (v) return v; if (Date.now() - t0 > ms || gone()) return null; await sleep(150); }
+    };
+    const status = () => { const m = /In game \(([^)]+)\)/.exec(doc.body ? doc.body.textContent : ''); return m ? m[1].trim().toLowerCase() : null; };
+    const tab = await until(() => doc.getElementById('live-game'), T.load);          // the profile has loaded once its tabs exist
+    if (!tab) return;
+    const mode = await until(status, T.status);                                       // the live status arrives a moment later
+    try { root.history.replaceState(null, '', root.location.href.replace(/#.*$/, '')); } catch (_) { /* keep the hash */ }
+    if (gone()) return;
+    if (!mode || !mode.includes('competitive')) {
+      try { root.chrome.runtime.sendMessage({ type: 'rdt-close-me' }); } catch (_) { /* extension reloaded: leave the tab */ }
+      return;
+    }
+    if (tab.getAttribute('aria-selected') !== 'true') tab.click();                    // open the Live Game tab ...
+    if (await until(() => R.scrapeLive(doc), T.live)) await scanNow();                // ... and read (save) it
+  }
+
   /** Force a fresh read + save right now (used by the toolbar popup). */
   async function scanNow() {
     if (dead || !alive()) { retire(); return { error: 'The extension was reloaded: reload this page.' }; }
@@ -433,8 +459,18 @@
     root.chrome.storage.onChanged.addListener((ch, area) => {
       if (area === 'local' && ch.rdt_settings) { lastSig = ''; schedule(); }
     });
+    if (/rdt-check/.test(root.location.hash)) profileCheck().catch(() => {});      // opened by "Open all profiles"
     if (root.chrome.runtime && root.chrome.runtime.onMessage) root.chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
       if (msg && msg.type === 'rdt-ping') { reply({ ok: true }); return; }
+      if (msg && msg.type === 'rdt-profiles') {
+        if (dead || !alive()) { retire(); reply({ error: 'The extension was reloaded: reload this page.' }); return; }
+        S.getSettings().then((settings) => {
+          const lobby = R.scrapeLive(doc);
+          if (!lobby) return reply({ noPanel: true });
+          reply({ uids: lobby.rows.filter((r) => r.uid && r.uid !== settings.selfUid).map((r) => r.uid), hidden: lobby.rows.filter((r) => r.masked).length });
+        }, (e) => reply({ error: String(e) }));
+        return true;
+      }
       if (msg && msg.type === 'rdt-detail') { scanNow().then(() => readDetails({ force: !!msg.force })).then(reply, (e) => reply({ error: String(e) })); return true; }
       if (msg && msg.type === 'rdt-scan') { scanNow().then(reply, (e) => reply({ error: String(e) })); return true; }
     });

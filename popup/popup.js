@@ -100,6 +100,23 @@
     setIdle();
   }
 
+  async function openAll(ev) {
+    const check = !(ev && ev.shiftKey);                          // Shift-click = just open the profiles, no checking
+    $('openall').disabled = true;
+    try {
+      const r = await send(tab.id, { type: 'rdt-profiles' });
+      if (!r) show('err', ['No response from the page. Reload the tab and try again.']);
+      else if (r.error) show('err', ['Error: ' + r.error]);
+      else if (r.noPanel) show('err', ['No Live Game found on this page.']);
+      else if (!r.uids.length) show('err', ['No player profiles to open.', r.hidden ? 'All ' + r.hidden + ' names are hidden right now (ban phase).' : '']);
+      else {
+        for (const u of r.uids) await chrome.tabs.create({ url: 'https://rivalsdata.com/player/' + encodeURIComponent(u) + (check ? '#rdt-check' : ''), active: false });
+        show('ok', ['Opened ' + r.uids.length + ' profile' + (r.uids.length === 1 ? '' : 's') + ' in new tabs'].concat(check ? ['Tabs of players not in a Competitive game close themselves; the others open their Live Game.'] : []).concat(r.hidden ? [r.hidden + ' hidden player' + (r.hidden === 1 ? '' : 's') + ' skipped (names not visible yet).'] : []));
+      }
+    } catch (e) { show('err', ['Could not reach the page: ' + (e && e.message || e)]); }
+    $('openall').disabled = false;
+  }
+
   async function init() {
     try { $('ver').textContent = 'Version ' + chrome.runtime.getManifest().version; } catch (_) { /* optional */ }
     try { await RDT.store.loadSeed(chrome.runtime.getURL('data/players.json')); } catch (_) { /* optional */ }
@@ -110,7 +127,8 @@
     tab = await findTab();
     if (!tab) { $('where').textContent = 'Open a rivalsdata.com player page with the Live Game tab to read a lobby.'; return; }
     $('where').textContent = 'Ready: ' + (tab.title || 'rivalsdata.com').slice(0, 60);
-    $('scan').disabled = false; $('details').disabled = false;
+    $('scan').disabled = false; $('details').disabled = false; $('openall').disabled = false;
+    $('openall').addEventListener('click', openAll);
     $('scan').addEventListener('click', scan);
     $('details').addEventListener('click', details);
   }
