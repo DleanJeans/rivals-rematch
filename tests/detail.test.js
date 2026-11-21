@@ -83,8 +83,8 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
     document.querySelectorAll('[role=tabpanel][aria-labelledby=live-game] li').forEach((li) => {
       const b = li.querySelector('button[aria-label^="Toggle details"]'); if (!b) return;
       b.addEventListener('click', () => {
-        if (b.getAttribute('aria-expanded') === 'true') { b.setAttribute('aria-expanded', 'false'); const d = li.querySelector('.panel'); if (d) d.remove(); }
-        else { (window.__opened = window.__opened || []).push(b.getAttribute('aria-label')); b.setAttribute('aria-expanded', 'true'); setTimeout(() => { const w = document.createElement('div'); w.innerHTML = PANEL; li.appendChild(w.firstElementChild); }, 250); }
+        if (b.getAttribute('aria-expanded') === 'true') { b.setAttribute('aria-expanded', 'false'); window.__open = (window.__open || 1) - 1; const d = li.querySelector('.panel'); if (d) d.remove(); }
+        else { (window.__opened = window.__opened || []).push(b.getAttribute('aria-label')); window.__open = (window.__open || 0) + 1; window.__maxOpen = Math.max(window.__maxOpen || 0, window.__open); b.setAttribute('aria-expanded', 'true'); setTimeout(() => { const w = document.createElement('div'); w.innerHTML = PANEL; li.appendChild(w.firstElementChild); }, 250); }
       });
     }); })()`;
   const p2 = await page(fx, sim);
@@ -93,6 +93,9 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
   const reply = await p2.evaluate(() => new Promise((res) => window.__msg({ type: 'rdt-detail' }, null, res)));
   const secs = (Date.now() - t0) / 1000;
   ok(reply.total === 11 && reply.read === 11 && reply.failed === 0, `read 11/11 other players (not you) in ${secs.toFixed(1)} s: ${JSON.stringify(reply)}`);
+  const maxOpen = await p2.evaluate(() => window.__maxOpen);
+  ok(maxOpen === 11, `all 11 panels were open at the same time (${maxOpen} at once), not one after another`);
+  ok(secs < 3, `so the whole lobby took ${secs.toFixed(1)} s instead of ~5 s (a panel needs ~0.25 s to load on the simulated site)`);
   const saved = [...store].filter(([k]) => k.startsWith('p:')).map(([, v]) => JSON.parse(v));
   const others = saved.filter((pl) => pl.uid !== '520435205');
   ok(saved.length === 12 && others.length === 11 && others.every((pl) => pl.detail && pl.detail.heroes.length === 5 && pl.detail.matches.length === 6 && pl.detail.season === 11), 'every other player has heroes / proficiency / matches / season stored');
@@ -126,6 +129,27 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
   ok(new Set(stamps).size === 2, `details carry the id of the match they were read in (${new Set(stamps).size} different matches stored)`);
   await p2b.close();
 
+  console.log('\n[2d] Panels rendered as a sibling AFTER the row (not inside it), all open at once');
+  [...store].filter(([k]) => k.startsWith('p:')).forEach(([k, v]) => { const pl = JSON.parse(v); delete pl.detail; store.set(k, JSON.stringify(pl)); });
+  const simSibling = `(() => {
+    const PANEL = ${JSON.stringify(panelA)};
+    document.querySelectorAll('[role=tabpanel][aria-labelledby=live-game] li').forEach((li) => {
+      const b = li.querySelector('button[aria-label^="Toggle details"]'); if (!b) return;
+      b.addEventListener('click', () => {
+        const nx = li.nextElementSibling;
+        if (b.getAttribute('aria-expanded') === 'true') { b.setAttribute('aria-expanded', 'false'); if (nx && nx.classList.contains('panel')) nx.remove(); }
+        else { b.setAttribute('aria-expanded', 'true'); setTimeout(() => { const w = document.createElement('div'); w.innerHTML = PANEL; li.after(w.firstElementChild); }, 250); }
+      });
+    }); })()`;
+  const p2d = await page(fx, simSibling);
+  await p2d.waitForTimeout(900);
+  const sib = await ask(p2d, true);
+  const sibSaved = [...store].filter(([k]) => k.startsWith('p:')).map(([, v]) => JSON.parse(v)).filter((pl) => others.some((o) => o.uid === pl.uid));      // this lobby's 11 other players
+  ok(sib.read === 11 && sib.failed === 0, `read 11/11 when the panel sits after the row (${JSON.stringify(sib)})`);
+  const shapes = [...new Set(sibSaved.map((pl) => pl.detail ? [pl.detail.heroes.length, pl.detail.proficiency.length, pl.detail.matches.length].join('/') : 'none'))];
+  ok(sibSaved.every((pl) => pl.detail && pl.detail.heroes.length === 5 && pl.detail.proficiency.length === 5 && pl.detail.matches.length === 6), `each player has exactly their own 5 heroes / 5 levels / 6 matches: no data mixed in from the neighbouring row (shapes found: ${JSON.stringify(shapes)})`);
+  await p2d.close();
+
   console.log('\n[3] A row whose panel never appears is reported, not faked (and is tried again next time, not skipped)');
   [...store].filter(([k]) => k.startsWith('p:')).forEach(([k, v]) => { const pl = JSON.parse(v); delete pl.detail; store.set(k, JSON.stringify(pl)); });   // start from nothing read
   const p3 = await page(fx, `document.querySelectorAll('button[aria-label^="Toggle details"]').forEach((b) => b.addEventListener('click', () => b.setAttribute('aria-expanded', b.getAttribute('aria-expanded') === 'true' ? 'false' : 'true')))`);
@@ -133,6 +157,18 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
   const r3 = await p3.evaluate(() => new Promise((res) => window.__msg({ type: 'rdt-detail' }, null, res)));
   ok(r3.read === 0 && r3.failed === 11, `no panel => 0 read, 11 failed (${JSON.stringify(r3)})`);
   await p3.close();
+
+  console.log('\n[4] Quick Play lobby: not saved, so its hero details are not read either');
+  const nPlayers = () => [...store].filter(([k]) => k.startsWith('p:')).length;
+  const nBefore = nPlayers();
+  const pq = await page(read('tests/fixtures/ban_qp.html'), sim);
+  await pq.waitForTimeout(900);
+  const sq = await pq.evaluate(() => new Promise((res) => window.__msg({ type: 'rdt-scan' }, null, res)));
+  ok(sq.qpNotSaved === true && sq.saved === 0, `popup scan reports "Quick Play lobby: not saved" (${JSON.stringify({ saved: sq.saved, qpNotSaved: sq.qpNotSaved })})`);
+  const dq = await ask(pq);
+  ok(dq.qpSkipped === true && !('read' in dq), `hero details are skipped too (${JSON.stringify(dq)})`);
+  ok(nPlayers() === nBefore && !(await pq.evaluate(() => (window.__opened || []).length)), 'nothing was stored and no row was opened');
+  await pq.close();
 
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await browser.close();

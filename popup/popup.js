@@ -41,6 +41,7 @@
     if (!r) return { cls: 'err', lines: ['No response from the page. Reload the tab and try again.'] };
     if (r.error) return { cls: 'err', lines: ['Error: ' + r.error] };
     if (r.noPanel) return { cls: 'err', lines: ['No Live Game found on this page.'] };
+    if (r.qpSkipped) return { cls: 'ok', lines: ['Quick Play lobby: hero details not read (Quick Play lobbies are not saved).'] };
     if (r.busy) return { cls: 'err', lines: ['Already reading hero details — wait a moment.'] };
     if (!r.read && !r.failed && r.already) {
       return { cls: 'ok', lines: ['Hero details: already saved for this match (' + r.already + ' player' + (r.already === 1 ? '' : 's') + ')', 'Nothing to read. Shift-click “Read hero details” to read them again.'] };
@@ -67,11 +68,12 @@
       else if (r.noPanel) lines = ['No Live Game found on this page.', 'Open the “Live Game” tab of a player who is in a match.'];
       else {
         cls = 'ok';
-        lines = [(r.saved ? 'Saved ' + r.saved + ' player' + (r.saved === 1 ? '' : 's') : 'Nothing saved yet')];
+        lines = [r.qpNotSaved ? 'Quick Play lobby: not saved' : (r.saved ? 'Saved ' + r.saved + ' player' + (r.saved === 1 ? '' : 's') : 'Nothing saved yet')];
         lines.push(r.total + ' in the lobby' + (r.newGame ? ' · new lobby' : '') + (r.hidden ? ' · ' + r.hidden + ' names hidden' : ''));
         if (r.hidden - (r.belowRange || 0) > 0) lines.push(r.matched + ' of ' + (r.hidden - (r.belowRange || 0)) + ' hidden players recognised (see the panel on the page)');
         if (r.belowRange) lines.push(r.belowRange + ' hidden player' + (r.belowRange === 1 ? '' : 's') + ' below ' + r.minLabel + ' not matched');
-        if (r.skipped) lines.push(r.skipped + ' Quick Play player' + (r.skipped === 1 ? '' : 's') + ' below GM not saved');
+        if (r.qpNotSaved) lines.push('Turn on “Save Quick Play lobbies” in Settings → What gets saved if you want them.');
+        else if (r.skipped) lines.push(r.skipped + ' Quick Play player' + (r.skipped === 1 ? '' : 's') + ' below GM not saved');
         if (!r.saved && r.hidden) lines.push('Names are hidden during the ban phase — press again once the match starts.');
         withDetails = r.saved > 0;
       }
@@ -80,7 +82,7 @@
     }
     show(cls, lines);                                            // the save result is shown immediately
     if (withDetails) {
-      setBusy('Reading hero details… (about 1 s per player)');
+      setBusy('Reading hero details… (a few seconds)');
       try {
         const d = detailLines(await send(tab.id, { type: 'rdt-detail' }));
         show(cls, lines.concat(d.lines));
@@ -92,7 +94,7 @@
   /** Only the hero details (no save), e.g. to refresh them. */
   async function details(ev) {
     const force = !!(ev && ev.shiftKey);                       // Shift-click = read everyone again
-    setBusy('Reading hero details… (about 1 s per player)');
+    setBusy('Reading hero details… (a few seconds)');
     try { const d = detailLines(await send(tab.id, { type: 'rdt-detail', force })); show(d.cls, d.lines); }
     catch (e) { show('err', ['Could not reach the page: ' + (e && e.message || e)]); }
     setIdle();

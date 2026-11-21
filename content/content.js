@@ -289,8 +289,8 @@
       curGameId = ing.gameId || null;
       if (settings.autoDetails && ing.newGame && !detailing) readDetails().catch(() => {});
       const hiddenN = lobby.rows.filter((r) => r.masked).length;
-      lastResult = { noPanel: false, total: lobby.rows.length, saved: ing.saved, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
-      statusText = ing.saved
+      lastResult = { noPanel: false, qpNotSaved: !!ing.qpNotSaved, total: lobby.rows.length, saved: ing.saved, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
+      statusText = ing.qpNotSaved ? 'Quick Play lobby: not saved (Settings → What gets saved)' : ing.saved
         ? 'saved ' + ing.saved + ' from this lobby' + (ing.skipped ? ', ' + ing.skipped + ' below GM skipped (Quick Play)' : '') + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
         : ing.skipped ? 'Quick Play: nobody at GM or above to save'
         : 'all ' + lobby.rows.length + ' names hidden — saved once revealed';
@@ -350,21 +350,36 @@
   // ---- hero panels: open each row's chevron, read Heroes / Proficiency / Match history, close it again
   let detailing = false;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  async function readOneDetail(row) {
-    const li = row.el;
-    const btn = li.querySelector('button[aria-label^="Toggle details"]') || li.querySelector('button[aria-expanded]');
-    if (!btn) return null;
-    const wasOpen = btn.getAttribute('aria-expanded') === 'true';
-    if (!wasOpen) btn.click();
-    let d = null;
-    for (let i = 0; i < 40; i++) {                                   // wait up to ~4 s for the panel to load
+  /**
+   * Open EVERY player's panel at once, wait until they have loaded, read them, then close them all again.
+   * One page-load of waiting for the whole lobby instead of one per player.
+   */
+  // Where a player's panel may be: inside their row, or in the element right after it - but never in the NEXT PLAYER's row
+  // (with every panel open at once that neighbour has a panel of its own, which would be mixed into this player's data).
+  const scopesFor = (li) => {
+    const sib = li.nextElementSibling;
+    return sib && !sib.querySelector('button[aria-expanded]') ? [li, sib] : [li];
+  };
+  async function readManyDetails(rows) {
+    const jobs = rows.map((row) => {
+      const li = row.el;
+      const btn = li.querySelector('button[aria-label^="Toggle details"]') || li.querySelector('button[aria-expanded]');
+      return { row, li, btn, wasOpen: !!btn && btn.getAttribute('aria-expanded') === 'true', d: null, done: false };
+    });
+    jobs.forEach((j) => { if (j.btn && !j.wasOpen) j.btn.click(); });                  // open them all together
+    for (let i = 0; i < 45; i++) {                                                     // wait up to ~4.5 s for all of them
       await sleep(100);
-      d = R.scrapeDetail([li, li.nextElementSibling]);
-      if (d && d.heroes.length && d.proficiency.length) break;       // every column is there
-      if (i >= 15 && d) break;                                       // partial after 1.5 s: keep what we have
+      let waiting = 0;
+      jobs.forEach((j) => {
+        if (!j.btn || j.done) return;
+        j.d = R.scrapeDetail(scopesFor(j.li));
+        if (j.d && j.d.heroes.length && j.d.proficiency.length) j.done = true; else waiting++;   // every column present = finished
+      });
+      if (!waiting) break;
+      if (i >= 15 && jobs.every((j) => !j.btn || j.done || j.d)) break;                // after 1.5 s accept partial panels
     }
-    if (!wasOpen && btn.getAttribute('aria-expanded') === 'true') btn.click();   // leave the page as we found it
-    return d;
+    jobs.forEach((j) => { if (j.btn && !j.wasOpen && j.btn.getAttribute('aria-expanded') === 'true') j.btn.click(); });   // leave the page as found
+    return jobs;
   }
   async function readDetails(opt) {
     const force = !!(opt && opt.force);
@@ -375,16 +390,17 @@
       const lobby = R.scrapeLive(doc);
       if (!lobby) return { noPanel: true };
       const settings = await S.getSettings();
-      const stored = new Map((await S.loadPlayers()).map((p) => [p.uid, p]));     // players that were actually saved (Quick Play filter!)
+      if (lobby.qpLobby && !settings.saveQuickPlay) return { qpSkipped: true };         // Quick Play lobbies are not saved, so neither are their details
+      const stored = new Map((await S.loadPlayers()).map((p) => [p.uid, p]));     // players that were actually saved
       const rows = lobby.rows.filter((r) => r.uid && r.uid !== settings.selfUid && stored.has(r.uid));   // never your own row
       let read = 0, failed = 0, already = 0;
-      for (const row of rows) {
+      const todo = rows.filter((row) => {
         const have = stored.get(row.uid).detail;
-        if (!force && curGameId && have && have.gameId === curGameId) { already++; continue; }   // read earlier in THIS match: skip
-        const d = await readOneDetail(row);
-        if (d && await S.saveDetail(row.uid, d, null, curGameId)) read++; else failed++;
-        await sleep(150);
-      }
+        if (!force && curGameId && have && have.gameId === curGameId) { already++; return false; }   // read earlier in THIS match: skip
+        return true;
+      });
+      const jobs = await readManyDetails(todo);
+      for (const j of jobs) { if (j.d && await S.saveDetail(j.row.uid, j.d, null, curGameId)) read++; else failed++; }
       if (read) { lastSig = ''; schedule(); }                                // redraw the panel with the new data
       return { total: rows.length, read, failed, already };
     } finally { detailing = false; }

@@ -116,8 +116,8 @@ const mockChrome = `
   ok(two.length === 2 && two.every((t) => !t.startsWith('no match')), `both recognised; the swapped-avatar one is carried by its matching top heroes: ${JSON.stringify(two)}`);
   await page.close();
 
-  console.log('\n[4] Real Quick Play ban-phase capture (rank only, partial names) - default: only GM or above are saved');
-  const before = players().length;
+  console.log('\n[4] Real Quick Play ban-phase capture (rank only, partial names) - default: Quick Play lobbies are NOT saved');
+  const before = players().length, gamesBefore = JSON.parse(store.get('rdt_games')).length;
   page = await load('ban_qp.html');
   const qp = await page.evaluate(() => ({
     host: !!document.querySelector('#rdt-host'),
@@ -136,15 +136,21 @@ const mockChrome = `
   store.delete('rdt_settings');
   page = await load('ban_qp.html');
   ok(qp.mode === 'quick play' && qp.qpLobby === true, `lobby recognised as Quick Play from the page header (mode="${qp.mode}")`);
-  ok(!byName('PlayerM1') && !byName('PlayerX6'), 'Platinum / Gold players in a Quick Play lobby are NOT saved');
+  ok(!byName('PlayerM1') && !byName('PlayerX6') && !byName('Player26') && !byName('Player29'), 'nobody from a Quick Play lobby is saved by default');
   ok(players().filter((p) => p.names.includes('PlayerM1') || p.names.includes('PlayerX6')).length === 0 && players().length === before, `database unchanged: still ${before} players (got ${players().length})`);
+  ok(JSON.parse(store.get('rdt_games')).length === gamesBefore, 'and no lobby was recorded for it either');
+  const qpHud = await page.evaluate(() => document.querySelector('#rdt-host').shadowRoot.querySelector('.hud').textContent);
+  ok(/Quick Play lobby: not saved/.test(qpHud), `the panel says it was not saved: "${qpHud.replace(/\s+/g, ' ').slice(0, 120)}"`);
   await page.close();
+
+  // opt in: "Save Quick Play lobbies too" -> only GM and above are kept
+  store.set('rdt_settings', JSON.stringify({ saveQuickPlay: true }));
 
   page = await load('ban_qp.html', () => {   // same lobby, but one visible Gold player is actually Grandmaster
     const li = [...document.querySelectorAll('li')].find((x) => x.textContent.includes('PlayerX6'));
     const im = li.querySelector('img[src*="/ranks/"]'); im.src = 'https://rivalsdata.com/assets/ranks/grandmaster.webp'; im.parentNode.firstChild.nodeType === 3 ? (im.parentNode.firstChild.textContent = 'GM2') : im.parentNode.childNodes.forEach((n) => { if (n.nodeType === 3) n.textContent = 'GM2'; });
   });
-  ok(!!byName('PlayerX6') && players().length === before + 1, 'a GM player in the same Quick Play lobby IS saved');
+  ok(!!byName('PlayerX6') && !byName('PlayerM1') && players().length === before + 1, 'opted in: the GM player is saved (+1), Platinum / Gold players still are not');
   await page.close();
 
   // every tier at/above GM is kept; Diamond is not (labels as rivalsdata would render them, incl. "OAA" with a hyphenated image)
@@ -159,8 +165,8 @@ const mockChrome = `
   ok(!byName('Player27') && !byName('Player28'), 'Diamond players (Player27, Player28) still not saved');
   await page.close();
 
-  console.log('\n[4b] Setting off => Quick Play saves everyone, QP rank kept separate');
-  store.set('rdt_settings', JSON.stringify({ qpHighRankOnly: false }));
+  console.log('\n[4b] Opted in with the GM-only filter off => Quick Play saves everyone, QP rank kept separate');
+  store.set('rdt_settings', JSON.stringify({ saveQuickPlay: true, qpHighRankOnly: false }));
   page = await load('ban_qp.html');
   const mo = byName('PlayerM1');
   ok(!!mo && !!byName('PlayerX6'), 'with the filter off, Platinum / Gold players are saved again');
