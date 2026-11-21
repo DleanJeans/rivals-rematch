@@ -29,6 +29,29 @@
   let statusText = 'starting…';
   let lastResult = { noPanel: true };
 
+  // Reloading/updating the extension leaves THIS copy running in already-open tabs, but its chrome.* calls now throw
+  // "Extension context invalidated". Detect that, stop quietly, and ask for a page reload instead of spamming errors.
+  const hadId = !!(root.chrome && root.chrome.runtime && root.chrome.runtime.id);   // false only in test mocks
+  const alive = () => { try { return !hadId || !!root.chrome.runtime.id; } catch (_) { return false; } };
+  const isInvalidated = (e) => /context invalidated/i.test(String((e && e.message) || e));
+  let dead = false, mo = null;
+  const onScroll = () => position(), onResize = () => position();
+  function retire() {
+    if (dead) return;
+    dead = true;
+    clearTimeout(timer);
+    if (mo) mo.disconnect();
+    root.removeEventListener('scroll', onScroll, true); root.removeEventListener('resize', onResize);
+    try {
+      if (!host || !host.isConnected) return;               // nothing of ours on screen (or a newer copy already replaced it)
+      chipLayer.textContent = ''; hud.textContent = ''; hud.classList.remove('min');
+      const h = el('div', 'hh');
+      h.appendChild(el('span', '', 'Rivals Rematch was updated — reload this page to keep saving lobbies.'));
+      const b = el('button', 'chev', 'Reload'); b.addEventListener('click', () => root.location.reload()); h.appendChild(b);
+      hud.appendChild(h);
+    } catch (_) { /* page is going away anyway */ }
+  }
+
   const CSS = `
   :host{all:initial}
   *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
@@ -78,6 +101,7 @@
     chipLayer = doc.createElement('div'); chipLayer.className = 'layer'; shadow.appendChild(chipLayer);
     hud = doc.createElement('div'); hud.className = 'hud'; shadow.appendChild(hud);
     doc.body.appendChild(host);
+    doc.querySelectorAll('#rdt-host').forEach((h) => { if (h !== host) h.remove(); });   // an orphaned copy's leftovers
     tip = doc.createElement('div'); tip.className = 'tip'; tip.setAttribute('popover', 'manual'); shadow.appendChild(tip); // top layer: always above the chips
     dtip = R.ui.makeTip(shadow);                                  // hero-tile tooltip (name + record / level)
   }
@@ -247,6 +271,8 @@
   }
 
   async function tick() {
+    if (dead) return lastResult;
+    if (!alive()) { retire(); return lastResult; }
     if (running) { again = true; return; }
     running = true;
     try {
@@ -308,6 +334,7 @@
       render(current.items, settings);
       return lastResult;
     } catch (e) {
+      if (isInvalidated(e) || !alive()) { retire(); return; }          // extension was reloaded: not an error worth showing
       console.warn('[Rivals Rematch]', e);
       lastResult = { error: String(e && e.message || e) };
       try { statusText = 'ERROR: ' + (e && e.message || e); ensureHost(); hud.textContent = ''; hudCollapsed = false; hud.classList.remove('min');
@@ -338,6 +365,7 @@
     return d;
   }
   async function readDetails() {
+    if (dead || !alive()) { retire(); return { error: 'The extension was reloaded: reload this page.' }; }
     if (detailing) return { busy: true };
     detailing = true;
     try {
@@ -359,6 +387,7 @@
 
   /** Force a fresh read + save right now (used by the toolbar popup). */
   async function scanNow() {
+    if (dead || !alive()) { retire(); return { error: 'The extension was reloaded: reload this page.' }; }
     for (let i = 0; i < 40 && running; i++) await new Promise((r) => setTimeout(r, 50));
     lastSig = '';
     const r = await tick();
@@ -366,18 +395,20 @@
   }
 
   let timer = null;
-  function schedule() { clearTimeout(timer); timer = setTimeout(tick, 250); }
+  function schedule() { if (dead) return; clearTimeout(timer); timer = setTimeout(tick, 250); }
 
   async function start() {
+    if (!alive()) return;
     try { if (root.chrome.runtime && root.chrome.runtime.getURL) await S.loadSeed(root.chrome.runtime.getURL('data/players.json')); } catch (_) { /* optional */ }
     stats = (await S.loadAll()).stats;
-    const mo = new MutationObserver((muts) => {
+    mo = new MutationObserver((muts) => {
+      if (!alive()) { retire(); return; }
       if (host && muts.every((m) => host.contains(m.target))) return; // ignore our own overlay
       schedule();
     });
     mo.observe(doc.body, { childList: true, subtree: true, characterData: true });
-    root.addEventListener('scroll', () => position(), true);
-    root.addEventListener('resize', () => position());
+    root.addEventListener('scroll', onScroll, true);
+    root.addEventListener('resize', onResize);
     root.chrome.storage.onChanged.addListener((ch, area) => {
       if (area === 'local' && ch.rdt_settings) { lastSig = ''; schedule(); }
     });
