@@ -343,8 +343,9 @@
     try {
       const lobby = R.scrapeLive(doc);
       if (!lobby) return { noPanel: true };
+      const settings = await S.getSettings();
       const have = new Set((await S.loadPlayers()).map((p) => p.uid));       // players that were actually saved (Quick Play filter!)
-      const rows = lobby.rows.filter((r) => r.uid && have.has(r.uid));
+      const rows = lobby.rows.filter((r) => r.uid && r.uid !== settings.selfUid && have.has(r.uid));   // never your own row
       let read = 0, failed = 0;
       for (const row of rows) {
         const d = await readOneDetail(row);
