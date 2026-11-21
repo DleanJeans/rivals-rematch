@@ -315,7 +315,7 @@
       curGameId = ing.gameId || null;
       if (settings.autoDetails && ing.newGame && !detailing) readDetails().catch(() => {});
       const hiddenN = lobby.rows.filter((r) => r.masked).length;
-      lastResult = { noPanel: false, qpNotSaved: !!ing.qpNotSaved, total: lobby.rows.length, saved: ing.saved, newPlayers: ing.newPlayers || 0, oldPlayers: ing.oldPlayers || 0, added: ing.added || 0, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
+      lastResult = { noPanel: false, qpNotSaved: !!ing.qpNotSaved, total: lobby.rows.length, saved: ing.saved, newPlayers: ing.newPlayers || 0, oldPlayers: ing.oldPlayers || 0, added: ing.added || 0, skipped: ing.skipped || 0, rankSkipped: ing.rankSkipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
       statusText = ing.qpNotSaved ? 'Quick Play lobby: not saved (Settings → What gets saved)' : ing.saved
         ? 'saved ' + ing.saved + ' from this lobby' + (ing.skipped ? ', ' + ing.skipped + ' below GM skipped (Quick Play)' : '') + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
         : ing.skipped ? 'Quick Play: nobody at GM or above to save'

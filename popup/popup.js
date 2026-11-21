@@ -75,6 +75,7 @@
         if (r.belowRange) lines.push(r.belowRange + ' hidden player' + (r.belowRange === 1 ? '' : 's') + ' below ' + r.minLabel + ' not matched');
         if (r.qpNotSaved) lines.push('Turn on “Save Quick Play lobbies” in Settings → What gets saved if you want them.');
         else if (r.skipped) lines.push(r.skipped + ' Quick Play player' + (r.skipped === 1 ? '' : 's') + ' below GM not saved');
+        if (r.rankSkipped) lines.push(r.rankSkipped + ' player' + (r.rankSkipped === 1 ? '' : 's') + ' below your rank limit not saved');
         if (!r.saved && r.hidden) lines.push('Names are hidden during the ban phase — press again once the match starts.');
         withDetails = r.saved > 0;
       }
