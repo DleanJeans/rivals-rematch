@@ -11,10 +11,11 @@ const S = RDT.store;
 const KEY = 'rdt_auto', NEXT = 'rdt-auto-next', LIMIT = 'rdt-auto-timeout';
 const DEFAULTS = { delaySec: 60, recheckMin: 30, minDelaySec: 0.1, maxDelaySec: 600, tabTimeoutSec: 75, maxErrors: 6 };
 
-const rd = () => new Promise((res) => chrome.storage.local.get(KEY, (r) => res(Object.assign({ running: false, checked: {}, stats: { checked: 0, inGame: 0, saved: 0, newPlayers: 0 }, errors: 0, delaySec: DEFAULTS.delaySec }, r[KEY] || {}))));
+const rd = () => new Promise((res) => chrome.storage.local.get(KEY, (r) => res(Object.assign({ running: false, checked: {}, stats: { checked: 0, inGame: 0, saved: 0, newPlayers: 0 }, errors: 0, delaySec: DEFAULTS.delaySec, parallel: 1, inflight: {} }, r[KEY] || {}))));
 const wr = (st) => new Promise((res) => chrome.storage.local.set({ [KEY]: st }, res));
 let chain = Promise.resolve();                                   // one step at a time: messages and alarms may overlap
 const locked = (fn) => { const p = chain.then(fn, fn); chain = p.catch(() => {}); return p; };
+const clampParallel = (n) => Math.min(10, Math.max(1, Math.round(Number(n)) || 1));
 const clampDelay = (n) => { n = Number(n); return Math.min(DEFAULTS.maxDelaySec, Math.max(DEFAULTS.minDelaySec, n > 0 ? Math.round(n * 10) / 10 : DEFAULTS.delaySec)); };
 const closeTab = (id) => { if (id != null) try { chrome.tabs.remove(id, () => void chrome.runtime.lastError); } catch (_) { /* gone already */ } };
 const schedule = (st, sec) => {
@@ -27,13 +28,13 @@ const waitFor = (st) => {                                        // delay, +-20 
   return Math.min(1800, base * (0.8 + Math.random() * 0.4));
 };
 
-async function pick(st) {
+async function pick(st, busy) {
   const settings = await S.getSettings();
   const now = Date.now(), fresh = DEFAULTS.recheckMin * 60e3;
   const all = await S.loadAll();
   const inMatch = new Set();                                      // saved players in a lobby from the last while: they are in (or just left) a match we already read
   all.games.filter((g) => now - (g.last || 0) < fresh).forEach((g) => Object.keys(g.players || {}).forEach((u) => inMatch.add(u)));
-  const todo = all.players.filter((p) => p.uid && p.uid !== settings.selfUid && !inMatch.has(p.uid) && !(st.checked[p.uid] && now - st.checked[p.uid] < fresh));
+  const todo = all.players.filter((p) => p.uid && p.uid !== settings.selfUid && !inMatch.has(p.uid) && !(busy && busy.has(p.uid)) && !(st.checked[p.uid] && now - st.checked[p.uid] < fresh));
   todo.sort((a, b) => {
     const ca = st.checked[a.uid] || 0, cb = st.checked[b.uid] || 0;
     if (!ca !== !cb) return ca ? 1 : -1;                         // never checked first
@@ -43,28 +44,37 @@ async function pick(st) {
   return { next: todo[0] || null, left: todo.length };
 }
 
+const open = (st) => Object.keys(st.inflight || {});
+const nameOf = (p) => (p.names && p.names[0]) || p.uid;
+
 function step() {
   return locked(async () => {
     const st = await rd();
-    if (!st.running || st.current) return;
-    const { next, left } = await pick(st);
-    if (!next) { st.status = 'Every saved player was checked in the last ' + DEFAULTS.recheckMin + ' min. Waiting…'; schedule(st, Math.max(st.delaySec, 60)); await wr(st); return; }
+    if (!st.running || open(st).length >= st.parallel) return;
+    st.inflight = st.inflight || {};
+    const busy = new Set(open(st).map((k) => st.inflight[k].uid));
+    const { next, left } = await pick(st, busy);
+    if (!next) {
+      if (!open(st).length) { st.status = 'Every saved player was checked in the last ' + DEFAULTS.recheckMin + ' min. Waiting…'; schedule(st, Math.max(st.delaySec, 60)); }
+      await wr(st); return;
+    }
     const tab = await chrome.tabs.create({ url: 'https://rivalsdata.com/player/' + encodeURIComponent(next.uid) + '#rdt-auto', active: false });
-    st.current = { uid: next.uid, tabId: tab.id, t: Date.now() };
-    st.status = 'Checking ' + ((next.names && next.names[0]) || next.uid) + ' (' + left + ' left to check)';
+    st.inflight[tab.id] = { uid: next.uid, tabId: tab.id, t: Date.now(), name: nameOf(next) };
+    st.status = 'Checking ' + open(st).map((k) => st.inflight[k].name).join(', ') + ' (' + Math.max(0, left - 1) + ' left to check)';
     st.nextAt = null;
     chrome.alarms.create(LIMIT, { when: Date.now() + DEFAULTS.tabTimeoutSec * 1000 });
+    if (open(st).length < st.parallel && left > 1) schedule(st, waitFor(st));          // fill the other slots one by one, not all in the same instant
     await wr(st);
   });
 }
 
-/** The tab reported (or timed out). outcome: offline | competitive | nolive | error */
+/** One tab reported (or timed out). outcome: offline | competitive | nolive | error */
 function finish(tabId, outcome, info) {
   return locked(async () => {
     const st = await rd();
-    if (!st.current || (tabId != null && st.current.tabId !== tabId)) return;
-    const cur = st.current; st.current = null;
-    chrome.alarms.clear(LIMIT);
+    const cur = st.inflight && st.inflight[tabId];
+    if (!cur) return;
+    delete st.inflight[tabId];
     closeTab(cur.tabId);
     st.checked[cur.uid] = Date.now();
     st.stats.checked++;
@@ -72,27 +82,37 @@ function finish(tabId, outcome, info) {
     let line;
     if (outcome === 'competitive') {
       st.stats.inGame++; st.stats.saved += (info && info.saved) || 0; st.stats.newPlayers += (info && info.newPlayers) || 0;
-      line = 'In a Competitive game: read ' + ((info && info.saved) || 0) + ' players, ' + ((info && info.newPlayers) || 0) + ' new';
-    } else if (outcome === 'offline') line = 'Not in a Competitive game';
-    else if (outcome === 'nolive') line = 'In a Competitive game but the Live Game never appeared';
-    else line = 'Page did not load (rate limited?)';
+      line = cur.name + ': in a Competitive game, read ' + ((info && info.saved) || 0) + ' players, ' + ((info && info.newPlayers) || 0) + ' new';
+    } else if (outcome === 'offline') line = cur.name + ': not in a Competitive game';
+    else if (outcome === 'nolive') line = cur.name + ': in a Competitive game but the Live Game never appeared';
+    else line = cur.name + ': page did not load (rate limited?)';
     if (st.errors >= DEFAULTS.maxErrors) {
       st.running = false; st.status = 'Stopped: ' + st.errors + ' pages in a row did not load. The site is probably rate limiting you — try again later with a longer delay.';
-      chrome.alarms.clear(NEXT); st.nextAt = null;
+      Object.keys(st.inflight).forEach((k) => closeTab(Number(k))); st.inflight = {};
+      chrome.alarms.clear(NEXT); chrome.alarms.clear(LIMIT); st.nextAt = null;
     } else {
-      const sec = waitFor(st); schedule(st, sec);
+      schedule(st, waitFor(st));
       st.status = line + (st.errors ? ' · slowing down' : '');
     }
     await wr(st);
   });
 }
 
-function start(delaySec) {
+/** Tabs that never reported back in time count as failed loads. */
+async function expire() {
+  const st = await rd(), now = Date.now();
+  for (const k of open(st)) if (now - st.inflight[k].t >= DEFAULTS.tabTimeoutSec * 1000 - 500) await finish(Number(k), 'error');
+  const left = await rd();
+  if (left.running && open(left).length) chrome.alarms.create(LIMIT, { when: Date.now() + 5000 });
+}
+
+function start(delaySec, parallel) {
   return locked(async () => {
     const st = await rd();
-    st.running = true; st.errors = 0; st.delaySec = clampDelay(delaySec != null ? delaySec : st.delaySec); st.status = 'Starting…';
+    Object.keys(st.inflight || {}).forEach((k) => closeTab(Number(k))); st.inflight = {};
+    st.running = true; st.errors = 0; st.delaySec = clampDelay(delaySec != null ? delaySec : st.delaySec);
+    st.parallel = clampParallel(parallel != null ? parallel : st.parallel); st.status = 'Starting…';
     st.stats = { checked: 0, inGame: 0, saved: 0, newPlayers: 0 }; st.startedAt = Date.now();
-    if (st.current) { closeTab(st.current.tabId); st.current = null; }
     await wr(st);
   }).then(step);
 }
@@ -101,7 +121,7 @@ function stop() {
   return locked(async () => {
     const st = await rd();
     st.running = false; st.status = 'Stopped'; st.nextAt = null;
-    if (st.current) { closeTab(st.current.tabId); st.current = null; }
+    Object.keys(st.inflight || {}).forEach((k) => closeTab(Number(k))); st.inflight = {};
     chrome.alarms.clear(NEXT); chrome.alarms.clear(LIMIT);
     await wr(st);
   });
@@ -109,9 +129,9 @@ function stop() {
 
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === NEXT) step();
-  else if (a.name === LIMIT) finish(null, 'error');
+  else if (a.name === LIMIT) expire();
 });
-chrome.runtime.onStartup.addListener(() => { rd().then((st) => { if (st.running) { st.current = null; return wr(st).then(step); } }); });
+chrome.runtime.onStartup.addListener(() => { rd().then((st) => { if (st.running) { st.inflight = {}; return wr(st).then(step); } }); });
 
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   if (!msg || sender.id !== chrome.runtime.id) return;
@@ -121,6 +141,6 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   } else if (msg.type === 'rdt-auto-done' && sender.tab && /^https:\/\/(www\.)?rivalsdata\.com\//.test(url)) {
     finish(sender.tab.id, msg.outcome, msg).then(() => reply({ ok: true }), () => reply({ ok: false }));
     return true;
-  } else if (msg.type === 'rdt-auto-start') { start(msg.delaySec).then(() => reply({ ok: true })); return true; }
+  } else if (msg.type === 'rdt-auto-start') { start(msg.delaySec, msg.parallel).then(() => reply({ ok: true })); return true; }
   else if (msg.type === 'rdt-auto-stop') { stop().then(() => reply({ ok: true })); return true; }
 });

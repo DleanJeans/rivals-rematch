@@ -60,6 +60,8 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   await dbp.evaluate(() => { window.__hl = new Set(); new MutationObserver(() => document.querySelectorAll('tr.auto-now').forEach((r) => window.__hl.add(r.dataset.uid))).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] }); });
   await popup.fill('#autodelay', '0.1'); await popup.waitForTimeout(1600);               // the popup refreshes itself every second: it must not undo the typed value
   ok((await popup.inputValue('#autodelay')) === '0.1', 'the typed delay stays in the box');
+  await popup.evaluate(() => { window.__max = 0; chrome.storage.onChanged.addListener((ch) => { if (ch.rdt_auto && ch.rdt_auto.newValue) window.__max = Math.max(window.__max, Object.keys(ch.rdt_auto.newValue.inflight || {}).length); }); });
+  await popup.fill('#autoparallel', '3');
   await popup.click('#autotoggle');
   await popup.waitForFunction(() => /Stop Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
   ok(true, 'the button turns into "Stop Auto Discover"');
@@ -67,14 +69,15 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   // the same controls on the database page's Players tab show the running state and can stop it
   await dbp.waitForFunction(() => /Stop Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
   ok(/checked|Checking/.test(await dbp.textContent('#autostatus')), 'the Players tab shows Auto Discover running, with its status');
-  const t0 = Date.now(); let s;
-  while (Date.now() - t0 < 150000) { s = await st(); if (s.running && /Every saved player/.test(s.status || '')) break; await popup.waitForTimeout(500); }
-  s = await st();
+  const t0 = Date.now(); let s, maxOpen = 0;
+  while (Date.now() - t0 < 150000) { s = await st(); maxOpen = Math.max(maxOpen, Object.keys(s.inflight || {}).length); if (s.running && /Every saved player/.test(s.status || '')) break; await popup.waitForTimeout(500); }
+  s = await st(); maxOpen = await popup.evaluate(() => window.__max);
   ok(/Every saved player/.test(s.status || ''), `it finished once nobody was left to check: "${s.status}"`);
+  ok(maxOpen >= 2 && maxOpen <= 3, `"Profiles open at once" = 3: up to 3 profile tabs were open together (peak ${maxOpen})`);
   ok(!(s.checked['520435205']), 'you are never checked');
   const comp = Object.keys(s.checked).filter((u) => kind(u) === 'competitive');
-  ok(s.stats.inGame === 1 && comp.length === 1, `only ONE Competitive profile was opened; the others were in the same match and skipped (in game: ${s.stats.inGame}, competitive checked: ${comp.length}, total checked: ${s.stats.checked})`);
-  ok(s.stats.saved === 12 && s.stats.newPlayers === 0, `the lobby read saved its players, none new since they were already known (${s.stats.saved} saved, ${s.stats.newPlayers} new)`);
+  ok(s.stats.inGame >= 1 && s.stats.inGame === comp.length && comp.length < 4, `not every Competitive profile was opened: players of a match already read were skipped (in game: ${s.stats.inGame} of 4, total checked: ${s.stats.checked})`);
+  ok(s.stats.saved === 12 * s.stats.inGame && s.stats.newPlayers === 0, `the lobby read saved its players, none new since they were already known (${s.stats.saved} saved, ${s.stats.newPlayers} new)`);
   const hl = await dbp.evaluate(() => [...window.__hl]);
   ok(hl.length >= 1 && hl.every((u) => Object.keys({}).concat(hl).includes(u)), `the Players tab highlighted the row being checked (${hl.length} different rows lit up)`);
   const games = await popup.evaluate(() => new Promise((r) => chrome.storage.local.get('rdt_games', (x) => r(x.rdt_games || []))));
@@ -85,7 +88,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   await popup.waitForTimeout(1500);
   const left = await popup.evaluate(async () => (await chrome.tabs.query({ url: 'https://rivalsdata.com/player/*' })).length);
   ok(left <= 1, `the profile tabs were closed again (${left} still open)`);
-  ok(/checked · 1 in Competitive/.test(await popup.textContent('#autostatus')), `the popup shows the totals: "${(await popup.textContent('#autostatus')).replace(/\s+/g, ' ')}"`);
+  ok(new RegExp('checked · ' + s.stats.inGame + ' in Competitive').test(await popup.textContent('#autostatus')), `the popup shows the totals: "${(await popup.textContent('#autostatus')).replace(/\s+/g, ' ')}"`);
 
   await dbp.click('#autotoggle'); await popup.waitForFunction(() => /Start Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
   const before = (await st()).stats.checked; await popup.waitForTimeout(5000);

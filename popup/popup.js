@@ -119,7 +119,7 @@
   }
 
   async function init() {
-    RDT.autoUI.init({ toggle: $('autotoggle'), delay: $('autodelay'), status: $('autostatus') });
+    RDT.autoUI.init({ toggle: $('autotoggle'), delay: $('autodelay'), status: $('autostatus'), parallel: $('autoparallel') });
     try { $('ver').textContent = 'Version ' + chrome.runtime.getManifest().version; } catch (_) { /* optional */ }
     try { await RDT.store.loadSeed(chrome.runtime.getURL('data/players.json')); } catch (_) { /* optional */ }
     refreshCounts();
