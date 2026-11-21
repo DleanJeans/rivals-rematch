@@ -432,6 +432,8 @@
   async function profileCheck() {
     const auto = /rdt-auto/.test(root.location.hash);                                 // opened by "Auto Expand": report back, the worker closes us
     const report = (outcome, extra) => { try { root.chrome.runtime.sendMessage(Object.assign({ type: 'rdt-auto-done', outcome }, extra || {})); } catch (_) { /* extension reloaded */ } };
+    const dbg = (m) => { try { root.console.log('[Rivals Rematch] profile check: ' + m); const t = (doc.title || '').replace(/^\[RR[^\]]*\] /, ''); doc.title = '[RR ' + m + '] ' + t; } catch (_) { /* cosmetic */ } };
+    dbg('waiting for the page');
     const T = root.__rdtCheckTimes || { load: 20000, status: 6000, live: 10000 };    // overridable so tests need not wait
     const gone = () => dead || !alive();
     const until = async (fn, ms) => {
@@ -440,17 +442,20 @@
     };
     const status = () => { const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : ''); return m ? m[1].trim().toLowerCase() : null; };
     const tab = await until(() => doc.getElementById('live-game'), T.load);          // the profile has loaded once its tabs exist
-    if (!tab) { if (auto) report('error'); return; }
+    if (!tab) { dbg('no tabs found, page did not load'); if (auto) report('error'); return; }
+    dbg('waiting for the game status');
     const mode = await until(status, T.status);                                       // the live status arrives a moment later
     try { root.history.replaceState(null, '', root.location.href.replace(/#.*$/, '')); } catch (_) { /* keep the hash */ }
     if (gone()) return;
     if (!mode || !mode.includes('competitive')) {
+      dbg('not in Competitive (' + (mode || 'no status') + ')');
       if (auto) { report('offline'); return; }
       try { root.chrome.runtime.sendMessage({ type: 'rdt-close-me' }); } catch (_) { /* extension reloaded: leave the tab */ }
       return;
     }
     // open the Live Game tab ... The site's tabs (React Aria) react to real pointer events, not just click(), and may not be
     // hydrated yet: so send the full pointer sequence and repeat until the tab reports itself selected.
+    dbg('Competitive: opening Live Game');
     const selected = () => tab.getAttribute('aria-selected') === 'true';
     for (let i = 0; i < 20 && !selected() && !gone(); i++) {
       const W = root;
@@ -461,7 +466,8 @@
       if (i % 4 === 3 && !selected()) { try { tab.focus(); for (const t of ['keydown', 'keyup']) fire(t, 'KeyboardEvent', { key: 'Enter', code: 'Enter' }); } catch (_) { /* ignore */ } }
       await sleep(250);
     }
-    if (await until(() => R.scrapeLive(doc), T.live)) { const r = await scanNow(); if (auto) report('competitive', { saved: (r && r.saved) || 0, newPlayers: (r && r.added) || 0 }); }   // ... and read (save) it
+    dbg(selected() ? 'Live Game open, reading' : 'could not open Live Game');
+    if (await until(() => R.scrapeLive(doc), T.live)) { const r = await scanNow(); dbg('read ' + ((r && r.saved) || 0) + ' players'); if (auto) report('competitive', { saved: (r && r.saved) || 0, newPlayers: (r && r.added) || 0 }); }   // ... and read (save) it
     else if (auto) report('nolive');
   }
 

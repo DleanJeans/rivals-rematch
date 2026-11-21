@@ -53,7 +53,9 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   ok(/Start Auto Expand/.test(await popup.textContent('#autotoggle')) && (await popup.inputValue('#autodelay')) === '60', 'popup offers "Start Auto Expand" with a conservative 60 s delay');
 
   const opened = []; ctx.on('page', (p) => { if (/\/player\/\d+/.test(p.url()) || p.url() === 'about:blank') opened.push(p); });
-  await popup.evaluate(() => chrome.runtime.sendMessage({ type: 'rdt-auto-start', delaySec: 0.1 }));
+  await popup.fill('#autodelay', '0.1'); await popup.waitForTimeout(1600);               // the popup refreshes itself every second: it must not undo the typed value
+  ok((await popup.inputValue('#autodelay')) === '0.1', 'the typed delay stays in the box');
+  await popup.click('#autotoggle');
   await popup.waitForFunction(() => /Stop Auto Expand/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
   ok(true, 'the button turns into "Stop Auto Expand"');
   await popup.waitForFunction(() => /Checking /.test(document.getElementById('autostatus').textContent), null, { timeout: 8000 });

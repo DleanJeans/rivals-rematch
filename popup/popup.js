@@ -119,12 +119,12 @@
   }
 
   // ---- Auto Expand: the worker does the walking; this only starts/stops it and shows its status
-  let autoState = null, autoTimer = null;
+  let autoState = null, autoTimer = null, delayShown = false;
   function paintAuto() {
     const st = autoState || {};
     $('autotoggle').textContent = st.running ? 'Stop Auto Expand' : 'Start Auto Expand';
     $('autodelay').disabled = !!st.running;
-    if (st.delaySec && document.activeElement !== $('autodelay')) $('autodelay').value = st.delaySec;
+    if (st.delaySec && (st.running || !delayShown)) { $('autodelay').value = st.delaySec; delayShown = true; }   // never overwrite what the user is typing
     const sx = st.stats || {};
     const lines = [];
     if (st.status) lines.push(st.status + (st.running && st.nextAt && !st.current ? ' · next in ' + Math.max(0, (st.nextAt - Date.now()) / 1000).toFixed(st.delaySec < 10 ? 1 : 0) + ' s' : ''));
