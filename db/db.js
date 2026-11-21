@@ -246,6 +246,63 @@
   $('saveNowBtn').addEventListener('click', () => saveToFile({ interactive: true, force: true }));
   $('chooseBtn').addEventListener('click', () => saveToFile({ interactive: true, relink: true, force: true }));
 
+  // ---- GitHub: merge with the repo's data/players.json, then push
+  const GH = RDT.github;
+  const tokenArea = () => (chrome.storage.session || chrome.storage.local);       // session = forgotten when the browser closes
+  let ghBusy = false;
+  function ghStatus(msg, bad) {
+    $('ghInfo').textContent = msg; $('fileStatus').textContent = msg; $('fileStatus').title = msg; $('fileStatus').classList.toggle('bad', !!bad);
+  }
+  async function ghLoad() {
+    const c = (await chrome.storage.local.get('rdt_github')).rdt_github || {};
+    const t = (await tokenArea().get('rdt_ghtoken')).rdt_ghtoken || (await chrome.storage.local.get('rdt_ghtoken')).rdt_ghtoken || '';
+    return { repo: c.repo || 'DleanJeans/rivals-rematch', branch: c.branch || 'main', remember: !!c.remember, token: t };
+  }
+  async function ghSaveCfg() {
+    await chrome.storage.local.set({ rdt_github: { repo: $('sRepo').value.trim(), branch: $('sBranch').value.trim() || 'main', remember: $('sRemember').checked } });
+  }
+  async function ghSaveToken() {
+    const v = $('sToken').value.trim(); if (!v) return;
+    await chrome.storage.local.remove('rdt_ghtoken'); await tokenArea().remove('rdt_ghtoken');
+    await (($('sRemember').checked ? chrome.storage.local : tokenArea()).set({ rdt_ghtoken: v }));
+    $('sToken').value = '';                                                   // never leave it on screen
+    ghStatus($('sRemember').checked ? 'Token saved on this browser.' : 'Token saved for this browser session (forgotten when the browser closes).');
+  }
+  async function ghForget() {
+    await chrome.storage.local.remove('rdt_ghtoken'); await tokenArea().remove('rdt_ghtoken'); $('sToken').value = '';
+    ghStatus('Token forgotten.');
+  }
+  async function githubSync() {
+    if (ghBusy) return;
+    ghBusy = true; $('ghBtn').disabled = true; $('ghSaveBtn').disabled = true;
+    try {
+      if ($('sToken').value.trim()) { await ghSaveCfg(); await ghSaveToken(); }
+      const cfg = await ghLoad();
+      if (!cfg.token) {
+        document.querySelector('#tabs button[data-tab=settings]').click(); $('sToken').focus();
+        ghStatus('Paste a GitHub token first (Settings → Save to GitHub).', true); return;
+      }
+      ghStatus('Talking to GitHub…');
+      const r = await GH.sync(cfg, S);
+      const where = GH.parseRepo(cfg.repo).full + '@' + cfg.branch, at = ' · ' + clock(Date.now());
+      const merged = r.pulled ? ' · merged ' + r.pulled + ' new player' + (r.pulled === 1 ? '' : 's') + ' from the repo' : '';
+      ghStatus(r.action === 'unchanged' ? 'Already up to date with ' + where + merged + at
+        : (r.action === 'created' ? 'Created data/players.json in ' + where : 'Pushed ' + r.players + ' players to ' + where) + merged + (r.commit ? ' · commit ' + r.commit : '') + at);
+      if (r.pulled) reload();
+    } catch (e) {
+      ghStatus(e instanceof GH.GhError ? e.message : 'Could not save to GitHub (unexpected error).', true);   // never echo raw errors: keep secrets out of messages
+    } finally { ghBusy = false; $('ghBtn').disabled = false; $('ghSaveBtn').disabled = false; }
+  }
+  $('ghBtn').addEventListener('click', githubSync);
+  $('ghSaveBtn').addEventListener('click', githubSync);
+  $('ghForget').addEventListener('click', ghForget);
+  ['sRepo', 'sBranch', 'sRemember'].forEach((id) => $(id).addEventListener('change', ghSaveCfg));
+  $('sToken').addEventListener('change', () => { ghSaveCfg().then(ghSaveToken); });
+  ghLoad().then((c) => {
+    $('sRepo').value = c.repo; $('sBranch').value = c.branch; $('sRemember').checked = c.remember;
+    $('ghInfo').textContent = c.token ? 'A token is set (' + (c.remember ? 'remembered on this browser' : 'this browser session only') + ').' : 'No token yet.';
+  });
+
   // ---- wiring
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('on', x === b));
@@ -281,5 +338,5 @@
   });
   // Merge the repo's bundled data first, but never let that step stop the page from rendering.
   Promise.resolve().then(() => S.loadSeed(chrome.runtime.getURL('data/players.json'))).catch(() => 0).then(reload)
-    .then(() => { if (data.settings.autoSaveFile || location.hash === '#save') return saveToFile(); });
+    .then(() => { if (location.hash === '#github') return githubSync(); if (data.settings.autoSaveFile || location.hash === '#save') return saveToFile(); });
 })();

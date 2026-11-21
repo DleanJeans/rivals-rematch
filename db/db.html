@@ -16,6 +16,7 @@
   </nav>
   <span class="sp"></span>
   <span id="fileStatus" class="dim" role="status"></span>
+  <button id="ghBtn" title="Merge with, then push to, data/players.json in your GitHub repo">Save to GitHub</button>
   <button id="fileBtn" class="primary" title="Write the database into the repo's data/players.json">Save to data/</button>
   <button id="exportBtn">Export</button>
   <button id="importBtn">Import</button>
@@ -79,6 +80,19 @@
       <button id="chooseBtn">Choose folder…</button> <button id="saveNowBtn">Save now</button>
     </div>
     <div class="card">
+      <h3>Save to GitHub</h3>
+      <p class="dim">Pushes <code>data/players.json</code> to your repo with no folder picking and no git. It first <b>merges</b> what is already in the repo
+        (so a session at home and one at the cafe never overwrite each other), then commits the result. It needs a
+        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained token</a>
+        limited to this one repository with <b>Contents: Read and write</b>.</p>
+      <label>Repository <input id="sRepo" size="28" placeholder="owner/name" spellcheck="false"></label>
+      <label>Branch <input id="sBranch" size="12" spellcheck="false"></label>
+      <label>Token <input id="sToken" type="password" size="38" autocomplete="off" placeholder="github_pat_… (paste, then press Tab)"></label>
+      <label><input type="checkbox" id="sRemember"> Remember the token on this browser (otherwise it is forgotten when the browser closes)</label>
+      <p id="ghInfo" class="dim" role="status">No token yet.</p>
+      <button id="ghSaveBtn" class="primary">Save to GitHub</button> <button id="ghForget">Forget token now</button>
+    </div>
+    <div class="card">
       <h3>Data</h3>
       <p class="dim">Everything is stored locally in this browser (chrome.storage). Nothing is sent anywhere.</p>
       <button id="wipe" class="danger">Delete all saved data…</button>
@@ -88,6 +102,7 @@
 <script src="../lib/shared.js"></script>
 <script src="../lib/store.js"></script>
 <script src="../lib/filesave.js"></script>
+<script src="../lib/github.js"></script>
 <script src="../lib/detailui.js"></script>
 <script src="db.js"></script>
 </body>

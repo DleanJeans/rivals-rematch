@@ -15,7 +15,7 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
 ## Updating
 An unpacked extension does not update itself. Download the repo again (or `git pull`), then press the **reload**
 button on the extension's card at `chrome://extensions`. The installed version is shown in the toolbar popup and
-at the top of the database page (currently 0.3.4) so you can check you have the latest.
+at the top of the database page (currently 0.4.0) so you can check you have the latest.
 
 ## How it works
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:
@@ -50,6 +50,16 @@ Keep this repo **private** (the file lists other players' names and your notes),
    is already there (settings and the accuracy record too).
 
 Writing the file needs Chrome's folder-access feature, so it only works on a Chromium browser. *Export* still downloads the same file.
+
+### Or: save straight to GitHub (no folder, no git)
+Database → Settings → **Save to GitHub** (or the **Save to GitHub** button in the popup / database header):
+
+1. Create a **fine-grained token** at <https://github.com/settings/personal-access-tokens/new> — *Only select repositories* → this repo,
+   permission **Contents: Read and write**, a short expiry. Paste it into the Token box (press Tab); it is then cleared from the screen.
+2. The first click **merges** whatever is already in the repo's `data/players.json` into your local data, then commits the result.
+   Because it merges first, a session at home and one at the cafe never overwrite each other. Nothing is committed if nothing changed.
+3. The token is kept for **this browser session only** (gone when the browser closes) unless you tick *Remember*. *Forget token now*
+   clears it immediately. It is never written to the data file, exports, or messages.
 
 ## Honest limits
 - It can only recognise people it has **seen with a visible name before**. New players show "no match".

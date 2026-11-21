@@ -67,6 +67,7 @@ tr.starred td{background:color-mix(in srgb,var(--acc) 9%,transparent)}
 .lob table.team td{border-bottom:0}
 .lob table.team col,.lob table.team th:nth-child(1){width:34%}
 
+input[type=password]{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:5px 10px}
 button.primary{background:var(--acc);border-color:var(--acc);color:var(--onacc);font-weight:600}
 #fileStatus{max-width:34ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
 #fileStatus.bad{color:var(--bad)}

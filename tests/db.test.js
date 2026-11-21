@@ -21,12 +21,12 @@ seed.rdt_stats = { checked: 8, correct: 7, suffixChecked: 8, suffixOk: 8 };
   page.on('pageerror', (e) => { console.log('  PAGEERROR', e.message); fail++; });
   page.on('dialog', (d) => d.accept());
   await page.addInitScript(`(() => { const st = ${JSON.stringify(seed)};
-    window.chrome = { storage: { local: {
-      get: (k, cb) => { const o = {}; if (k === null) Object.assign(o, JSON.parse(JSON.stringify(st))); else [].concat(k).forEach((x) => { if (x in st) o[x] = JSON.parse(JSON.stringify(st[x])); }); cb(o); },
-      set: (o, cb) => { Object.assign(st, JSON.parse(JSON.stringify(o))); cb && cb(); },
-      remove: (k, cb) => { [].concat(k).forEach((x) => delete st[x]); cb && cb(); },
-      clear: (cb) => { for (const k in st) delete st[k]; cb && cb(); } },
-      onChanged: { addListener() {} } } }; window.__st = st; })();`);
+    // like real Chrome: every method takes a callback OR returns a promise
+    const area = { get(k, cb) { const o = {}; if (k === null) Object.assign(o, JSON.parse(JSON.stringify(st))); else [].concat(k).forEach((x) => { if (x in st) o[x] = JSON.parse(JSON.stringify(st[x])); }); if (cb) { cb(o); return; } return Promise.resolve(o); },
+      set(o, cb) { Object.assign(st, JSON.parse(JSON.stringify(o))); if (cb) { cb(); return; } return Promise.resolve(); },
+      remove(k, cb) { [].concat(k).forEach((x) => delete st[x]); if (cb) { cb(); return; } return Promise.resolve(); },
+      clear(cb) { for (const k in st) delete st[k]; if (cb) { cb(); return; } return Promise.resolve(); } };
+    window.chrome = { storage: { local: area, session: Object.assign({}, area, { get: () => Promise.resolve({}), set: () => Promise.resolve(), remove: () => Promise.resolve() }), onChanged: { addListener() {} } } }; window.__st = st; })();`);
   await page.goto('file://' + path.join(root, 'db/db.html'));
   await page.waitForSelector('#tbl tbody tr');
   const rows = () => page.$$eval('#tbl tbody tr', (r) => r.map((x) => x.querySelector('td.nm a').textContent));
