@@ -9,8 +9,18 @@ const ext = fs.realpathSync(extDir);
 let fail = 0; const ok = (c, m) => { console.log((c ? '  ✓ ' : '  ✗ ') + m); if (!c) fail++; };
 // Unpacked extension id = first 32 hex chars of sha256(path), mapped 0-f -> a-p.
 const extId = crypto.createHash('sha256').update(ext).digest('hex').slice(0, 32).replace(/[0-9a-f]/g, (c) => String.fromCharCode(97 + parseInt(c, 16)));
+const H = (slug) => `<img alt="${slug}" src="https://rivalsdata.com/assets/heroes/${slug}.webp">`;
+const PANEL = `<div class="panel"><div><span>Heroes</span>${[['peni-parker', 12, '67%'], ['groot', 3, '33%']].map(([s, g, w]) => `<div>${H(s)}<span>${s}</span><span>${g}</span><span>${w}</span></div>`).join('')}</div>
+  <div><span>Proficiency</span>${[['peni-parker', 51], ['groot', 28]].map(([s, l]) => `<div>${H(s)}<i></i><span>Lv ${l}</span></div>`).join('')}</div>
+  <div><span>Match History</span>${[['peni-parker', 'W', '+14'], ['groot', 'L', '-22']].map(([s, r, d]) => `<div>${H(s)}<b>${r}</b><span>${d}</span></div>`).join('')}</div></div>`;
+const SIM = `<script>document.querySelectorAll('[role=tabpanel][aria-labelledby=live-game] li').forEach((li) => {
+  const b = li.querySelector('button[aria-label^="Toggle details"]'); if (!b) return;
+  b.addEventListener('click', () => {
+    if (b.getAttribute('aria-expanded') === 'true') { b.setAttribute('aria-expanded', 'false'); const d = li.querySelector('.panel'); if (d) d.remove(); }
+    else { b.setAttribute('aria-expanded', 'true'); setTimeout(() => { const w = document.createElement('div'); w.innerHTML = ${JSON.stringify(PANEL)}; li.appendChild(w.firstElementChild); }, 200); }
+  }); });</script>`;
 const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<link[^>]*stylesheet[^>]*>/g, '')
-  .replace('</head>', '<style>' + fs.readFileSync(path.join(ext, 'tests/fixtures/site.css'), 'utf8') + '</style></head>');
+  .replace('</head>', '<style>' + fs.readFileSync(path.join(ext, 'tests/fixtures/site.css'), 'utf8') + '</style></head>').replace('</body>', SIM + '</body>');
 
 (async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rdt-'));
@@ -27,25 +37,38 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   const popup = await ctx.newPage(); popup.on('pageerror', (e) => { errs.push(e.message); });
   await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
   await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 5000 });
-  ok(/Version 0\.3\.3/.test(await popup.textContent('#ver')), 'popup shows the installed version');
+  ok(/Version 0\.3\.4/.test(await popup.textContent('#ver')), 'popup shows the installed version');
   ok(/Ready/.test(await popup.textContent('#where')), 'popup finds the rivalsdata tab and enables the button');
   ok(/12 players/.test(await popup.textContent('#counts')), `automatic save already stored the lobby: "${await popup.textContent('#counts')}"`);
 
   await popup.click('#scan'); await popup.waitForSelector('#result.show');
   const res = await popup.textContent('#result');
-  ok(/Saved 12 players/.test(res) && /12 in the lobby/.test(res), `button reports the read: "${res}"`);
+  ok(/Saved 12 players/.test(res) && /12 in the lobby/.test(res), `button reports the save straight away: "${res}"`);
+  ok(await popup.isDisabled('#scan'), 'the button stays busy while it goes on to read hero details');
+  await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 40000 });
+  const both = (await popup.textContent('#result')).replace(/\s+/g, ' ');
+  ok(/Saved 12 players/.test(both) && /Hero details: read 11 of 11 players/.test(both), `the same message then adds the hero details (11 others, not you): "${both}"`);
+  const stored = await popup.evaluate(async () => (await RDT.store.loadPlayers()).filter((p) => p.detail).length);
+  ok(stored === 11, `hero details were actually stored for ${stored} players (all but you)`);
+  ok((await site.evaluate(() => document.querySelectorAll('.panel').length)) === 0, 'rows were closed again afterwards');
   ok(/12 players · 1 lobbies/.test(await popup.textContent('#counts')), 'pressing again does not duplicate players or lobbies');
+
+  // the details-only button still works on its own
+  await popup.click('#details'); await popup.waitForFunction(() => !document.getElementById('details').disabled, null, { timeout: 40000 });
+  const only = (await popup.textContent('#result')).replace(/\s+/g, ' ');
+  ok(/Hero details: read 11 of 11/.test(only) && !/Saved/.test(only), `"Read hero details" alone only reports the details: "${only}"`);
 
   // injecting a second copy must be harmless (popup injects when the page predates the install)
   await popup.evaluate(async () => { const [t] = await chrome.tabs.query({ url: 'https://rivalsdata.com/*' });
     await chrome.scripting.executeScript({ target: { tabId: t.id }, files: ['lib/shared.js', 'lib/store.js', 'lib/detailui.js', 'content/scrape.js', 'content/content.js'] }); });
-  await popup.click('#scan'); await popup.waitForTimeout(600);
+  await popup.click('#scan'); await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 40000 });
   ok(await site.evaluate(() => document.querySelectorAll('#rdt-host').length) === 1, 'double injection leaves exactly one overlay');
 
   // a tab without a live game
   await site.evaluate(() => document.querySelector('[role=tabpanel][aria-labelledby=live-game]').remove());
-  await popup.click('#scan'); await popup.waitForTimeout(600);
-  ok(/No Live Game found/.test(await popup.textContent('#result')), 'clear message when the page has no Live Game');
+  await popup.click('#scan'); await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 40000 });
+  const nolive = await popup.textContent('#result');
+  ok(/No Live Game found/.test(nolive) && !/Hero details/.test(nolive), 'clear message when the page has no Live Game, and no hero-details attempt');
 
   await popup.screenshot({ path: path.join(__dirname, 'out_popup.png') });
   await popup.click('#open'); await site.waitForTimeout(700);     // the popup closes itself, like a real one

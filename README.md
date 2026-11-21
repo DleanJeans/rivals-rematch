@@ -7,14 +7,15 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
 ## Install
 1. `chrome://extensions` → enable **Developer mode** → **Load unpacked** → pick this folder.
 2. Open your profile on rivalsdata.com and keep the **Live Game** tab open while you queue.
-3. Click the toolbar icon: **Read & save this lobby** reads the page right now (it also injects itself if the tab was
+3. Click the toolbar icon: **Read & save this lobby** reads the page right now, saves the players and then also reads every other
+   player's hero details (there is a separate *Read hero details* button to redo just that). It reads the page right now (it also injects itself if the tab was
    opened before the extension was installed/reloaded). It reports what was saved; **Open database** opens the full DB.
    Saving also happens automatically in the background; the panel at the bottom-right of the page shows its status.
 
 ## Updating
 An unpacked extension does not update itself. Download the repo again (or `git pull`), then press the **reload**
 button on the extension's card at `chrome://extensions`. The installed version is shown in the toolbar popup and
-at the top of the database page (currently 0.3.3) so you can check you have the latest.
+at the top of the database page (currently 0.3.4) so you can check you have the latest.
 
 ## How it works
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:

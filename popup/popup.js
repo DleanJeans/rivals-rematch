@@ -36,41 +36,61 @@
     });
   }
 
+  // Lines describing a hero-details run; shared by the combined button and the details-only button.
+  function detailLines(r) {
+    if (!r) return { cls: 'err', lines: ['No response from the page. Reload the tab and try again.'] };
+    if (r.error) return { cls: 'err', lines: ['Error: ' + r.error] };
+    if (r.noPanel) return { cls: 'err', lines: ['No Live Game found on this page.'] };
+    if (r.busy) return { cls: 'err', lines: ['Already reading hero details — wait a moment.'] };
+    return {
+      cls: r.read ? 'ok' : 'err',
+      lines: [r.read ? 'Hero details: read ' + r.read + ' of ' + r.total + ' players' : 'Hero details: could not read any player panel']
+        .concat(r.failed ? [r.failed + ' could not be read (panel did not open or has no data yet).'] : []),
+    };
+  }
+
+  const setBusy = (text) => { $('scan').disabled = true; $('details').disabled = true; $('scan').textContent = text; };
+  const setIdle = () => { $('scan').disabled = false; $('details').disabled = false; $('scan').textContent = 'Read & save this lobby'; $('details').textContent = 'Read hero details'; refreshCounts(); };
+
+  /** Read & save the lobby, then (if anyone was saved) read every player's hero details too. */
   async function scan() {
-    $('scan').disabled = true; $('scan').textContent = 'Reading…';
+    setBusy('Reading…');
+    let lines = null, cls = 'err', withDetails = false;
     try {
       const r = await send(tab.id, { type: 'rdt-scan' });
-      if (!r) show('err', ['No response from the page. Reload the tab and try again.']);
-      else if (r.error) show('err', ['Error: ' + r.error]);
-      else if (r.noPanel) show('err', ['No Live Game found on this page.', 'Open the “Live Game” tab of a player who is in a match.']);
+      if (!r) lines = ['No response from the page. Reload the tab and try again.'];
+      else if (r.error) lines = ['Error: ' + r.error];
+      else if (r.noPanel) lines = ['No Live Game found on this page.', 'Open the “Live Game” tab of a player who is in a match.'];
       else {
-        const lines = [(r.saved ? 'Saved ' + r.saved + ' player' + (r.saved === 1 ? '' : 's') : 'Nothing saved yet')];
+        cls = 'ok';
+        lines = [(r.saved ? 'Saved ' + r.saved + ' player' + (r.saved === 1 ? '' : 's') : 'Nothing saved yet')];
         lines.push(r.total + ' in the lobby' + (r.newGame ? ' · new lobby' : '') + (r.hidden ? ' · ' + r.hidden + ' names hidden' : ''));
         if (r.hidden - (r.belowRange || 0) > 0) lines.push(r.matched + ' of ' + (r.hidden - (r.belowRange || 0)) + ' hidden players recognised (see the panel on the page)');
         if (r.belowRange) lines.push(r.belowRange + ' hidden player' + (r.belowRange === 1 ? '' : 's') + ' below ' + r.minLabel + ' not matched');
         if (r.skipped) lines.push(r.skipped + ' Quick Play player' + (r.skipped === 1 ? '' : 's') + ' below GM not saved');
         if (!r.saved && r.hidden) lines.push('Names are hidden during the ban phase — press again once the match starts.');
-        show('ok', lines);
+        withDetails = r.saved > 0;
       }
     } catch (e) {
-      show('err', ['Could not reach the page: ' + (e && e.message || e)]);
+      lines = ['Could not reach the page: ' + (e && e.message || e)];
     }
-    $('scan').disabled = false; $('scan').textContent = 'Read & save this lobby';
-    refreshCounts();
+    show(cls, lines);                                            // the save result is shown immediately
+    if (withDetails) {
+      setBusy('Reading hero details… (about 1 s per player)');
+      try {
+        const d = detailLines(await send(tab.id, { type: 'rdt-detail' }));
+        show(cls, lines.concat(d.lines));
+      } catch (e) { show(cls, lines.concat(['Hero details: ' + (e && e.message || e)])); }
+    }
+    setIdle();
   }
 
+  /** Only the hero details (no save), e.g. to refresh them. */
   async function details() {
-    const b = $('details'); b.disabled = true; $('scan').disabled = true; b.textContent = 'Reading… (about 1 s per player)';
-    try {
-      const r = await send(tab.id, { type: 'rdt-detail' });
-      if (!r) show('err', ['No response from the page. Reload the tab and try again.']);
-      else if (r.error) show('err', ['Error: ' + r.error]);
-      else if (r.noPanel) show('err', ['No Live Game found on this page.']);
-      else if (r.busy) show('err', ['Already reading — wait a moment.']);
-      else show(r.read ? 'ok' : 'err', [r.read ? 'Read ' + r.read + ' of ' + r.total + ' players' : 'Could not read any player panel',
-        r.failed ? r.failed + ' could not be read (panel did not open or has no data yet).' : 'Hover a hero in the database to see their stats.']);
-    } catch (e) { show('err', ['Could not reach the page: ' + (e && e.message || e)]); }
-    b.disabled = false; $('scan').disabled = false; b.textContent = 'Read hero details'; refreshCounts();
+    setBusy('Reading hero details… (about 1 s per player)');
+    try { const d = detailLines(await send(tab.id, { type: 'rdt-detail' })); show(d.cls, d.lines); }
+    catch (e) { show('err', ['Could not reach the page: ' + (e && e.message || e)]); }
+    setIdle();
   }
 
   async function init() {
