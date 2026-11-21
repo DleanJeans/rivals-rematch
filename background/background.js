@@ -9,15 +9,19 @@ importScripts('../lib/shared.js', '../lib/store.js');
 
 const S = RDT.store;
 const KEY = 'rdt_auto', NEXT = 'rdt-auto-next', LIMIT = 'rdt-auto-timeout';
-const DEFAULTS = { delaySec: 60, recheckMin: 30, minDelaySec: 30, maxDelaySec: 600, tabTimeoutSec: 75, maxErrors: 6 };
+const DEFAULTS = { delaySec: 60, recheckMin: 30, minDelaySec: 0.1, maxDelaySec: 600, tabTimeoutSec: 75, maxErrors: 6 };
 
 const rd = () => new Promise((res) => chrome.storage.local.get(KEY, (r) => res(Object.assign({ running: false, checked: {}, stats: { checked: 0, inGame: 0, saved: 0, newPlayers: 0 }, errors: 0, delaySec: DEFAULTS.delaySec }, r[KEY] || {}))));
 const wr = (st) => new Promise((res) => chrome.storage.local.set({ [KEY]: st }, res));
 let chain = Promise.resolve();                                   // one step at a time: messages and alarms may overlap
 const locked = (fn) => { const p = chain.then(fn, fn); chain = p.catch(() => {}); return p; };
-const clampDelay = (n, fast) => Math.min(DEFAULTS.maxDelaySec, Math.max(fast ? 1 : DEFAULTS.minDelaySec, Math.round(Number(n)) || DEFAULTS.delaySec));
+const clampDelay = (n) => { n = Number(n); return Math.min(DEFAULTS.maxDelaySec, Math.max(DEFAULTS.minDelaySec, n > 0 ? Math.round(n * 10) / 10 : DEFAULTS.delaySec)); };
 const closeTab = (id) => { if (id != null) try { chrome.tabs.remove(id, () => void chrome.runtime.lastError); } catch (_) { /* gone already */ } };
-const schedule = (st, sec) => { st.nextAt = Date.now() + sec * 1000; chrome.alarms.create(NEXT, { when: st.nextAt }); };
+const schedule = (st, sec) => {
+  st.nextAt = Date.now() + sec * 1000;
+  chrome.alarms.create(NEXT, { when: st.nextAt });                // Chrome rounds alarms up to 30 s in installed extensions ...
+  if (sec < 30) setTimeout(step, sec * 1000);                     // ... so short waits use a timer (the alarm stays as the fallback)
+};
 const waitFor = (st) => {                                        // delay, +-20 % so the rhythm is not mechanical, doubled after each failure
   const base = st.delaySec * Math.pow(2, Math.min(st.errors, 4));
   return Math.min(1800, base * (0.8 + Math.random() * 0.4));
@@ -80,10 +84,10 @@ function finish(tabId, outcome, info) {
   });
 }
 
-function start(delaySec, fast) {
+function start(delaySec) {
   return locked(async () => {
     const st = await rd();
-    st.running = true; st.errors = 0; st.delaySec = clampDelay(delaySec != null ? delaySec : st.delaySec, fast); st.status = 'Starting…';
+    st.running = true; st.errors = 0; st.delaySec = clampDelay(delaySec != null ? delaySec : st.delaySec); st.status = 'Starting…';
     st.stats = { checked: 0, inGame: 0, saved: 0, newPlayers: 0 }; st.startedAt = Date.now();
     if (st.current) { closeTab(st.current.tabId); st.current = null; }
     await wr(st);
@@ -114,6 +118,6 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   } else if (msg.type === 'rdt-auto-done' && sender.tab && /^https:\/\/(www\.)?rivalsdata\.com\//.test(url)) {
     finish(sender.tab.id, msg.outcome, msg).then(() => reply({ ok: true }), () => reply({ ok: false }));
     return true;
-  } else if (msg.type === 'rdt-auto-start') { start(msg.delaySec, msg.fast).then(() => reply({ ok: true })); return true; }
+  } else if (msg.type === 'rdt-auto-start') { start(msg.delaySec).then(() => reply({ ok: true })); return true; }
   else if (msg.type === 'rdt-auto-stop') { stop().then(() => reply({ ok: true })); return true; }
 });

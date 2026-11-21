@@ -127,7 +127,7 @@
     if (st.delaySec && document.activeElement !== $('autodelay')) $('autodelay').value = st.delaySec;
     const sx = st.stats || {};
     const lines = [];
-    if (st.status) lines.push(st.status + (st.running && st.nextAt && !st.current ? ' · next in ' + Math.max(0, Math.round((st.nextAt - Date.now()) / 1000)) + ' s' : ''));
+    if (st.status) lines.push(st.status + (st.running && st.nextAt && !st.current ? ' · next in ' + Math.max(0, (st.nextAt - Date.now()) / 1000).toFixed(st.delaySec < 10 ? 1 : 0) + ' s' : ''));
     if (sx.checked) lines.push(sx.checked + ' checked · ' + sx.inGame + ' in Competitive · ' + sx.newPlayers + ' new players found');
     $('autostatus').textContent = lines.join('\n'); $('autostatus').style.whiteSpace = 'pre-line';
   }

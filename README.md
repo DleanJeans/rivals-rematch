@@ -15,7 +15,7 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
 ## Updating
 An unpacked extension does not update itself. Download the repo again (or `git pull`), then press the **reload**
 button on the extension's card at `chrome://extensions`. The installed version is shown in the toolbar popup and
-at the top of the database page (currently 0.9.1) so you can check you have the latest.
+at the top of the database page (currently 0.9.2) so you can check you have the latest.
 
 ## How it works
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:
