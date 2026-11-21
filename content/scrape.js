@@ -81,12 +81,19 @@
 
   // ---- the expanded row (chevron): Heroes (games + win%), Proficiency (Lv) and Match history (W/L + RS change) ----
   const HERO_IMG = 'img[src*="/assets/heroes/"]';
+  // One string per ELEMENT (its own text nodes joined): React renders `Lv {level}`, `{wr}%` and `+{rs}` as several
+  // adjacent text nodes, which must read as "Lv 51", "67%" and "+14" again.
   function leafTexts(node) {
-    const out = [], w = node.ownerDocument.createTreeWalker(node, 4 /* SHOW_TEXT */);
-    let n;
-    while ((n = w.nextNode())) { const t = n.textContent.replace(/\s+/g, ' ').trim(); if (t) out.push(t); }
+    const out = [];
+    [node].concat(Array.from(node.querySelectorAll('*'))).forEach((e) => {
+      const t = Array.from(e.childNodes).filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').replace(/\s+/g, ' ').trim();
+      if (t) out.push(t);
+    });
     return out;
   }
+  const HEADING = /^(?:Heroes|Proficiency|Match History|Season\s*\d*|Lv\.?\s*\d*|Level\s*\d*|W|L|Win|Loss)$/i;
+  /** The hero's display name as written in its row (the icons carry no alt text on the real site). */
+  const nameFrom = (t) => t.find((x) => /[A-Za-z]{3,}/.test(x) && !HEADING.test(x) && !/^[+\-−–]?\s*\d/.test(x)) || null;
   /** Smallest ancestor of a hero icon that still holds only that one icon = that icon's row. */
   function rowOf(img, scope) {
     let row = img;
@@ -112,8 +119,8 @@
         seen.add(row);
         const t = leafTexts(row);
         if (!t.length) return;                                              // a plain hero icon (e.g. the Top Heroes tiles)
-        const slug = last(img.getAttribute('src')), name = (img.getAttribute('alt') || img.getAttribute('title') || '').trim() || null;
-        const lv = t.map((x) => /^(?:Lv\.?|Level)\s*(\d+)$/i.exec(x)).find(Boolean);
+        const slug = last(img.getAttribute('src')), name = (img.getAttribute('alt') || img.getAttribute('title') || '').trim() || nameFrom(t);
+        const lv = /(?:^|\s)(?:Lv\.?|Level)\s*(\d+)(?:\s|$)/i.exec(t.join(' '));     // also if "Lv" and the number sit in separate elements
         const res = t.find((x) => /^(W|L|Win|Loss|Victory|Defeat)$/i.test(x));
         const pc = t.map((x) => /^(\d+(?:\.\d+)?)\s*%$/.exec(x)).find(Boolean);
         if (lv) d.proficiency.push({ slug, name, level: +lv[1] });

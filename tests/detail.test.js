@@ -28,6 +28,13 @@ const panelB = `<section><div class="titles"><p>HEROES</p><p>PROFICIENCY</p><p>M
   <table><tbody>${PROF.map(([s, l]) => `<tr><td>${H(s)}</td><td><i></i></td><td>Level ${l}</td></tr>`).join('')}</tbody></table>
   <table><tbody>${MATCHES.map(([s, r, d]) => `<tr><td>${H(s)}</td><td>${r}</td><td>${d}</td></tr>`).join('')}</tbody></table></div></section>`;
 
+const NAMES = { 'peni-parker': 'Peni Parker', groot: 'Groot', magneto: 'Magneto', venom: 'Venom', ultron: 'Ultron' };
+const IMG = (slug) => `<img src="https://rivalsdata.com/assets/heroes/${slug}.webp">`;
+const panelC = `<div class="expanded"><div class="grid"><div><h4>Heroes</h4><button>Season <!-- -->11</button>
+  ${HEROES.map(([s, g, w]) => `<div class="row">${IMG(s)}<span>${NAMES[s]}</span><span>${g}</span><span>${w.replace('%', '')}<!-- -->%</span></div>`).join('')}</div>
+  <div><h4>Proficiency</h4>${PROF.map(([s, l]) => `<div class="row">${IMG(s)}<div class="bar"><i></i></div><span>Lv <!-- -->${l}</span></div>`).join('')}</div>
+  <div><h4>Match History</h4>${MATCHES.map(([s, r, d]) => `<div class="row">${IMG(s)}<b>${r}</b><span>${d.slice(0, 1)}<!-- -->${d.slice(1)}</span></div>`).join('')}</div></div></div>`;
+
 const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window.__msg = fn; } } }, storage: { local: {
   get: (k, cb) => window.__get(k).then(cb), set: (o, cb) => window.__set(o).then(() => cb && cb()),
   remove: (k, cb) => window.__remove(k).then(() => cb && cb()), clear: (cb) => window.__clear().then(() => cb && cb()) }, onChanged: { addListener() {} } } };`;
@@ -53,13 +60,17 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
   };
 
   console.log('\n[1] Reader on two different panel structures');
-  for (const [name, panel] of [['A (column wrappers)', panelA], ['B (separate heading row, tables, "Level")', panelB]]) {
+  for (const [name, panel] of [['A (column wrappers)', panelA], ['B (separate heading row, tables, "Level")', panelB], ['C (React-style split text nodes, no alt text)', panelC]]) {
     const p = await page(`<html><body><div id="scope"><div class="top">${['hulk', 'thor', 'venom', 'groot'].map(H).join('')}</div>${panel}</div></body></html>`);
     const d = await p.evaluate(() => RDT.scrapeDetail([document.getElementById('scope')]));
     ok(d && d.heroes.length === 5 && d.heroes[0].slug === 'peni-parker' && d.heroes[0].games === 12 && d.heroes[0].wr === 67, `${name}: hero records (12 games, 67%) read; the 4 plain Top-Hero tiles ignored`);
     ok(d.proficiency.length === 5 && d.proficiency[0].level === 51 && d.proficiency[4].level === 24, `${name}: proficiency levels 51…24 read`);
     ok(d.matches.length === 6 && d.matches[2].result === 'L' && d.matches[2].rs === -22 && d.matches[4].rs === 0 && d.matches[3].rs === 18, `${name}: match history incl. a unicode minus (−22) and +0`);
     ok(d.heroes.every((h) => !/^\d+$/.test(h.slug)) && d.heroes[1].games === 3 && d.heroes[1].wr === 33, `${name}: games and win% not mixed up`);
+    if (name.startsWith('C')) {
+      ok(d.heroes[0].name === 'Peni Parker' && d.heroes[1].name === 'Groot', `${name}: hero names come from the row text (${d.heroes.slice(0, 2).map((h) => h.name).join(', ')})`);
+      ok(d.season === 11, `${name}: "Season <!-- -->11" read as season 11`);
+    }
     await p.close();
   }
   const e = await (await page('<html><body><div id="x"><img src="https://rivalsdata.com/assets/heroes/hulk.webp"></div></body></html>')).evaluate(() => RDT.scrapeDetail([document.getElementById('x')]));
