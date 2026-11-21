@@ -13,6 +13,11 @@
   <div id="result" role="status" aria-live="polite"></div>
   <button id="openall" disabled title="Opens every other player in this lobby in new background tabs. A tab closes itself if that player is not in a Competitive game; otherwise it opens their Live Game and reads it. Shift-click: just open them.">Open all profiles in this lobby</button>
   <button id="details" disabled title="Reads hero details (win rates, proficiency, match history) for players not yet read in this match. Shift-click to read everyone again.">Read hero details</button>
+  <div id="auto" class="auto">
+    <button id="autotoggle" title="Goes through every saved player slowly, one at a time: opens their profile, and if they are in a Competitive game reads that lobby (new players get saved). Needs no rivalsdata tab open.">Start Auto Expand</button>
+    <label class="dim">Wait between players <input id="autodelay" type="number" min="30" max="600" step="5" value="60"> s</label>
+    <div id="autostatus" class="dim" role="status" aria-live="polite"></div>
+  </div>
   <button id="open">Open database</button>
   <button id="savegh" title="Merge with, then push to, data/players.json in your GitHub repo">Save to GitHub</button>
   <button id="savefile" title="Write the database into the repo's data/players.json">Save to data/players.json</button>

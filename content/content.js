@@ -307,7 +307,7 @@
       curGameId = ing.gameId || null;
       if (settings.autoDetails && ing.newGame && !detailing) readDetails().catch(() => {});
       const hiddenN = lobby.rows.filter((r) => r.masked).length;
-      lastResult = { noPanel: false, qpNotSaved: !!ing.qpNotSaved, total: lobby.rows.length, saved: ing.saved, newPlayers: ing.newPlayers || 0, oldPlayers: ing.oldPlayers || 0, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
+      lastResult = { noPanel: false, qpNotSaved: !!ing.qpNotSaved, total: lobby.rows.length, saved: ing.saved, newPlayers: ing.newPlayers || 0, oldPlayers: ing.oldPlayers || 0, added: ing.added || 0, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
       statusText = ing.qpNotSaved ? 'Quick Play lobby: not saved (Settings → What gets saved)' : ing.saved
         ? 'saved ' + ing.saved + ' from this lobby' + (ing.skipped ? ', ' + ing.skipped + ' below GM skipped (Quick Play)' : '') + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
         : ing.skipped ? 'Quick Play: nobody at GM or above to save'
@@ -430,6 +430,8 @@
    * It never closes a page that did not finish loading (error, rate limit): that is left for the user to look at.
    */
   async function profileCheck() {
+    const auto = /rdt-auto/.test(root.location.hash);                                 // opened by "Auto Expand": report back, the worker closes us
+    const report = (outcome, extra) => { try { root.chrome.runtime.sendMessage(Object.assign({ type: 'rdt-auto-done', outcome }, extra || {})); } catch (_) { /* extension reloaded */ } };
     const T = root.__rdtCheckTimes || { load: 20000, status: 6000, live: 10000 };    // overridable so tests need not wait
     const gone = () => dead || !alive();
     const until = async (fn, ms) => {
@@ -438,11 +440,12 @@
     };
     const status = () => { const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : ''); return m ? m[1].trim().toLowerCase() : null; };
     const tab = await until(() => doc.getElementById('live-game'), T.load);          // the profile has loaded once its tabs exist
-    if (!tab) return;
+    if (!tab) { if (auto) report('error'); return; }
     const mode = await until(status, T.status);                                       // the live status arrives a moment later
     try { root.history.replaceState(null, '', root.location.href.replace(/#.*$/, '')); } catch (_) { /* keep the hash */ }
     if (gone()) return;
     if (!mode || !mode.includes('competitive')) {
+      if (auto) { report('offline'); return; }
       try { root.chrome.runtime.sendMessage({ type: 'rdt-close-me' }); } catch (_) { /* extension reloaded: leave the tab */ }
       return;
     }
@@ -458,7 +461,8 @@
       if (i % 4 === 3 && !selected()) { try { tab.focus(); for (const t of ['keydown', 'keyup']) fire(t, 'KeyboardEvent', { key: 'Enter', code: 'Enter' }); } catch (_) { /* ignore */ } }
       await sleep(250);
     }
-    if (await until(() => R.scrapeLive(doc), T.live)) await scanNow();                // ... and read (save) it
+    if (await until(() => R.scrapeLive(doc), T.live)) { const r = await scanNow(); if (auto) report('competitive', { saved: (r && r.saved) || 0, newPlayers: (r && r.added) || 0 }); }   // ... and read (save) it
+    else if (auto) report('nolive');
   }
 
   /** Force a fresh read + save right now (used by the toolbar popup). */
@@ -488,7 +492,7 @@
     root.chrome.storage.onChanged.addListener((ch, area) => {
       if (area === 'local' && ch.rdt_settings) { lastSig = ''; schedule(); }
     });
-    if (/rdt-check/.test(root.location.hash)) profileCheck().catch(() => {});      // opened by "Open all profiles"
+    if (/rdt-(check|auto)/.test(root.location.hash)) profileCheck().catch(() => {});      // opened by "Open all profiles"
     if (root.chrome.runtime && root.chrome.runtime.onMessage) root.chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
       if (msg && msg.type === 'rdt-ping') { reply({ ok: true }); return; }
       if (msg && msg.type === 'rdt-profiles') {
