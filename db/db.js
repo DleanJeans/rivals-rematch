@@ -263,7 +263,7 @@
   function renderSettings() {
     const s = data.settings;
     $('sSelf').value = s.selfUid; $('sOverlay').checked = s.overlay;
-    $('sIcons').checked = s.useIcons; $('sQp').checked = s.qpHighRankOnly; $('sQpSave').checked = s.saveQuickPlay; $('sQp').disabled = !s.saveQuickPlay; $('sAuto').checked = s.autoSaveFile; $('sRange').value = s.matchRankRange;
+    $('sIcons').checked = s.useIcons; $('sQp').checked = s.qpHighRankOnly; $('sQpSave').checked = s.saveQuickPlay; $('sQp').disabled = !s.saveQuickPlay; $('sSavedHeroes').checked = s.showSavedHeroes !== false; $('sAuto').checked = s.autoSaveFile; $('sRange').value = s.matchRankRange;
     const me = data.all.find((p) => p.uid === s.selfUid), mi = me && me.last && me.last.rankIdx;
     $('rangeInfo').textContent = mi != null
       ? 'You are ' + me.last.rankLabel + ' → hidden players below ' + RDT.rankLabelOf(RDT.minRankIdx(mi, s.matchRankRange)) + ' are skipped. This follows your rank automatically.'
@@ -276,11 +276,11 @@
   async function saveSettings() {
     const s = Object.assign({}, data.settings, {
       selfUid: $('sSelf').value.trim(), overlay: $('sOverlay').checked,
-      useIcons: $('sIcons').checked, qpHighRankOnly: $('sQp').checked, saveQuickPlay: $('sQpSave').checked, autoSaveFile: $('sAuto').checked, matchRankRange: Math.max(0, Math.min(24, parseInt($('sRange').value, 10) || 0)), autoDetails: $('sDetails').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
+      useIcons: $('sIcons').checked, qpHighRankOnly: $('sQp').checked, saveQuickPlay: $('sQpSave').checked, showSavedHeroes: $('sSavedHeroes').checked, autoSaveFile: $('sAuto').checked, matchRankRange: Math.max(0, Math.min(24, parseInt($('sRange').value, 10) || 0)), autoDetails: $('sDetails').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
     });
     await S.saveSettings(s); data.settings = s;
   }
-  ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sQp', 'sQpSave', 'sAuto', 'sDetails', 'sRange'].forEach((id) => $(id).addEventListener('change', saveSettings));
+  ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sQp', 'sQpSave', 'sSavedHeroes', 'sAuto', 'sDetails', 'sRange'].forEach((id) => $(id).addEventListener('change', saveSettings));
 
   try { $('ver').textContent = 'v' + chrome.runtime.getManifest().version; } catch (_) { /* no manifest in tests */ }
 

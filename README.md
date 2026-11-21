@@ -15,7 +15,7 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
 ## Updating
 An unpacked extension does not update itself. Download the repo again (or `git pull`), then press the **reload**
 button on the extension's card at `chrome://extensions`. The installed version is shown in the toolbar popup and
-at the top of the database page (currently 0.7.0) so you can check you have the latest.
+at the top of the database page (currently 0.8.0) so you can check you have the latest.
 
 ## How it works
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:
@@ -41,6 +41,8 @@ at the top of the database page (currently 0.7.0) so you can check you have the 
 - **Deleting:** each lobby line has a **Delete** button (it rolls back the counts that lobby added, and offers to forget players who appear in
   no other lobby; starred, tagged or noted players are always kept), and each player has ✕. Deletions are remembered in the data file, so
   they survive Save to GitHub and loading the file on another machine; a player seen again later simply comes back.
+- **Saved heroes on hidden players:** for a likely match, the site's blank Top Heroes boxes are covered with the heroes you saved for that
+  player (dashed outline; hover for the tooltip and when you last saw them). Settings can turn this off.
 - Hidden rows get a chip over the `****` (green ≥80 %, amber ≥ threshold, grey "(maybe)", dashed "no match"),
   and a **HUD** lists each recognised player's name, **last-known top heroes**, teammate/enemy history and your notes —
   handy for deciding bans.

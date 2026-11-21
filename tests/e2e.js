@@ -72,7 +72,11 @@ const mockChrome = `
       const s = document.createElement('span'); s.className = a.className;
       s.textContent = '*****' + a.textContent.slice(-1); a.replaceWith(s);
       li.querySelectorAll('[title="In a party"]').forEach((e) => e.remove());
-      li.querySelectorAll('img[src*="/assets/heroes/"], button[aria-controls]').forEach((e) => e.remove());
+      li.querySelectorAll('button[aria-controls]').forEach((e) => e.remove());                   // the (mobile) buttons
+      li.querySelectorAll('img[src*="/assets/heroes/"]').forEach((im) => {                        // grey placeholders, like the real masked row
+        const d = document.createElement('div'); d.className = 'ph size-8 shrink-0'; d.style.cssText = 'width:32px;height:32px;border-radius:4px;background:#2a2d36';
+        im.replaceWith(d);
+      });
     });
   };
   page = await load('game3.html', maskRanked);
@@ -84,6 +88,20 @@ const mockChrome = `
   ok(chips.length === 11, `11 hidden rows got a chip (got ${chips.length})`);
   ok(got.length === 3 && got.every((c) => want[c.text]),
     `exactly the 3 returning players recognised: ${got.map((c) => c.text + ' ' + c.pc).join(', ')}`);
+  // saved heroes drawn over the blank Top Heroes boxes of the likely matches
+  const over = await page.evaluate(() => {
+    const sr = document.querySelector('#rdt-host').shadowRoot, phs = [...document.querySelectorAll('.ph')].map((e) => e.getBoundingClientRect());
+    return [...sr.querySelectorAll('.heroover')].map((o) => {
+      const r = o.getBoundingClientRect();
+      return { slugs: [...o.querySelectorAll('.dtile')].map((i) => i.dataset.slug), covers: phs.filter((p) => p.x + p.width / 2 > r.x && p.x + p.width / 2 < r.x + r.width && p.y + p.height / 2 > r.y && p.y + p.height / 2 < r.y + r.height).length };
+    });
+  });
+  ok(over.length === 3 && over.every((o) => o.slugs.length > 0), `the 3 likely matches get their saved heroes over the blank boxes; the 8 "no match" rows get nothing (${over.length} overlays)`);
+  ok(over.some((o) => o.slugs.join() === 'emma-frost,magneto,devil-dinosaur,peni-parker'), 'and they are the heroes saved for that player (Emma Frost, Magneto, Devil Dinosaur, Peni Parker)');
+  ok(over.filter((o) => o.slugs.length === 4).every((o) => o.covers === 4), 'each 4-hero overlay sits exactly on top of its row\'s four grey placeholder boxes');
+  await page.hover('#rdt-host >> .heroover >> nth=0 >> .dtile >> nth=0'); await page.waitForTimeout(200);
+  const tipText = await page.evaluate(() => [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.dtip')].map((t) => t.textContent).join('|'));
+  ok(/from your saved data, seen/.test(tipText), `hovering a tile says where it comes from: "${tipText.slice(0, 70)}"`);
   ok(chips.filter((c) => c.cls === 'none').length === 8, '8 genuinely new players left as "no match" (no false positives)');
   // hover a chip that has "no match" rows underneath its tooltip: the tooltip must be the topmost thing
   await page.hover('#rdt-host >> .chip.hi >> nth=0'); await page.waitForTimeout(200);
@@ -113,8 +131,16 @@ const mockChrome = `
     });
   });
   const two = await page.evaluate(() => [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.chip')].map((c) => c.querySelector('.nm').textContent + ' ' + ((c.querySelector('.pc') || {}).textContent || '')));
+  ok((await page.evaluate(() => document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.heroover').length)) === 0, 'when the site itself shows the heroes (not blank) nothing is drawn over them');
   ok(two.length === 2 && two.every((t) => !t.startsWith('no match')), `both recognised; the swapped-avatar one is carried by its matching top heroes: ${JSON.stringify(two)}`);
   await page.close();
+
+  console.log('\n[3c] The setting switches the overlay off (names still recognised)');
+  store.set('rdt_settings', JSON.stringify({ showSavedHeroes: false }));
+  page = await load('game3.html', maskRanked);
+  const off = await page.evaluate(() => { const sr = document.querySelector('#rdt-host').shadowRoot; return { over: sr.querySelectorAll('.heroover').length, hi: sr.querySelectorAll('.chip.hi').length }; });
+  ok(off.over === 0 && off.hi >= 3, `with "Show saved heroes" off: no overlays, but the recognised names are still shown (${JSON.stringify(off)}; by now earlier steps saved the other game-3 players too)`);
+  await page.close(); store.delete('rdt_settings');
 
   console.log('\n[4] Real Quick Play ban-phase capture (rank only, partial names) - default: Quick Play lobbies are NOT saved');
   const before = players().length, gamesBefore = JSON.parse(store.get('rdt_games')).length;

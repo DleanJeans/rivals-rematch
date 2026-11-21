@@ -89,6 +89,8 @@
   .badge{padding:0 5px;border-radius:4px;background:#2a2d36;color:#cdd}
   .badge.tag{background:#5a2a2a;color:#ffd0d0}
   .badge.star{background:#5a4a12;color:#ffe08a}
+  .heroover{position:fixed;display:flex;align-items:center;gap:4px;pointer-events:auto;background:#1a1d24;border-radius:6px}
+  .heroover .dtile{outline:1px dashed #b8892a;outline-offset:-1px}
   .hud .dp{grid-template-columns:1fr}.hud .dp .col+.col{border-left:0;border-top:1px solid #2a2d36}.hud{--line:#2a2d36;--card:#171a21;--tx:#e4e7ee;--dim:#8e94a4;--acc:#ffd050}
   .dpwrap{grid-column:1/-1;margin:4px -10px -7px}.heroes .dtile{width:26px;height:26px}
   .foot{padding:7px 10px;color:#8e94a4;border-top:1px solid #22252d}
@@ -147,6 +149,14 @@
       c.dataset.row = it.row.idx;
       chipLayer.appendChild(c);
       it.chip = c;
+      // Likely match, and the site shows only blank boxes: put the heroes we saved for them over those boxes.
+      const hs = player && player.last && player.last.heroes;
+      if (settings.showSavedHeroes !== false && it.match.uid && it.match.p >= settings.minShow && !it.row.heroes && it.row.heroesEl && hs && hs.length) {
+        const ho = el('div', 'heroover');
+        hs.slice(0, 4).forEach((h) => ho.appendChild(R.ui.heroTile(h, player.detail, dtip, player.last.heroLabels, 'from your saved data, seen ' + ago(player.lastSeen))));
+        chipLayer.appendChild(ho);
+        it.heroOver = ho;
+      }
     });
     renderHud(items, settings);
     position(items);
@@ -155,6 +165,14 @@
   function position(items) {
     items = items || (current && current.items) || [];
     items.forEach((it) => {
+      if (it.heroOver) {
+        const he = it.row.heroesEl;
+        if (he && he.isConnected) {
+          const hr = (he.querySelector('div.flex') || he).getBoundingClientRect(), hst = it.heroOver.style;
+          hst.left = hr.left + 'px'; hst.top = hr.top + 'px'; hst.width = hr.width + 'px'; hst.height = hr.height + 'px';
+          hst.display = hr.bottom < 0 || hr.top > root.innerHeight ? 'none' : 'flex';
+        } else it.heroOver.style.display = 'none';
+      }
       if (!it.chip || !it.row.nameEl.isConnected) return;
       const r = it.row.nameEl.getBoundingClientRect();
       const s = it.chip.style;

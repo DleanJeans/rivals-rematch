@@ -76,6 +76,7 @@
       isProfileOwner: !!(link && link.getAttribute('aria-current') === 'page'),
       el: li,
       nameEl: nameCell || grid,
+      heroesEl: grid.children[4] || null,           // the Top Heroes cell (blank boxes while the name is hidden)
     };
   }
 
