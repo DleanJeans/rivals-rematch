@@ -51,13 +51,14 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   const popup = await ctx.newPage(); popup.on('pageerror', (e) => { errs.push(e.message); });
   await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
   await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 5000 });
-  ok(/Version 0\.8\.1/.test(await popup.textContent('#ver')), 'popup shows the installed version');
+  ok(/Version 0\.8\.2/.test(await popup.textContent('#ver')), 'popup shows the installed version');
   ok(/Ready/.test(await popup.textContent('#where')), 'popup finds the rivalsdata tab and enables the button');
   ok(/12 players/.test(await popup.textContent('#counts')), `automatic save already stored the lobby: "${await popup.textContent('#counts')}"`);
 
   await popup.click('#scan'); await popup.waitForSelector('#result.show');
   const res = await popup.textContent('#result');
   ok(/Saved 12 players/.test(res) && /12 in the lobby/.test(res), `button reports the save straight away: "${res}"`);
+  ok(/12 new players · 0 already known/.test(res), `first save: all 12 are new: "${res}"`);
   ok(await popup.isDisabled('#scan'), 'the button stays busy while it goes on to read hero details');
   await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 40000 });
   const both = (await popup.textContent('#result')).replace(/\s+/g, ' ');
@@ -73,6 +74,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   await popup.click('#scan'); await idle();
   const again = (await popup.textContent('#result')).replace(/\s+/g, ' ');
   ok(/Saved 12 players/.test(again) && /Hero details: already saved for this match \(11 players\)/.test(again) && Date.now() - t0 < 4000, `"Read & save" again: saves, then skips the hero details already read (${Math.round((Date.now() - t0) / 100) / 10} s): "${again}"`);
+  ok(/12 new players · 0 already known/.test(again), `saving the same lobby again still counts its players as new: "${again}"`);
   await popup.click('#details'); await idle();
   const only = (await popup.textContent('#result')).replace(/\s+/g, ' ');
   ok(/already saved for this match \(11 players\)/.test(only) && !/Saved 12/.test(only), `"Read hero details" alone also skips, and says how to force it: "${only}"`);

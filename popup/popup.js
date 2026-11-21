@@ -70,6 +70,7 @@
         cls = 'ok';
         lines = [r.qpNotSaved ? 'Quick Play lobby: not saved' : (r.saved ? 'Saved ' + r.saved + ' player' + (r.saved === 1 ? '' : 's') : 'Nothing saved yet')];
         lines.push(r.total + ' in the lobby' + (r.newGame ? ' · new lobby' : '') + (r.hidden ? ' · ' + r.hidden + ' names hidden' : ''));
+        if (r.saved) lines.push(r.newPlayers + ' new player' + (r.newPlayers === 1 ? '' : 's') + ' · ' + r.oldPlayers + ' already known');
         if (r.hidden - (r.belowRange || 0) > 0) lines.push(r.matched + ' of ' + (r.hidden - (r.belowRange || 0)) + ' hidden players recognised (see the panel on the page)');
         if (r.belowRange) lines.push(r.belowRange + ' hidden player' + (r.belowRange === 1 ? '' : 's') + ' below ' + r.minLabel + ' not matched');
         if (r.qpNotSaved) lines.push('Turn on “Save Quick Play lobbies” in Settings → What gets saved if you want them.');

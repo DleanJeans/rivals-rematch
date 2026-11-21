@@ -307,7 +307,7 @@
       curGameId = ing.gameId || null;
       if (settings.autoDetails && ing.newGame && !detailing) readDetails().catch(() => {});
       const hiddenN = lobby.rows.filter((r) => r.masked).length;
-      lastResult = { noPanel: false, qpNotSaved: !!ing.qpNotSaved, total: lobby.rows.length, saved: ing.saved, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
+      lastResult = { noPanel: false, qpNotSaved: !!ing.qpNotSaved, total: lobby.rows.length, saved: ing.saved, newPlayers: ing.newPlayers || 0, oldPlayers: ing.oldPlayers || 0, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
       statusText = ing.qpNotSaved ? 'Quick Play lobby: not saved (Settings → What gets saved)' : ing.saved
         ? 'saved ' + ing.saved + ' from this lobby' + (ing.skipped ? ', ' + ing.skipped + ' below GM skipped (Quick Play)' : '') + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
         : ing.skipped ? 'Quick Play: nobody at GM or above to save'
@@ -436,7 +436,7 @@
       const t0 = Date.now();
       for (;;) { const v = fn(); if (v) return v; if (Date.now() - t0 > ms || gone()) return null; await sleep(150); }
     };
-    const status = () => { const m = /In game \(([^)]+)\)/.exec(doc.body ? doc.body.textContent : ''); return m ? m[1].trim().toLowerCase() : null; };
+    const status = () => { const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : ''); return m ? m[1].trim().toLowerCase() : null; };
     const tab = await until(() => doc.getElementById('live-game'), T.load);          // the profile has loaded once its tabs exist
     if (!tab) return;
     const mode = await until(status, T.status);                                       // the live status arrives a moment later
