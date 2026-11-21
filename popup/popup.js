@@ -42,9 +42,13 @@
     if (r.error) return { cls: 'err', lines: ['Error: ' + r.error] };
     if (r.noPanel) return { cls: 'err', lines: ['No Live Game found on this page.'] };
     if (r.busy) return { cls: 'err', lines: ['Already reading hero details — wait a moment.'] };
+    if (!r.read && !r.failed && r.already) {
+      return { cls: 'ok', lines: ['Hero details: already saved for this match (' + r.already + ' player' + (r.already === 1 ? '' : 's') + ')', 'Nothing to read. Shift-click “Read hero details” to read them again.'] };
+    }
     return {
-      cls: r.read ? 'ok' : 'err',
-      lines: [r.read ? 'Hero details: read ' + r.read + ' of ' + r.total + ' players' : 'Hero details: could not read any player panel']
+      cls: r.read || r.already ? 'ok' : 'err',
+      lines: [r.read ? 'Hero details: read ' + r.read + ' of ' + (r.total - (r.already || 0)) + ' players' : 'Hero details: could not read any player panel']
+        .concat(r.already ? [r.already + ' already saved for this match, skipped.'] : [])
         .concat(r.failed ? [r.failed + ' could not be read (panel did not open or has no data yet).'] : []),
     };
   }
@@ -86,9 +90,10 @@
   }
 
   /** Only the hero details (no save), e.g. to refresh them. */
-  async function details() {
+  async function details(ev) {
+    const force = !!(ev && ev.shiftKey);                       // Shift-click = read everyone again
     setBusy('Reading hero details… (about 1 s per player)');
-    try { const d = detailLines(await send(tab.id, { type: 'rdt-detail' })); show(d.cls, d.lines); }
+    try { const d = detailLines(await send(tab.id, { type: 'rdt-detail', force })); show(d.cls, d.lines); }
     catch (e) { show('err', ['Could not reach the page: ' + (e && e.message || e)]); }
     setIdle();
   }

@@ -37,7 +37,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   const popup = await ctx.newPage(); popup.on('pageerror', (e) => { errs.push(e.message); });
   await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
   await popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 5000 });
-  ok(/Version 0\.4\.1/.test(await popup.textContent('#ver')), 'popup shows the installed version');
+  ok(/Version 0\.4\.2/.test(await popup.textContent('#ver')), 'popup shows the installed version');
   ok(/Ready/.test(await popup.textContent('#where')), 'popup finds the rivalsdata tab and enables the button');
   ok(/12 players/.test(await popup.textContent('#counts')), `automatic save already stored the lobby: "${await popup.textContent('#counts')}"`);
 
@@ -53,10 +53,18 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   ok((await site.evaluate(() => document.querySelectorAll('.panel').length)) === 0, 'rows were closed again afterwards');
   ok(/12 players · 1 lobbies/.test(await popup.textContent('#counts')), 'pressing again does not duplicate players or lobbies');
 
-  // the details-only button still works on its own
-  await popup.click('#details'); await popup.waitForFunction(() => !document.getElementById('details').disabled, null, { timeout: 40000 });
+  // pressing the buttons again in the same match skips what was already read
+  const idle = () => popup.waitForFunction(() => !document.getElementById('scan').disabled, null, { timeout: 40000 });
+  const t0 = Date.now();
+  await popup.click('#scan'); await idle();
+  const again = (await popup.textContent('#result')).replace(/\s+/g, ' ');
+  ok(/Saved 12 players/.test(again) && /Hero details: already saved for this match \(11 players\)/.test(again) && Date.now() - t0 < 4000, `"Read & save" again: saves, then skips the hero details already read (${Math.round((Date.now() - t0) / 100) / 10} s): "${again}"`);
+  await popup.click('#details'); await idle();
   const only = (await popup.textContent('#result')).replace(/\s+/g, ' ');
-  ok(/Hero details: read 11 of 11/.test(only) && !/Saved/.test(only), `"Read hero details" alone only reports the details: "${only}"`);
+  ok(/already saved for this match \(11 players\)/.test(only) && !/Saved 12/.test(only), `"Read hero details" alone also skips, and says how to force it: "${only}"`);
+  await popup.click('#details', { modifiers: ['Shift'] }); await idle();
+  const forced = (await popup.textContent('#result')).replace(/\s+/g, ' ');
+  ok(/Hero details: read 11 of 11 players/.test(forced), `Shift-click reads everyone again: "${forced}"`);
 
   // injecting a second copy must be harmless (popup injects when the page predates the install)
   await popup.evaluate(async () => { const [t] = await chrome.tabs.query({ url: 'https://rivalsdata.com/*' });

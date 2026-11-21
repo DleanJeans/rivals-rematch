@@ -35,6 +35,7 @@
   const alive = () => { try { return !hadId || !!root.chrome.runtime.id; } catch (_) { return false; } };
   const isInvalidated = (e) => /context invalidated/i.test(String((e && e.message) || e));
   let dead = false, mo = null;
+  let curGameId = null;                    // the lobby currently on screen (from the last save)
   const onScroll = () => position(), onResize = () => position();
   function retire() {
     if (dead) return;
@@ -285,6 +286,7 @@
       const settings = await S.getSettings();
       await verifyGuesses(lobby);
       const ing = await S.ingest(lobby, settings);
+      curGameId = ing.gameId || null;
       if (settings.autoDetails && ing.newGame && !detailing) readDetails().catch(() => {});
       const hiddenN = lobby.rows.filter((r) => r.masked).length;
       lastResult = { noPanel: false, total: lobby.rows.length, saved: ing.saved, skipped: ing.skipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
@@ -364,7 +366,8 @@
     if (!wasOpen && btn.getAttribute('aria-expanded') === 'true') btn.click();   // leave the page as we found it
     return d;
   }
-  async function readDetails() {
+  async function readDetails(opt) {
+    const force = !!(opt && opt.force);
     if (dead || !alive()) { retire(); return { error: 'The extension was reloaded: reload this page.' }; }
     if (detailing) return { busy: true };
     detailing = true;
@@ -372,16 +375,18 @@
       const lobby = R.scrapeLive(doc);
       if (!lobby) return { noPanel: true };
       const settings = await S.getSettings();
-      const have = new Set((await S.loadPlayers()).map((p) => p.uid));       // players that were actually saved (Quick Play filter!)
-      const rows = lobby.rows.filter((r) => r.uid && r.uid !== settings.selfUid && have.has(r.uid));   // never your own row
-      let read = 0, failed = 0;
+      const stored = new Map((await S.loadPlayers()).map((p) => [p.uid, p]));     // players that were actually saved (Quick Play filter!)
+      const rows = lobby.rows.filter((r) => r.uid && r.uid !== settings.selfUid && stored.has(r.uid));   // never your own row
+      let read = 0, failed = 0, already = 0;
       for (const row of rows) {
+        const have = stored.get(row.uid).detail;
+        if (!force && curGameId && have && have.gameId === curGameId) { already++; continue; }   // read earlier in THIS match: skip
         const d = await readOneDetail(row);
-        if (d && await S.saveDetail(row.uid, d)) read++; else failed++;
+        if (d && await S.saveDetail(row.uid, d, null, curGameId)) read++; else failed++;
         await sleep(150);
       }
-      lastSig = ''; schedule();                                              // redraw the panel with the new data
-      return { total: rows.length, read, failed };
+      if (read) { lastSig = ''; schedule(); }                                // redraw the panel with the new data
+      return { total: rows.length, read, failed, already };
     } finally { detailing = false; }
   }
 
@@ -414,7 +419,7 @@
     });
     if (root.chrome.runtime && root.chrome.runtime.onMessage) root.chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
       if (msg && msg.type === 'rdt-ping') { reply({ ok: true }); return; }
-      if (msg && msg.type === 'rdt-detail') { scanNow().then(() => readDetails()).then(reply, (e) => reply({ error: String(e) })); return true; }
+      if (msg && msg.type === 'rdt-detail') { scanNow().then(() => readDetails({ force: !!msg.force })).then(reply, (e) => reply({ error: String(e) })); return true; }
       if (msg && msg.type === 'rdt-scan') { scanNow().then(reply, (e) => reply({ error: String(e) })); return true; }
     });
     schedule();

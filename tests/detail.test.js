@@ -89,11 +89,34 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
   const opened = await p2.evaluate(() => window.__opened || []);
   ok(opened.length === 11 && !opened.some((n) => /DleanJeans/.test(n)), `only the 11 other players' rows were opened, yours never was (${opened.length} opened)`);
   ok(await p2.evaluate(() => document.querySelectorAll('.panel').length === 0 && [...document.querySelectorAll('button[aria-expanded]')].every((b) => b.getAttribute('aria-expanded') !== 'true')), 'all rows closed again: the page is left as it was found');
-  const busy = await p2.evaluate(() => Promise.all([new Promise((r) => window.__msg({ type: 'rdt-detail' }, null, r)), new Promise((r) => window.__msg({ type: 'rdt-detail' }, null, r))]));
+  const ask = (page, force) => page.evaluate((f) => new Promise((res) => window.__msg({ type: 'rdt-detail', force: f }, null, res)), !!force);
+  const openedCount = () => p2.evaluate(() => (window.__opened || []).length);
+
+  console.log('\n[2b] Pressing again in the same match skips players already read');
+  const again = await ask(p2);
+  ok(again.read === 0 && again.already === 11 && again.failed === 0, `second press: nothing to read, 11 already saved for this match (${JSON.stringify(again)})`);
+  ok((await openedCount()) === 11, 'and not a single row was opened again');
+  const uids = saved.filter((pl) => pl.uid !== '520435205').slice(0, 2).map((pl) => pl.uid);
+  uids.forEach((u) => { const pl = JSON.parse(store.get('p:' + u)); delete pl.detail; store.set('p:' + u, JSON.stringify(pl)); });
+  const part = await ask(p2);
+  ok(part.read === 2 && part.already === 9 && (await openedCount()) === 13, `two players missing their details: only those 2 are read (${JSON.stringify(part)}, ${await openedCount()} rows opened in total)`);
+  const forced = await ask(p2, true);
+  ok(forced.read === 11 && forced.already === 0 && (await openedCount()) === 24, `force (Shift-click) reads everyone again (${JSON.stringify(forced)})`);
+  const busy = await Promise.all([ask(p2, true), ask(p2, true)]);
   ok(busy.filter((r) => r.busy).length === 1 && busy.filter((r) => r.read === 11).length === 1, `two simultaneous requests: one runs, the other is told it is busy (${JSON.stringify(busy)})`);
   await p2.close();
 
-  console.log('\n[3] A row whose panel never appears is reported, not faked');
+  console.log('\n[2c] A new match: details are read again');
+  const p2b = await page(read('tests/fixtures/game3.html'), sim);
+  await p2b.waitForTimeout(900);
+  const next = await ask(p2b);
+  ok(next.total === 11 && next.read === 11 && next.already === 0, `different lobby => everyone is read again, even players who were in the previous match (${JSON.stringify(next)})`);
+  const stamps = [...store].filter(([k]) => k.startsWith('p:')).map(([, v]) => JSON.parse(v)).filter((pl) => pl.detail && pl.uid !== '520435205').map((pl) => pl.detail.gameId);
+  ok(new Set(stamps).size === 2, `details carry the id of the match they were read in (${new Set(stamps).size} different matches stored)`);
+  await p2b.close();
+
+  console.log('\n[3] A row whose panel never appears is reported, not faked (and is tried again next time, not skipped)');
+  [...store].filter(([k]) => k.startsWith('p:')).forEach(([k, v]) => { const pl = JSON.parse(v); delete pl.detail; store.set(k, JSON.stringify(pl)); });   // start from nothing read
   const p3 = await page(fx, `document.querySelectorAll('button[aria-label^="Toggle details"]').forEach((b) => b.addEventListener('click', () => b.setAttribute('aria-expanded', b.getAttribute('aria-expanded') === 'true' ? 'false' : 'true')))`);
   await p3.waitForTimeout(900);
   const r3 = await p3.evaluate(() => new Promise((res) => window.__msg({ type: 'rdt-detail' }, null, res)));
