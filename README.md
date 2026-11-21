@@ -31,10 +31,18 @@ at the top of the database page (currently 0.2.0) so you can check you have the 
 - Open the database from the popup: search, sort, tag/note players, lobby log, settings, export/import.
 
 ## Keeping your data between sessions (e.g. a PC that resets)
-1. Keep this repo **private** (it will hold other players' names and your notes).
-2. End of session: Database → **Export** (saves `players.json`), then on GitHub: `data/` → *Add file → Upload files* → commit.
-3. Next session: download the repo as a ZIP, unzip, `chrome://extensions` → **Load unpacked**. The extension merges
-   `data/players.json` into its storage on first run, so everything is already there. Settings and the accuracy record come back too.
+Keep this repo **private** (the file lists other players' names and your notes), and load the extension from the repo folder.
+
+1. **Once per browser session:** open the database (toolbar icon → *Open database*) and click **Save to data/**. Pick the repo's
+   `data` folder (or the repo folder itself). Chrome remembers the choice; after a browser restart it asks you to allow writing again.
+2. From then on `data/players.json` is **kept up to date automatically while the database page is open**, and the file is only
+   rewritten when something actually changed. Before logging off, click **Save to data/** (or the popup's *Save to data/players.json*)
+   to be sure it's current.
+3. **Commit and push** `data/players.json` (GitHub Desktop, git, or upload it on github.com).
+4. Next session: download/clone the repo, **Load unpacked** — the extension merges `data/players.json` on first run, so everything
+   is already there (settings and the accuracy record too).
+
+Writing the file needs Chrome's folder-access feature, so it only works on a Chromium browser. *Export* still downloads the same file.
 
 ## Honest limits
 - It can only recognise people it has **seen with a visible name before**. New players show "no match".

@@ -62,6 +62,7 @@
     try { $('ver').textContent = 'Version ' + chrome.runtime.getManifest().version; } catch (_) { /* optional */ }
     try { await RDT.store.loadSeed(chrome.runtime.getURL('data/players.json')); } catch (_) { /* optional */ }
     refreshCounts();
+    $('savefile').addEventListener('click', () => { chrome.tabs.create({ url: chrome.runtime.getURL('db/db.html#save') }); window.close(); });
     $('open').addEventListener('click', () => { chrome.tabs.create({ url: chrome.runtime.getURL('db/db.html') }); window.close(); });
     tab = await findTab();
     if (!tab) { $('where').textContent = 'Open a rivalsdata.com player page with the Live Game tab to read a lobby.'; return; }

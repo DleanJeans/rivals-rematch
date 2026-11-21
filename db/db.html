@@ -15,6 +15,8 @@
     <button data-tab="settings">Settings</button>
   </nav>
   <span class="sp"></span>
+  <span id="fileStatus" class="dim" role="status"></span>
+  <button id="fileBtn" class="primary" title="Write the database into the repo's data/players.json">Save to data/</button>
   <button id="exportBtn">Export</button>
   <button id="importBtn">Import</button>
   <input id="importFile" type="file" accept="application/json" hidden>
@@ -64,6 +66,15 @@
       <p id="accuracy" class="dim"></p>
     </div>
     <div class="card">
+      <h3>Save to the repo file</h3>
+      <p class="dim">Writes <code>data/players.json</code> straight into your repo folder, so at log-off you only have to commit and push.
+        Pick the repo's <b>data</b> folder (or the repo folder itself) once per browser session — Chrome remembers the choice
+        and asks to re-allow writing after a restart.</p>
+      <label><input type="checkbox" id="sAuto"> Keep the file up to date automatically while this page is open</label>
+      <p id="fileInfo" class="dim">Not linked yet.</p>
+      <button id="chooseBtn">Choose folder…</button> <button id="saveNowBtn">Save now</button>
+    </div>
+    <div class="card">
       <h3>Data</h3>
       <p class="dim">Everything is stored locally in this browser (chrome.storage). Nothing is sent anywhere.</p>
       <button id="wipe" class="danger">Delete all saved data…</button>
@@ -72,6 +83,7 @@
 </main>
 <script src="../lib/shared.js"></script>
 <script src="../lib/store.js"></script>
+<script src="../lib/filesave.js"></script>
 <script src="db.js"></script>
 </body>
 </html>

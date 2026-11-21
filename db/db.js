@@ -166,7 +166,7 @@
   function renderSettings() {
     const s = data.settings;
     $('sSelf').value = s.selfUid; $('sOverlay').checked = s.overlay;
-    $('sIcons').checked = s.useIcons; $('sQp').checked = s.qpHighRankOnly; $('sMin').value = Math.round(s.minShow * 100);
+    $('sIcons').checked = s.useIcons; $('sQp').checked = s.qpHighRankOnly; $('sAuto').checked = s.autoSaveFile; $('sMin').value = Math.round(s.minShow * 100);
     const st = data.stats;
     $('accuracy').textContent = st.checked
       ? 'Track record: ' + st.correct + ' of ' + st.checked + ' ban-phase guesses were confirmed correct once names were revealed.'
@@ -175,13 +175,51 @@
   async function saveSettings() {
     const s = Object.assign({}, data.settings, {
       selfUid: $('sSelf').value.trim(), overlay: $('sOverlay').checked,
-      useIcons: $('sIcons').checked, qpHighRankOnly: $('sQp').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
+      useIcons: $('sIcons').checked, qpHighRankOnly: $('sQp').checked, autoSaveFile: $('sAuto').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
     });
     await S.saveSettings(s); data.settings = s;
   }
-  ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sQp'].forEach((id) => $(id).addEventListener('change', saveSettings));
+  ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sQp', 'sAuto'].forEach((id) => $(id).addEventListener('change', saveSettings));
 
   try { $('ver').textContent = 'v' + chrome.runtime.getManifest().version; } catch (_) { /* no manifest in tests */ }
+
+
+  // ---- write the database into <repo>/data/players.json
+  const FS = RDT.fs;
+  let saving = false, saveTimer = null;
+  const clock = (t) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  function setStatus(msg, bad) {
+    $('fileStatus').textContent = msg; $('fileStatus').title = msg; $('fileStatus').classList.toggle('bad', !!bad);
+    $('fileInfo').textContent = msg;
+  }
+  /** interactive=true is a click: may open the folder picker / permission prompt. force=true rewrites even if unchanged. */
+  async function saveToFile(opt) {
+    opt = opt || {};
+    if (!FS.supported()) { setStatus('This browser cannot write files — use Export instead.', true); return false; }
+    if (saving) return false;
+    saving = true;
+    try {
+      let h = await FS.getHandle();
+      if (opt.relink || (!h && opt.interactive)) h = await FS.link();
+      if (!h) { setStatus('Not linked: click “Save to data/” and pick the repo\'s data folder.'); return false; }
+      if (!(await FS.permitted(h, !!opt.interactive))) { setStatus('Click “Save to data/” to allow writing again.', true); return false; }
+      const snap = await S.snapshot();
+      const m = await chrome.storage.local.get(['rdt_filesig', 'rdt_fsmeta']);
+      if (!opt.force && m.rdt_filesig === snap.sig && m.rdt_fsmeta) {
+        setStatus('Up to date · ' + m.rdt_fsmeta.where + ' · saved ' + clock(m.rdt_fsmeta.t)); return true;
+      }
+      const where = await FS.write(h, snap.text);
+      const t = Date.now();
+      await chrome.storage.local.set({ rdt_filesig: snap.sig, rdt_seed: snap.fp, rdt_fsmeta: { t, count: snap.count, where } });
+      setStatus('Saved ' + where + ' · ' + snap.count + ' players · ' + clock(t)); return true;
+    } catch (e) {
+      setStatus(e && e.name === 'AbortError' ? 'No folder chosen.' : 'Could not save: ' + (e && e.message || e), e && e.name !== 'AbortError');
+      return false;
+    } finally { saving = false; }
+  }
+  $('fileBtn').addEventListener('click', () => saveToFile({ interactive: true }));
+  $('saveNowBtn').addEventListener('click', () => saveToFile({ interactive: true, force: true }));
+  $('chooseBtn').addEventListener('click', () => saveToFile({ interactive: true, relink: true, force: true }));
 
   // ---- wiring
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => {
@@ -208,11 +246,15 @@
   $('wipe').addEventListener('click', async () => {
     if (confirm('Delete ALL saved players, lobbies and stats? Export first if unsure.')) { await S.wipe(); reload(); }
   });
-  chrome.storage.onChanged.addListener(() => {
+  const OWN_KEYS = ['rdt_filesig', 'rdt_fsmeta', 'rdt_seed'];
+  chrome.storage.onChanged.addListener((changes) => {
+    if (Object.keys(changes).every((k) => OWN_KEYS.includes(k))) return;   // our own bookkeeping, nothing to redraw or save
+    clearTimeout(saveTimer); saveTimer = setTimeout(() => { if (data.settings.autoSaveFile) saveToFile(); }, 2000);
     const a = document.activeElement;           // don't yank focus while a note/tag is being typed
     if (a && a.tagName === 'INPUT' && a.closest('#tbl')) return;
     clearTimeout(reload.t); reload.t = setTimeout(reload, 400);
   });
   // Merge the repo's bundled data first, but never let that step stop the page from rendering.
-  Promise.resolve().then(() => S.loadSeed(chrome.runtime.getURL('data/players.json'))).catch(() => 0).then(reload);
+  Promise.resolve().then(() => S.loadSeed(chrome.runtime.getURL('data/players.json'))).catch(() => 0).then(reload)
+    .then(() => { if (data.settings.autoSaveFile || location.hash === '#save') return saveToFile(); });
 })();
