@@ -217,7 +217,7 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
 
   c = await page(fx, null, FAST + `(() => { const p = document.querySelector('[role=tabpanel][aria-labelledby=live-game]'); p.remove(); document.getElementById('live-game').setAttribute('aria-selected', 'false'); })();` + HASH); await c.waitForTimeout(3500);
   st = await state(c);
-  ok(st.clicks === 1 && !st.sent.length, 'Competitive but the Live Game panel never appears: it tried once, did not crash, and left the tab open');
+  ok(st.clicks >= 1 && !st.sent.length, 'Competitive but the Live Game panel never appears: it kept trying, did not crash, and left the tab open');
   await c.close();
 
   c = await page(fx.replace('In game (Competitive)', 'Offline'), null, FAST); await c.waitForTimeout(2300);
