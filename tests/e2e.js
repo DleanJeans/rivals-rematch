@@ -90,7 +90,7 @@ const mockChrome = `
     `exactly the 3 returning players recognised: ${got.map((c) => c.text + ' ' + c.pc).join(', ')}`);
   // saved heroes drawn over the blank Top Heroes boxes of the likely matches
   const over = await page.evaluate(() => {
-    const sr = document.querySelector('#rdt-host').shadowRoot, phs = [...document.querySelectorAll('.ph')].map((e) => e.getBoundingClientRect());
+    const sr = document.querySelector('#rdt-heroes').shadowRoot, phs = [...document.querySelectorAll('.ph')].map((e) => e.getBoundingClientRect());
     return [...sr.querySelectorAll('.heroover')].map((o) => {
       const r = o.getBoundingClientRect();
       return { slugs: [...o.querySelectorAll('.dtile')].map((i) => i.dataset.slug), covers: phs.filter((p) => p.x + p.width / 2 > r.x && p.x + p.width / 2 < r.x + r.width && p.y + p.height / 2 > r.y && p.y + p.height / 2 < r.y + r.height).length };
@@ -99,7 +99,14 @@ const mockChrome = `
   ok(over.length === 3 && over.every((o) => o.slugs.length > 0), `the 3 likely matches get their saved heroes over the blank boxes; the 8 "no match" rows get nothing (${over.length} overlays)`);
   ok(over.some((o) => o.slugs.join() === 'emma-frost,magneto,devil-dinosaur,peni-parker'), 'and they are the heroes saved for that player (Emma Frost, Magneto, Devil Dinosaur, Peni Parker)');
   ok(over.filter((o) => o.slugs.length === 4).every((o) => o.covers === 4), 'each 4-hero overlay sits exactly on top of its row\'s four grey placeholder boxes');
-  await page.hover('#rdt-host >> .heroover >> nth=0 >> .dtile >> nth=0'); await page.waitForTimeout(200);
+  await page.hover('#rdt-heroes >> .heroover >> nth=0 >> .dtile >> nth=0'); await page.waitForTimeout(200);
+  // the site's own popups (z-index 50) must stay above our hero tiles
+  const above = await page.evaluate(() => {
+    const ho = document.querySelector('#rdt-heroes').shadowRoot.querySelector('.heroover'), r = ho.getBoundingClientRect();
+    const d = document.createElement('div'); d.id = 'site-tip'; d.style.cssText = `position:fixed;z-index:50;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;background:#fff`; document.body.appendChild(d);
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); const ok = top && top.id === 'site-tip'; d.remove(); return { ok, top: top && (top.id || top.tagName) };
+  });
+  ok(above.ok, `a site popup (z-index 50) over a hero overlay stays on top (topmost: ${above.top})`);
   const tipText = await page.evaluate(() => [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.dtip')].map((t) => t.textContent).join('|'));
   ok(/from your saved data, seen/.test(tipText), `hovering a tile says where it comes from: "${tipText.slice(0, 70)}"`);
   ok(chips.filter((c) => c.cls === 'none').length === 8, '8 genuinely new players left as "no match" (no false positives)');
@@ -131,14 +138,14 @@ const mockChrome = `
     });
   });
   const two = await page.evaluate(() => [...document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.chip')].map((c) => c.querySelector('.nm').textContent + ' ' + ((c.querySelector('.pc') || {}).textContent || '')));
-  ok((await page.evaluate(() => document.querySelector('#rdt-host').shadowRoot.querySelectorAll('.heroover').length)) === 0, 'when the site itself shows the heroes (not blank) nothing is drawn over them');
+  ok((await page.evaluate(() => (document.querySelector('#rdt-heroes') || { shadowRoot: document }).shadowRoot.querySelectorAll('.heroover').length)) === 0, 'when the site itself shows the heroes (not blank) nothing is drawn over them');
   ok(two.length === 2 && two.every((t) => !t.startsWith('no match')), `both recognised; the swapped-avatar one is carried by its matching top heroes: ${JSON.stringify(two)}`);
   await page.close();
 
   console.log('\n[3c] The setting switches the overlay off (names still recognised)');
   store.set('rdt_settings', JSON.stringify({ showSavedHeroes: false }));
   page = await load('game3.html', maskRanked);
-  const off = await page.evaluate(() => { const sr = document.querySelector('#rdt-host').shadowRoot; return { over: sr.querySelectorAll('.heroover').length, hi: sr.querySelectorAll('.chip.hi').length }; });
+  const off = await page.evaluate(() => { const sr = document.querySelector('#rdt-host').shadowRoot; return { over: ((document.querySelector('#rdt-heroes') || {}).shadowRoot || document).querySelectorAll('.heroover').length, hi: sr.querySelectorAll('.chip.hi').length }; });
   ok(off.over === 0 && off.hi >= 3, `with "Show saved heroes" off: no overlays, but the recognised names are still shown (${JSON.stringify(off)}; by now earlier steps saved the other game-3 players too)`);
   await page.close(); store.delete('rdt_settings');
 

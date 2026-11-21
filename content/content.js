@@ -21,7 +21,7 @@
   }
   const PLAYER = (u) => 'https://rivalsdata.com/player/' + encodeURIComponent(u);
 
-  let host = null, shadow = null, chipLayer = null, hud = null;
+  let host = null, shadow = null, chipLayer = null, hud = null, heroHost = null, heroLayer = null;
   let lastSig = '', running = false, again = false, current = null;
   let hudCollapsed = null; // null = auto
   let pending = new Map(); // ban-phase guesses awaiting the reveal: key -> {uid, t}
@@ -45,7 +45,7 @@
     root.removeEventListener('scroll', onScroll, true); root.removeEventListener('resize', onResize);
     try {
       if (!host || !host.isConnected) return;               // nothing of ours on screen (or a newer copy already replaced it)
-      chipLayer.textContent = ''; hud.textContent = ''; hud.classList.remove('min');
+      chipLayer.textContent = ''; if (heroLayer) heroLayer.textContent = ''; hud.textContent = ''; hud.classList.remove('min');
       const h = el('div', 'hh');
       h.appendChild(el('span', '', 'Rivals Rematch was updated — reload this page to keep saving lobbies.'));
       const b = el('button', 'chev', 'Reload'); b.addEventListener('click', () => root.location.reload()); h.appendChild(b);
@@ -97,7 +97,7 @@
   `;
 
   function ensureHost() {
-    if (host && host.isConnected) return;
+    if (host && host.isConnected && heroHost && heroHost.isConnected) return;
     host = doc.createElement('div'); host.id = 'rdt-host';
     shadow = host.attachShadow({ mode: 'open' });
     const st = doc.createElement('style'); st.textContent = CSS + R.ui.css; shadow.appendChild(st);
@@ -105,12 +105,20 @@
     hud = doc.createElement('div'); hud.className = 'hud'; shadow.appendChild(hud);
     doc.body.appendChild(host);
     doc.querySelectorAll('#rdt-host').forEach((h) => { if (h !== host) h.remove(); });   // an orphaned copy's leftovers
+    // The saved-hero tiles live in their OWN layer with a modest z-index: above the site's rows (to cover the blank boxes) but
+    // below the site's tooltips and popovers (z-index 50+), which must stay readable.
+    doc.querySelectorAll('#rdt-heroes').forEach((h) => h.remove());
+    heroHost = doc.createElement('div'); heroHost.id = 'rdt-heroes';
+    const hs = heroHost.attachShadow({ mode: 'open' });
+    const hst = doc.createElement('style'); hst.textContent = CSS + R.ui.css + '.hlayer{position:fixed;inset:0;pointer-events:none;z-index:20}'; hs.appendChild(hst);
+    heroLayer = doc.createElement('div'); heroLayer.className = 'hlayer'; hs.appendChild(heroLayer);
+    doc.body.appendChild(heroHost);
     tip = doc.createElement('div'); tip.className = 'tip'; tip.setAttribute('popover', 'manual'); shadow.appendChild(tip); // top layer: always above the chips
     dtip = R.ui.makeTip(shadow);                                  // hero-tile tooltip (name + record / level)
   }
   let tip = null, dtip = null;
   const hudOpen = new Set();   // players whose dropdown is open in the panel
-  function clearOverlay() { if (host) { host.remove(); host = null; } }
+  function clearOverlay() { if (host) { host.remove(); host = null; } if (heroHost) { heroHost.remove(); heroHost = null; heroLayer = null; } }
 
   const el = (tag, cls, text) => { const e = doc.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const pct = (p) => Math.round(p * 100) + '%';
@@ -136,7 +144,7 @@
 
   function render(items, settings) {
     ensureHost();
-    chipLayer.textContent = '';
+    chipLayer.textContent = ''; heroLayer.textContent = '';
     items.forEach((it) => {
       const cls = chipClass(it.match, settings.minShow);
       const c = el('div', 'chip ' + cls);
@@ -154,7 +162,7 @@
       if (settings.showSavedHeroes !== false && it.match.uid && it.match.p >= settings.minShow && !it.row.heroes && it.row.heroesEl && hs && hs.length) {
         const ho = el('div', 'heroover');
         hs.slice(0, 4).forEach((h) => ho.appendChild(R.ui.heroTile(h, player.detail, dtip, player.last.heroLabels, 'from your saved data, seen ' + ago(player.lastSeen))));
-        chipLayer.appendChild(ho);
+        heroLayer.appendChild(ho);
         it.heroOver = ho;
       }
     });

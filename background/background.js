@@ -52,18 +52,22 @@ function step() {
     const st = await rd();
     if (!st.running || open(st).length >= st.parallel) return;
     st.inflight = st.inflight || {};
-    const busy = new Set(open(st).map((k) => st.inflight[k].uid));
-    const { next, left } = await pick(st, busy);
-    if (!next) {
-      if (!open(st).length) { st.status = 'Every saved player was checked in the last ' + DEFAULTS.recheckMin + ' min. Waiting…'; schedule(st, Math.max(st.delaySec, 60)); }
-      await wr(st); return;
+    // fill every free slot right now (a short stagger between tabs); the wait only applies between one profile finishing and its replacement opening
+    let left = 0, opened = 0;
+    while (open(st).length < st.parallel) {
+      const busy = new Set(open(st).map((k) => st.inflight[k].uid));
+      const r = await pick(st, busy); left = r.left;
+      if (!r.next) break;
+      const tab = await chrome.tabs.create({ url: 'https://rivalsdata.com/player/' + encodeURIComponent(r.next.uid) + '#rdt-auto', active: false });
+      st.inflight[tab.id] = { uid: r.next.uid, tabId: tab.id, t: Date.now(), name: nameOf(r.next) }; opened++; left--;
+      if (open(st).length < st.parallel) await new Promise((res) => setTimeout(res, 400));
     }
-    const tab = await chrome.tabs.create({ url: 'https://rivalsdata.com/player/' + encodeURIComponent(next.uid) + '#rdt-auto', active: false });
-    st.inflight[tab.id] = { uid: next.uid, tabId: tab.id, t: Date.now(), name: nameOf(next) };
-    st.status = 'Checking ' + open(st).map((k) => st.inflight[k].name).join(', ') + ' (' + Math.max(0, left - 1) + ' left to check)';
-    st.nextAt = null;
-    chrome.alarms.create(LIMIT, { when: Date.now() + DEFAULTS.tabTimeoutSec * 1000 });
-    if (open(st).length < st.parallel && left > 1) schedule(st, waitFor(st));          // fill the other slots one by one, not all in the same instant
+    if (!open(st).length) { st.status = 'Every saved player was checked in the last ' + DEFAULTS.recheckMin + ' min. Waiting…'; schedule(st, Math.max(st.delaySec, 60)); await wr(st); return; }
+    if (opened) {
+      st.status = 'Checking ' + open(st).map((k) => st.inflight[k].name).join(', ') + ' (' + Math.max(0, left) + ' left to check)';
+      st.nextAt = null;
+      chrome.alarms.create(LIMIT, { when: Date.now() + DEFAULTS.tabTimeoutSec * 1000 });
+    }
     await wr(st);
   });
 }

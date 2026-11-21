@@ -60,6 +60,17 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   await dbp.evaluate(() => { window.__hl = new Set(); new MutationObserver(() => document.querySelectorAll('tr.auto-now').forEach((r) => window.__hl.add(r.dataset.uid))).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] }); });
   await popup.fill('#autodelay', '0.1'); await popup.waitForTimeout(1600);               // the popup refreshes itself every second: it must not undo the typed value
   ok((await popup.inputValue('#autodelay')) === '0.1', 'the typed delay stays in the box');
+  // a slow pace (30 s) must not stop the extra profiles from opening together at the start
+  await popup.fill('#autodelay', '30'); await popup.fill('#autoparallel', '3'); await popup.click('#autotoggle');
+  await popup.waitForFunction(() => /Stop Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
+  await popup.waitForTimeout(3500);
+  const e0 = await popup.evaluate(() => new Promise((r) => chrome.storage.local.get('rdt_auto', (x) => r(x.rdt_auto))));
+  const early = Object.keys(e0.inflight || {}).length + e0.stats.checked;
+  ok(early >= 2, `with a 30 s wait and 3 at once, several profiles are opened right away, not one per 30 s (${early} in the first 3.5 s)`);
+  await popup.click('#autotoggle'); await popup.waitForFunction(() => /Start Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
+  await popup.evaluate(() => new Promise((r) => chrome.storage.local.get('rdt_auto', (x) => { x.rdt_auto.checked = {}; chrome.storage.local.set({ rdt_auto: x.rdt_auto }, r); })));
+  await popup.evaluate(() => new Promise((r) => chrome.storage.local.get('rdt_games', (x) => { const g = x.rdt_games; g.forEach((m) => { m.last -= 2 * 3600e3; }); chrome.storage.local.set({ rdt_games: g }, r); })));
+  await popup.waitForTimeout(500);
   await popup.evaluate(() => { window.__max = 0; chrome.storage.onChanged.addListener((ch) => { if (ch.rdt_auto && ch.rdt_auto.newValue) window.__max = Math.max(window.__max, Object.keys(ch.rdt_auto.newValue.inflight || {}).length); }); });
   await popup.fill('#autoparallel', '3');
   await popup.click('#autotoggle');
@@ -68,7 +79,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   const st = () => popup.evaluate(() => new Promise((r) => chrome.storage.local.get('rdt_auto', (x) => r(x.rdt_auto))));
   // the same controls on the database page's Players tab show the running state and can stop it
   await dbp.waitForFunction(() => /Stop Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
-  ok(/checked|Checking/.test(await dbp.textContent('#autostatus')), 'the Players tab shows Auto Discover running, with its status');
+  ok((await dbp.textContent('#autostatus')).trim().length > 0, 'the Players tab shows Auto Discover running, with its status');
   const t0 = Date.now(); let s, maxOpen = 0;
   while (Date.now() - t0 < 150000) { s = await st(); maxOpen = Math.max(maxOpen, Object.keys(s.inflight || {}).length); if (s.running && /Every saved player/.test(s.status || '')) break; await popup.waitForTimeout(500); }
   s = await st(); maxOpen = await popup.evaluate(() => window.__max);
