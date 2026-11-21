@@ -303,7 +303,7 @@
 
       const settings = await S.getSettings();
       await verifyGuesses(lobby);
-      const ing = await S.ingest(lobby, settings);
+      const ing = await S.ingest(lobby, settings, lobby.startedAt || undefined);
       curGameId = ing.gameId || null;
       if (settings.autoDetails && ing.newGame && !detailing) readDetails().catch(() => {});
       const hiddenN = lobby.rows.filter((r) => r.masked).length;

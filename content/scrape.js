@@ -157,7 +157,17 @@
     const mode = mm ? mm[1].trim().toLowerCase() : null;
     const qpLobby = mode ? mode.includes('quick') : rows.some((r) => r.qp);
     rows.forEach((r) => { r.qpLobby = qpLobby; });
-    return { season, teams, rows, qpLobby, mode };
+    // When the match really started: the status span carries it ("In game (Competitive) - 28:36", data-elapsed-start = epoch seconds);
+    // failing that, now minus the shown duration. null (= use the time of saving) when neither is there or it is implausible.
+    const now = Date.now(), sane = (t) => (t && t <= now + 120e3 && t >= now - 4 * 3600e3 ? Math.round(t) : null);
+    let startedAt = null;
+    const es = doc.querySelector('[data-elapsed-start]');
+    if (es) { const v = Number(es.getAttribute('data-elapsed-start')); if (v > 1e9) startedAt = sane(v > 1e11 ? v : v * 1000); }
+    if (!startedAt && mm) {
+      const dm = /In game\s*\([^)]+\)\s*[-\u2013\u2014]\s*(?:(\d+):)?(\d{1,2}):(\d{2})/.exec(doc.body.textContent);
+      if (dm) startedAt = sane(now - (((+dm[1] || 0) * 60 + +dm[2]) * 60 + +dm[3]) * 1000);
+    }
+    return { season, teams, rows, qpLobby, mode, startedAt };
   }
 
   root.RDT = Object.assign(root.RDT || {}, { scrapeLive, scrapeDetail });

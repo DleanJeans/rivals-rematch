@@ -35,7 +35,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
     if (!m) { res.writeHead(404); res.end(); return; }
     const k = kind(m[1]);
     const body = k === 'quickplay' ? fx('ban_qp.html') : k === 'offline' ? fx('game2.html').replace('In game (Competitive)', 'Offline') : fx('game2.html');
-    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(body);
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(body.replace(/data-elapsed-start="\d+"[^>]*>- [\d:]+/, (m) => m.replace(/data-elapsed-start="\d+"/, `data-elapsed-start="${Math.floor(Date.now() / 1000) - 1716}"`).replace(/- [\d:]+$/, '- 28:36')));
   });
   await new Promise((r) => server.listen(8443, '127.0.0.1', r));
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rdt-'));
@@ -67,6 +67,11 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   ok(!(s.checked['520435205']), 'you are never checked');
   ok(s.stats.inGame === 4, `4 of them were in a Competitive game and their lobby was read (${s.stats.inGame})`);
   ok(s.stats.saved >= 4 * 12 && s.stats.newPlayers === 0, `each lobby read saved its players, none new since they were already known (${s.stats.saved} saved, ${s.stats.newPlayers} new)`);
+  const games = await popup.evaluate(() => new Promise((r) => chrome.storage.local.get('rdt_games', (x) => r(x.rdt_games || []))));
+  const ageMin = games.map((g) => (Date.now() - g.t) / 60e3);
+  ok(games.length > 0 && ageMin.every((m) => m > 27 && m < 31), `lobbies are stamped with when the match started (28:36 ago), not when they were saved: ${ageMin.map((m) => m.toFixed(1) + ' min ago').join(', ')}`);
+  const pl = await popup.evaluate(() => new Promise((r) => chrome.storage.local.get(null, (x) => r(Object.keys(x).filter((k) => k.startsWith('p:')).map((k) => x[k])))));
+  ok(pl.length > 0 && pl.every((p) => (Date.now() - p.lastSeen) / 60e3 > 27), 'players\' "last seen" is the match start too');
   await popup.waitForTimeout(1500);
   const left = await popup.evaluate(async () => (await chrome.tabs.query({ url: 'https://rivalsdata.com/player/*' })).length);
   ok(left <= 1, `the profile tabs were closed again (${left} still open)`);
