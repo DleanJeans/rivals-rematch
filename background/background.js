@@ -9,7 +9,7 @@ importScripts('../lib/shared.js', '../lib/store.js');
 
 const S = RDT.store;
 const KEY = 'rdt_auto', NEXT = 'rdt-auto-next', LIMIT = 'rdt-auto-timeout';
-const DEFAULTS = { delaySec: 60, recheckMin: 30, minDelaySec: 0.1, maxDelaySec: 600, tabTimeoutSec: 75, maxErrors: 6 };
+const DEFAULTS = { delaySec: 60, recheckMin: 20, minDelaySec: 0.1, maxDelaySec: 600, tabTimeoutSec: 75, maxErrors: 6 };
 
 const rd = () => new Promise((res) => chrome.storage.local.get(KEY, (r) => res(Object.assign({ running: false, checked: {}, stats: { checked: 0, inGame: 0, saved: 0, newPlayers: 0 }, errors: 0, delaySec: DEFAULTS.delaySec, parallel: 1, inflight: {} }, r[KEY] || {}))));
 const wr = (st) => new Promise((res) => chrome.storage.local.set({ [KEY]: st }, res));
@@ -45,22 +45,24 @@ async function pick(st, busy) {
 }
 
 const open = (st) => Object.keys(st.inflight || {});
+const active = (st) => open(st).filter((k) => !st.inflight[k].waiting);          // a tab waiting for hidden names does not use up a slot
+const MAX_WAITING = 5;
 const nameOf = (p) => (p.names && p.names[0]) || p.uid;
 
 function step() {
   return locked(async () => {
     const st = await rd();
-    if (!st.running || open(st).length >= st.parallel) return;
+    if (!st.running || active(st).length >= st.parallel || open(st).length >= st.parallel + MAX_WAITING) return;
     st.inflight = st.inflight || {};
     // fill every free slot right now (a short stagger between tabs); the wait only applies between one profile finishing and its replacement opening
     let left = 0, opened = 0;
-    while (open(st).length < st.parallel) {
+    while (active(st).length < st.parallel && open(st).length < st.parallel + MAX_WAITING) {
       const busy = new Set(open(st).map((k) => st.inflight[k].uid));
       const r = await pick(st, busy); left = r.left;
       if (!r.next) break;
       const tab = await chrome.tabs.create({ url: 'https://rivalsdata.com/player/' + encodeURIComponent(r.next.uid) + '#rdt-auto', active: false });
       st.inflight[tab.id] = { uid: r.next.uid, tabId: tab.id, t: Date.now(), name: nameOf(r.next) }; opened++; left--;
-      if (open(st).length < st.parallel) await new Promise((res) => setTimeout(res, 400));
+      if (active(st).length < st.parallel) await new Promise((res) => setTimeout(res, 400));
     }
     if (!open(st).length) { st.status = 'Every saved player was checked in the last ' + DEFAULTS.recheckMin + ' min. Waiting…'; schedule(st, Math.max(st.delaySec, 60)); await wr(st); return; }
     if (opened) {
@@ -112,8 +114,10 @@ function alive(tabId) {
   return locked(async () => {
     const st = await rd();
     if (!st.inflight || !st.inflight[tabId]) return;
-    st.inflight[tabId].t = Date.now();
+    const first = !st.inflight[tabId].waiting;
+    st.inflight[tabId].t = Date.now(); st.inflight[tabId].waiting = true;
     chrome.alarms.create(LIMIT, { when: Date.now() + DEFAULTS.tabTimeoutSec * 1000 });
+    if (first && st.running) schedule(st, waitFor(st));                          // a free slot: open the next profile while this one waits
     await wr(st);
   });
 }

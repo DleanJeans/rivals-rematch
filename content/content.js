@@ -21,7 +21,8 @@
   }
   const PLAYER = (u) => 'https://rivalsdata.com/player/' + encodeURIComponent(u);
 
-  let host = null, shadow = null, chipLayer = null, hud = null, heroHost = null, heroLayer = null;
+  let host = null, shadow = null, chipLayer = null, hud = null;
+  let heroInjected = [];                                  // saved-hero overlays placed INSIDE the site's rows (see render)
   let lastSig = '', running = false, again = false, current = null;
   let hudCollapsed = null; // null = auto
   let pending = new Map(); // ban-phase guesses awaiting the reveal: key -> {uid, t}
@@ -45,7 +46,7 @@
     root.removeEventListener('scroll', onScroll, true); root.removeEventListener('resize', onResize);
     try {
       if (!host || !host.isConnected) return;               // nothing of ours on screen (or a newer copy already replaced it)
-      chipLayer.textContent = ''; if (heroLayer) heroLayer.textContent = ''; hud.textContent = ''; hud.classList.remove('min');
+      chipLayer.textContent = ''; removeHeroOverlays(); hud.textContent = ''; hud.classList.remove('min');
       const h = el('div', 'hh');
       h.appendChild(el('span', '', 'Rivals Rematch was updated — reload this page to keep saving lobbies.'));
       const b = el('button', 'chev', 'Reload'); b.addEventListener('click', () => root.location.reload()); h.appendChild(b);
@@ -89,7 +90,7 @@
   .badge{padding:0 5px;border-radius:4px;background:#2a2d36;color:#cdd}
   .badge.tag{background:#5a2a2a;color:#ffd0d0}
   .badge.star{background:#5a4a12;color:#ffe08a}
-  .heroover{position:fixed;display:flex;align-items:center;gap:4px;pointer-events:auto;background:#1a1d24;border-radius:6px}
+  .heroover{position:absolute;inset:0;display:flex;align-items:center;gap:4px;pointer-events:auto;background:#1a1d24;border-radius:6px}
   .heroover .dtile{outline:1px dashed #b8892a;outline-offset:-1px}
   .hud .dp{grid-template-columns:1fr}.hud .dp .col+.col{border-left:0;border-top:1px solid #2a2d36}.hud{--line:#2a2d36;--card:#171a21;--tx:#e4e7ee;--dim:#8e94a4;--acc:#ffd050}
   .dpwrap{grid-column:1/-1;margin:4px -10px -7px}.heroes .dtile{width:26px;height:26px}
@@ -97,7 +98,7 @@
   `;
 
   function ensureHost() {
-    if (host && host.isConnected && heroHost && heroHost.isConnected) return;
+    if (host && host.isConnected) return;
     host = doc.createElement('div'); host.id = 'rdt-host';
     shadow = host.attachShadow({ mode: 'open' });
     const st = doc.createElement('style'); st.textContent = CSS + R.ui.css; shadow.appendChild(st);
@@ -105,20 +106,17 @@
     hud = doc.createElement('div'); hud.className = 'hud'; shadow.appendChild(hud);
     doc.body.appendChild(host);
     doc.querySelectorAll('#rdt-host').forEach((h) => { if (h !== host) h.remove(); });   // an orphaned copy's leftovers
-    // The saved-hero tiles live in their OWN layer with a modest z-index: above the site's rows (to cover the blank boxes) but
-    // below the site's tooltips and popovers (z-index 50+), which must stay readable.
-    doc.querySelectorAll('#rdt-heroes').forEach((h) => h.remove());
-    heroHost = doc.createElement('div'); heroHost.id = 'rdt-heroes';
-    const hs = heroHost.attachShadow({ mode: 'open' });
-    const hst = doc.createElement('style'); hst.textContent = CSS + R.ui.css + '.hlayer{position:fixed;inset:0;pointer-events:none;z-index:20}'; hs.appendChild(hst);
-    heroLayer = doc.createElement('div'); heroLayer.className = 'hlayer'; hs.appendChild(heroLayer);
-    doc.body.appendChild(heroHost);
     tip = doc.createElement('div'); tip.className = 'tip'; tip.setAttribute('popover', 'manual'); shadow.appendChild(tip); // top layer: always above the chips
     dtip = R.ui.makeTip(shadow);                                  // hero-tile tooltip (name + record / level)
   }
   let tip = null, dtip = null;
   const hudOpen = new Set();   // players whose dropdown is open in the panel
-  function clearOverlay() { if (host) { host.remove(); host = null; } if (heroHost) { heroHost.remove(); heroHost = null; heroLayer = null; } }
+  function removeHeroOverlays() {
+    heroInjected.forEach((x) => { try { x.wrap.remove(); if (x.restore) x.box.style.position = x.restore.pos; } catch (_) { /* row is gone */ } });
+    heroInjected = [];
+    doc.querySelectorAll('.rdt-heroover').forEach((w) => w.remove());
+  }
+  function clearOverlay() { if (host) { host.remove(); host = null; } removeHeroOverlays(); }
 
   const el = (tag, cls, text) => { const e = doc.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const pct = (p) => Math.round(p * 100) + '%';
@@ -144,7 +142,7 @@
 
   function render(items, settings) {
     ensureHost();
-    chipLayer.textContent = ''; heroLayer.textContent = '';
+    chipLayer.textContent = ''; removeHeroOverlays();
     items.forEach((it) => {
       const cls = chipClass(it.match, settings.minShow);
       const c = el('div', 'chip ' + cls);
@@ -160,9 +158,21 @@
       // Likely match, and the site shows only blank boxes: put the heroes we saved for them over those boxes.
       const hs = player && player.last && player.last.heroes;
       if (settings.showSavedHeroes !== false && it.match.uid && it.match.p >= settings.minShow && !it.row.heroes && it.row.heroesEl && hs && hs.length) {
+        // The tiles are injected INTO the site's own row (an absolutely positioned child of the heroes box, in a shadow root so the
+        // site's CSS cannot touch them). That way they take part in the site's normal stacking: its tooltips and popovers draw over them,
+        // they scroll and clip with the row, and no coordinates are tracked.
+        const box = it.row.heroesEl.querySelector('div.flex') || it.row.heroesEl;
+        const wrap = doc.createElement('span'); wrap.className = 'rdt-heroover';
+        wrap.style.cssText = 'position:absolute;left:0;top:0;right:0;bottom:0;display:block;z-index:0;pointer-events:none';
+        const sr = wrap.attachShadow({ mode: 'open' });
+        const hst = doc.createElement('style'); hst.textContent = CSS + R.ui.css; sr.appendChild(hst);
         const ho = el('div', 'heroover');
         hs.slice(0, 4).forEach((h) => ho.appendChild(R.ui.heroTile(h, player.detail, dtip, player.last.heroLabels, 'from your saved data, seen ' + ago(player.lastSeen))));
-        heroLayer.appendChild(ho);
+        sr.appendChild(ho);
+        const restore = root.getComputedStyle(box).position === 'static' ? { pos: box.style.position } : null;
+        if (restore) box.style.position = 'relative';
+        box.appendChild(wrap);
+        heroInjected.push({ wrap, box, restore });
         it.heroOver = ho;
       }
     });
@@ -173,14 +183,6 @@
   function position(items) {
     items = items || (current && current.items) || [];
     items.forEach((it) => {
-      if (it.heroOver) {
-        const he = it.row.heroesEl;
-        if (he && he.isConnected) {
-          const hr = (he.querySelector('div.flex') || he).getBoundingClientRect(), hst = it.heroOver.style;
-          hst.left = hr.left + 'px'; hst.top = hr.top + 'px'; hst.width = hr.width + 'px'; hst.height = hr.height + 'px';
-          hst.display = hr.bottom < 0 || hr.top > root.innerHeight ? 'none' : 'flex';
-        } else it.heroOver.style.display = 'none';
-      }
       if (!it.chip || !it.row.nameEl.isConnected) return;
       const r = it.row.nameEl.getBoundingClientRect();
       const s = it.chip.style;

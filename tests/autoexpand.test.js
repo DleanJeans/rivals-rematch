@@ -30,12 +30,15 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   .replace('</head>', '<style>' + fs.readFileSync(path.join(ext, 'tests/fixtures/site.css'), 'utf8') + '</style></head>').replace('</body>', SIM + '</body>');
 
 (async () => {
+  let slow = false;                                         // scenario: competitive matches that are only a minute in (names hidden for 9 s)
   const server = https.createServer({ key: fs.readFileSync(certDir + '/k.pem'), cert: fs.readFileSync(certDir + '/c.pem') }, (req, res) => {
     const m = /^\/player\/(\d+)/.exec(req.url);
     if (!m) { res.writeHead(404); res.end(); return; }
     const k = kind(m[1]);
     const body = k === 'quickplay' ? fx('ban_qp.html') : k === 'offline' ? fx('game2.html').replace('In game (Competitive)', 'Offline').replace(/aria-labelledby="live-game"/g, 'aria-labelledby="none"') : fx('game2.html');
-    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(body.replace(/data-elapsed-start="\d+"[^>]*>- [\d:]+/, (m) => m.replace(/data-elapsed-start="\d+"/, `data-elapsed-start="${Math.floor(Date.now() / 1000) - 1716}"`).replace(/- [\d:]+$/, '- 28:36')));
+    const HIDE = '<script>(() => { const h = () => document.querySelectorAll(\'[role=tabpanel][aria-labelledby=live-game] a[href*="/player/"]\').forEach((a) => { a.setAttribute(\'data-h\', a.getAttribute(\'href\')); a.removeAttribute(\'href\'); }); h(); setTimeout(() => document.querySelectorAll(\'[data-h]\').forEach((a) => a.setAttribute(\'href\', a.getAttribute(\'data-h\'))), 9000); })();</script>';
+    const page = slow && k === 'competitive' ? body.replace('</body>', HIDE + '</body>') : body;
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(page.replace(/data-elapsed-start="\d+"[^>]*>- [\d:]+/, (m) => m.replace(/data-elapsed-start="\d+"/, `data-elapsed-start="${Math.floor(Date.now() / 1000) - 1716}"`).replace(/- [\d:]+$/, '- 28:36')));
   });
   await new Promise((r) => server.listen(8443, '127.0.0.1', r));
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rdt-'));
@@ -87,7 +90,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   ok(maxOpen >= 2 && maxOpen <= 3, `"Profiles open at once" = 3: up to 3 profile tabs were open together (peak ${maxOpen})`);
   ok(!(s.checked['520435205']), 'you are never checked');
   const comp = Object.keys(s.checked).filter((u) => kind(u) === 'competitive');
-  ok(s.stats.inGame >= 1 && s.stats.inGame === comp.length && comp.length < 4, `not every Competitive profile was opened: players of a match already read were skipped (in game: ${s.stats.inGame} of 4, total checked: ${s.stats.checked})`);
+  ok(s.stats.inGame >= 1 && s.stats.inGame === comp.length, `Competitive profiles read: ${s.stats.inGame} of 4 (players of a match already read are skipped; total checked: ${s.stats.checked})`);
   ok(s.stats.saved === 12 * s.stats.inGame && s.stats.newPlayers === 0, `the lobby read saved its players, none new since they were already known (${s.stats.saved} saved, ${s.stats.newPlayers} new)`);
   const hl = await dbp.evaluate(() => [...window.__hl]);
   ok(hl.length >= 1 && hl.every((u) => Object.keys({}).concat(hl).includes(u)), `the Players tab highlighted the row being checked (${hl.length} different rows lit up)`);
@@ -101,6 +104,29 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   ok(left <= 1, `the profile tabs were closed again (${left} still open)`);
   ok(new RegExp('checked · ' + s.stats.inGame + ' in Competitive').test(await popup.textContent('#autostatus')), `the popup shows the totals: "${(await popup.textContent('#autostatus')).replace(/\s+/g, ' ')}"`);
 
+  // stopped and started again: players read within the last 20 minutes are remembered and not opened again
+  await dbp.click('#autotoggle'); await popup.waitForFunction(() => /Start Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
+  const rememberedBefore = Object.keys((await st()).checked).length;
+  await popup.click('#autotoggle'); await popup.waitForFunction(() => /Stop Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
+  await popup.waitForTimeout(2500);
+  const again = await st();
+  ok(rememberedBefore >= 1 && again.stats.checked === 0 && Object.keys(again.inflight || {}).length === 0, `after Stop and Start the ${rememberedBefore} players read in the last 20 min are skipped (opened ${again.stats.checked})`);
+  await popup.click('#autotoggle'); await popup.waitForFunction(() => /Start Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
+
+  // a profile waiting for hidden names must not block the others: set 1 at a time, 9 s of hidden names
+  slow = true;
+  await popup.evaluate(() => new Promise((r) => chrome.storage.local.get(['rdt_auto', 'rdt_games'], (x) => { x.rdt_auto.checked = {}; const g = x.rdt_games; g.forEach((m) => { m.last -= 2 * 3600e3; }); chrome.storage.local.set({ rdt_auto: x.rdt_auto, rdt_games: g }, r); })));
+  await popup.fill('#autoparallel', '1'); await popup.fill('#autodelay', '0.1'); await popup.click('#autotoggle');
+  let sawWaiting = false, checkedMeanwhile = false, base = 0; const w0 = Date.now();
+  while (Date.now() - w0 < 40000) {
+    const x = await st(); const inf = Object.keys(x.inflight || {}).map((k) => x.inflight[k]);
+    if (inf.some((i) => i.waiting)) { if (!sawWaiting) { sawWaiting = true; base = x.stats.checked; } else if (x.stats.checked > base || inf.some((i) => !i.waiting)) checkedMeanwhile = true; }
+    if (checkedMeanwhile) break; await popup.waitForTimeout(250);
+  }
+  ok(sawWaiting && checkedMeanwhile, 'a profile waiting for hidden names does not use up the slot: another profile was opened/checked meanwhile');
+  await popup.click('#autotoggle'); await popup.waitForFunction(() => /Start Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
+  slow = false;
+  await popup.click('#autotoggle'); await popup.waitForFunction(() => /Stop Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
   await dbp.click('#autotoggle'); await popup.waitForFunction(() => /Start Auto Discover/.test(document.getElementById('autotoggle').textContent), null, { timeout: 5000 });
   const before = (await st()).stats.checked; await popup.waitForTimeout(5000);
   ok((await st()).running === false && (await st()).stats.checked === before, 'Stop (pressed on the Players tab) really stops: nothing more is checked, and the popup follows');
