@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exportedAt": 1795078476094,
+ "exportedAt": 1795279345383,
  "players": [
   {
    "asEnemy": 0,
@@ -151,6 +151,492 @@
   },
   {
    "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 6,
+      "name": null,
+      "slug": "venom",
+      "wr": 33
+     },
+     {
+      "games": 4,
+      "name": null,
+      "slug": "jeff-the-land-shark",
+      "wr": 25
+     },
+     {
+      "games": 4,
+      "name": null,
+      "slug": "angela",
+      "wr": 100
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "groot",
+      "wr": 33
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 100
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "loki",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "rogue",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "groot"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "groot"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 16,
+      "slug": "angela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "angela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "angela"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "groot"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "angela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 24,
+      "slug": "doctor-strange"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 24,
+      "slug": "doctor-strange"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278609305
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4727,
+     "l": 11,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 19
+    }
+   ],
+   "icon": "31050215",
+   "last": {
+    "abs": 4727,
+    "heroLabels": {
+     "gambit": "Gambit",
+     "invisible-woman": "Invisible Woman",
+     "jeff-the-land-shark": "Jeff the Land Shark",
+     "white-fox": "White Fox"
+    },
+    "heroes": [
+     "jeff-the-land-shark",
+     "invisible-woman",
+     "white-fox",
+     "gambit"
+    ],
+    "l": 11,
+    "party": true,
+    "partyColor": "rgb(244, 114, 182)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 27,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 1,
+    "w": 19
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "Khúc Thị Hương"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1210012006"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 5,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 60
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "invisible-woman",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "hela",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 0,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 18,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -35,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -32,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 0,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -33,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": 0,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "doctor-strange"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -23,
+      "slug": "luna-snow"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278558998
+   },
+   "firstSeen": 1795278502949,
+   "hist": [
+    {
+     "abs": 4639,
+     "l": 6,
+     "season": 11,
+     "t": 1795278502949,
+     "w": 9
+    }
+   ],
+   "icon": "31033208",
+   "last": {
+    "abs": 4639,
+    "heroLabels": {
+     "emma-frost": "Emma Frost",
+     "hela": "Hela",
+     "invisible-woman": "Invisible Woman",
+     "luna-snow": "Luna Snow"
+    },
+    "heroes": [
+     "invisible-woman",
+     "luna-snow",
+     "emma-frost",
+     "hela"
+    ],
+    "l": 6,
+    "party": true,
+    "partyColor": "rgb(52, 211, 153)",
+    "qp": {
+     "abs": 3394,
+     "label": "S3",
+     "rankIdx": 3,
+     "rs": 94
+    },
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 39,
+    "season": 11,
+    "t": 1795278559575,
+    "team": 1,
+    "w": 9
+   },
+   "lastSeen": 1795278559575,
+   "names": [
+    "ouTressLechess"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1243795687"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 12,
+      "name": null,
+      "slug": "black-widow",
+      "wr": 50
+     },
+     {
+      "games": 9,
+      "name": null,
+      "slug": "cyclops",
+      "wr": 33
+     },
+     {
+      "games": 7,
+      "name": null,
+      "slug": "hela",
+      "wr": 43
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "winter-soldier",
+      "wr": 60
+     },
+     {
+      "games": 4,
+      "name": null,
+      "slug": "magneto",
+      "wr": 100
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "spider-man",
+      "wr": 67
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "phoenix",
+      "wr": 33
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "bruce-banner",
+      "wr": 100
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "wolverine",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "psylocke",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "winter-soldier"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "black-widow"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "psylocke"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -18,
+      "slug": "black-widow"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "black-widow"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "black-widow"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "winter-soldier"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -14,
+      "slug": "cyclops"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -16,
+      "slug": "black-widow"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278616518
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4841,
+     "l": 27,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 32
+    }
+   ],
+   "icon": "30000182",
+   "last": {
+    "abs": 4841,
+    "heroLabels": {
+     "black-widow": "Black Widow",
+     "cyclops": "Cyclops",
+     "hela": "Hela",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "winter-soldier",
+     "hela",
+     "cyclops",
+     "black-widow"
+    ],
+    "l": 27,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 18,
+    "rankLabel": "C3",
+    "rs": 41,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 2,
+    "w": 32
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "Dèjá vù"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "1295751883"
+  },
+  {
+   "asEnemy": 0,
    "asTeammate": 1,
    "firstSeen": 1795076311436,
    "hist": [
@@ -199,8 +685,883 @@
    "uid": "1361407834"
   },
   {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 7,
+      "name": null,
+      "slug": "hela",
+      "wr": 57
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "magneto",
+      "wr": 60
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 33
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "venom",
+      "wr": 50
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "adam-warlock",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "devil-dinosaur",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "invisible-woman",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "phoenix",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "elsa-bloodstone",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "groot",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "L",
+      "rs": -22,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 24,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -22,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "black-panther"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -22,
+      "slug": "adam-warlock"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "elsa-bloodstone"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -14,
+      "slug": "rogue"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "devil-dinosaur"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "venom"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278603893
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4600,
+     "l": 16,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 14
+    }
+   ],
+   "icon": "30000001",
+   "last": {
+    "abs": 4600,
+    "heroLabels": {
+     "hela": "Hela",
+     "magneto": "Magneto",
+     "winter-soldier": "Winter Soldier",
+     "wolverine": "Wolverine"
+    },
+    "heroes": [
+     "hela",
+     "winter-soldier",
+     "wolverine",
+     "magneto"
+    ],
+    "l": 16,
+    "party": true,
+    "partyColor": "rgb(52, 211, 153)",
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 0,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 1,
+    "w": 14
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "zxvcnx"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1465722323"
+  },
+  {
    "asEnemy": 1,
    "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 41,
+      "name": null,
+      "slug": "magneto",
+      "wr": 49
+     },
+     {
+      "games": 22,
+      "name": null,
+      "slug": "groot",
+      "wr": 64
+     },
+     {
+      "games": 17,
+      "name": null,
+      "slug": "namor",
+      "wr": 35
+     },
+     {
+      "games": 15,
+      "name": null,
+      "slug": "the-hood",
+      "wr": 13
+     },
+     {
+      "games": 9,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 56
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "the-punisher",
+      "wr": 80
+     },
+     {
+      "games": 4,
+      "name": null,
+      "slug": "squirrel-girl",
+      "wr": 75
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "the-thing",
+      "wr": 100
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "storm",
+      "wr": 50
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "rocket-raccoon",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -19,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "the-thing"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -18,
+      "slug": "ultron"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "squirrel-girl"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "squirrel-girl"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 24,
+      "slug": "namor"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 26,
+      "slug": "squirrel-girl"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -17,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -15,
+      "slug": "doctor-strange"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279094434
+   },
+   "firstSeen": 1795278751948,
+   "hist": [
+    {
+     "abs": 4570,
+     "l": 73,
+     "season": 11,
+     "t": 1795278751948,
+     "w": 65
+    }
+   ],
+   "icon": "31032004",
+   "last": {
+    "abs": 4570,
+    "heroLabels": {
+     "groot": "Groot",
+     "magneto": "Magneto",
+     "namor": "Namor",
+     "the-hood": "The Hood"
+    },
+    "heroes": [
+     "magneto",
+     "groot",
+     "the-hood",
+     "namor"
+    ],
+    "l": 73,
+    "party": true,
+    "partyColor": "rgb(244, 114, 182)",
+    "rankIdx": 15,
+    "rankLabel": "GM3",
+    "rs": 70,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 2,
+    "w": 65
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "25rev"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1470075262"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 12,
+      "name": null,
+      "slug": "rogue",
+      "wr": 58
+     },
+     {
+      "games": 12,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 58
+     },
+     {
+      "games": 9,
+      "name": null,
+      "slug": "emma-frost",
+      "wr": 56
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "magneto",
+      "wr": 80
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "devil-dinosaur",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "peni-parker",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "angela",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "thor",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "white-fox",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 12,
+      "slug": "adam-warlock"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 14,
+      "slug": "tankpool"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 8,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -28,
+      "slug": "elsa-bloodstone"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 2,
+      "slug": "doctor-strange"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 8,
+      "slug": "black-panther"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 6,
+      "slug": "peni-parker"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 11,
+      "slug": "spider-man"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "emma-frost"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "thor"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279096249
+   },
+   "firstSeen": 1795278751948,
+   "hist": [
+    {
+     "abs": 4808,
+     "l": 21,
+     "season": 11,
+     "t": 1795278751948,
+     "w": 31
+    }
+   ],
+   "icon": "31057205",
+   "last": {
+    "abs": 4808,
+    "heroLabels": {
+     "doctor-strange": "Doctor Strange",
+     "emma-frost": "Emma Frost",
+     "magneto": "Magneto",
+     "rogue": "Rogue"
+    },
+    "heroes": [
+     "doctor-strange",
+     "emma-frost",
+     "rogue",
+     "magneto"
+    ],
+    "l": 21,
+    "party": true,
+    "partyColor": "rgb(52, 211, 153)",
+    "rankIdx": 18,
+    "rankLabel": "C3",
+    "rs": 8,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 2,
+    "w": 31
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "VT Clover"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1572271726"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "detail": {
+    "heroes": [
+     {
+      "games": 3,
+      "name": null,
+      "slug": "hela",
+      "wr": 67
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "psylocke",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "daredevil",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "psylocke"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "daredevil"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "psylocke"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -40,
+      "slug": "hela"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279087197
+   },
+   "firstSeen": 1795278643457,
+   "hist": [
+    {
+     "abs": 4710,
+     "l": 1,
+     "season": 11,
+     "t": 1795278643457,
+     "w": 5
+    }
+   ],
+   "icon": "31055205",
+   "last": {
+    "abs": 4710,
+    "heroLabels": {
+     "daredevil": "Daredevil",
+     "hela": "Hela",
+     "psylocke": "Psylocke",
+     "spider-man": "Spider-Man"
+    },
+    "heroes": [
+     "hela",
+     "daredevil",
+     "spider-man",
+     "psylocke"
+    ],
+    "l": 1,
+    "party": true,
+    "partyColor": "rgb(167, 139, 250)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 10,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 1,
+    "w": 5
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "ReaperExodiа"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1580505142"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "detail": {
+    "heroes": [
+     {
+      "games": 1,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "winter-soldier",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "winter-soldier"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "winter-soldier"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "doctor-strange"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 16,
+      "slug": "winter-soldier"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 17,
+      "slug": "spider-man"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 17,
+      "slug": "winter-soldier"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 16,
+      "slug": "doctor-strange"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 18,
+      "slug": "cyclops"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -24,
+      "slug": "spider-man"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 15,
+      "slug": "winter-soldier"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279089006
+   },
+   "firstSeen": 1795278751948,
+   "hist": [
+    {
+     "abs": 4550,
+     "l": 1,
+     "season": 11,
+     "t": 1795278751948,
+     "w": 6
+    }
+   ],
+   "icon": "31059201",
+   "last": {
+    "abs": 4550,
+    "heroLabels": {
+     "moon-knight": "Moon Knight",
+     "spider-man": "Spider-Man",
+     "the-punisher": "The Punisher",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "spider-man",
+     "winter-soldier",
+     "the-punisher",
+     "moon-knight"
+    ],
+    "l": 1,
+    "party": true,
+    "partyColor": "rgb(96, 165, 250)",
+    "rankIdx": 15,
+    "rankLabel": "GM3",
+    "rs": 50,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 1,
+    "w": 6
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "ぽんずみこ"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1588054915"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 8,
+      "name": null,
+      "slug": "the-hood",
+      "wr": 88
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "emma-frost",
+      "wr": 60
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "venom",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "rocket-raccoon",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "L",
+      "rs": -31,
+      "slug": "elsa-bloodstone"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -24,
+      "slug": "rocket-raccoon"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "emma-frost"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "emma-frost"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 27,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 31,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -33,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -31,
+      "slug": "magneto"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278557196
+   },
    "firstSeen": 1795076311436,
    "hist": [
     {
@@ -209,11 +1570,18 @@
      "season": 11,
      "t": 1795076311436,
      "w": 11
+    },
+    {
+     "abs": 4806,
+     "l": 4,
+     "season": 11,
+     "t": 1795278502949,
+     "w": 12
     }
    ],
    "icon": "31041211",
    "last": {
-    "abs": 4810,
+    "abs": 4806,
     "heroLabels": {
      "doctor-strange": "Doctor Strange",
      "emma-frost": "Emma Frost",
@@ -226,26 +1594,506 @@
      "venom",
      "doctor-strange"
     ],
-    "l": 3,
+    "l": 4,
     "party": true,
-    "partyColor": "rgb(52, 211, 153)",
+    "partyColor": "rgb(167, 139, 250)",
+    "qp": {
+     "abs": 3383,
+     "label": "S3",
+     "rankIdx": 3,
+     "rs": 83
+    },
     "rankIdx": 18,
     "rankLabel": "C3",
-    "rs": 10,
+    "rs": 6,
     "season": 11,
-    "t": 1795076311436,
-    "team": 2,
-    "w": 11
+    "t": 1795278559575,
+    "team": 1,
+    "w": 12
    },
-   "lastSeen": 1795076311436,
+   "lastSeen": 1795278559575,
    "names": [
     "Daяк"
+   ],
+   "note": "",
+   "partied": 2,
+   "seen": 2,
+   "tag": "",
+   "uid": "1684069305"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "detail": {
+    "heroes": [
+     {
+      "games": 2,
+      "name": null,
+      "slug": "black-cat",
+      "wr": 50
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "cyclops",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "winter-soldier",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "hela",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "L",
+      "rs": -40,
+      "slug": "winter-soldier"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "cyclops"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 11,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -40,
+      "slug": "black-cat"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "black-cat"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279085390
+   },
+   "firstSeen": 1795278643457,
+   "hist": [
+    {
+     "abs": 4690,
+     "l": 2,
+     "season": 11,
+     "t": 1795278643457,
+     "w": 3
+    }
+   ],
+   "icon": "31041202",
+   "last": {
+    "abs": 4690,
+    "heroLabels": {
+     "black-cat": "Black Cat",
+     "hela": "Hela",
+     "psylocke": "Psylocke",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "winter-soldier",
+     "psylocke",
+     "hela",
+     "black-cat"
+    ],
+    "l": 2,
+    "party": true,
+    "partyColor": "rgb(167, 139, 250)",
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 90,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 1,
+    "w": 3
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "Johji"
    ],
    "note": "",
    "partied": 1,
    "seen": 1,
    "tag": "",
-   "uid": "1684069305"
+   "uid": "1794411454"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 30,
+      "name": null,
+      "slug": "mantis",
+      "wr": 60
+     },
+     {
+      "games": 24,
+      "name": null,
+      "slug": "jeff-the-land-shark",
+      "wr": 42
+     },
+     {
+      "games": 20,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 50
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "peni-parker",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "gambit",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "hawkeye",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "ultron",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "cyclops",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "the-punisher",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "namor",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "peni-parker"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -19,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -17,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 18,
+      "slug": "peni-parker"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 17,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "mantis"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278611114
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4726,
+     "l": 42,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 47
+    }
+   ],
+   "icon": "30000105",
+   "last": {
+    "abs": 4726,
+    "heroLabels": {
+     "jeff-the-land-shark": "Jeff the Land Shark",
+     "luna-snow": "Luna Snow",
+     "mantis": "Mantis",
+     "peni-parker": "Peni Parker"
+    },
+    "heroes": [
+     "jeff-the-land-shark",
+     "luna-snow",
+     "mantis",
+     "peni-parker"
+    ],
+    "l": 42,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 26,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 1,
+    "w": 47
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "PeryFromVN"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "1809531375"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 11,
+      "name": null,
+      "slug": "psylocke",
+      "wr": 100
+     },
+     {
+      "games": 9,
+      "name": null,
+      "slug": "namor",
+      "wr": 22
+     },
+     {
+      "games": 8,
+      "name": null,
+      "slug": "winter-soldier",
+      "wr": 50
+     },
+     {
+      "games": 8,
+      "name": null,
+      "slug": "spider-man",
+      "wr": 50
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "rocket-raccoon",
+      "wr": 60
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "daredevil",
+      "wr": 100
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "elsa-bloodstone",
+      "wr": 100
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "the-hood",
+      "wr": 0
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "jeff-the-land-shark",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "mantis",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "elsa-bloodstone"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "wolverine"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "winter-soldier"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "psylocke"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "elsa-bloodstone"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -23,
+      "slug": "namor"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "daredevil"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "psylocke"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "psylocke"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "psylocke"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278605701
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4795,
+     "l": 28,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 36
+    }
+   ],
+   "icon": "31028001",
+   "last": {
+    "abs": 4795,
+    "heroLabels": {
+     "namor": "Namor",
+     "psylocke": "Psylocke",
+     "spider-man": "Spider-Man",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "winter-soldier",
+     "spider-man",
+     "psylocke",
+     "namor"
+    ],
+    "l": 28,
+    "party": true,
+    "partyColor": "rgb(244, 114, 182)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 95,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 1,
+    "w": 36
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "Paang"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1831046431"
   },
   {
    "asEnemy": 0,
@@ -348,6 +2196,160 @@
   {
    "asEnemy": 1,
    "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 13,
+      "name": null,
+      "slug": "the-punisher",
+      "wr": 46
+     },
+     {
+      "games": 6,
+      "name": null,
+      "slug": "hela",
+      "wr": 33
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 20
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "namor",
+      "wr": 67
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "squirrel-girl",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "nightcrawler",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "L",
+      "rs": -16,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -23,
+      "slug": "the-punisher"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -22,
+      "slug": "squirrel-girl"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -22,
+      "slug": "the-punisher"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "the-punisher"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -18,
+      "slug": "the-punisher"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -15,
+      "slug": "the-punisher"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -15,
+      "slug": "the-punisher"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "the-punisher"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "namor"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279099932
+   },
+   "firstSeen": 1795278751948,
+   "hist": [
+    {
+     "abs": 4570,
+     "l": 20,
+     "season": 11,
+     "t": 1795278751948,
+     "w": 16
+    }
+   ],
+   "icon": "30000183",
+   "last": {
+    "abs": 4570,
+    "heroLabels": {
+     "hela": "Hela",
+     "luna-snow": "Luna Snow",
+     "namor": "Namor",
+     "the-punisher": "The Punisher"
+    },
+    "heroes": [
+     "the-punisher",
+     "hela",
+     "luna-snow",
+     "namor"
+    ],
+    "l": 20,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 15,
+    "rankLabel": "GM3",
+    "rs": 70,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 2,
+    "w": 16
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "전투석"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "1902689498"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
    "firstSeen": 1795076311436,
    "hist": [
     {
@@ -393,6 +2395,172 @@
    "seen": 1,
    "tag": "",
    "uid": "1913305464"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 16,
+      "name": null,
+      "slug": "mantis",
+      "wr": 56
+     },
+     {
+      "games": 14,
+      "name": null,
+      "slug": "gambit",
+      "wr": 57
+     },
+     {
+      "games": 11,
+      "name": null,
+      "slug": "invisible-woman",
+      "wr": 55
+     },
+     {
+      "games": 4,
+      "name": null,
+      "slug": "loki",
+      "wr": 75
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "rocket-raccoon",
+      "wr": 33
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "white-fox",
+      "wr": 50
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "jeff-the-land-shark",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "magneto",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "L",
+      "rs": -18,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -24,
+      "slug": "rocket-raccoon"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -22,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "gambit"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 18,
+      "slug": "gambit"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -19,
+      "slug": "invisible-woman"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "invisible-woman"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -24,
+      "slug": "rocket-raccoon"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "gambit"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279103626
+   },
+   "firstSeen": 1795278751948,
+   "hist": [
+    {
+     "abs": 4690,
+     "l": 25,
+     "season": 11,
+     "t": 1795278751948,
+     "w": 30
+    }
+   ],
+   "icon": "30000254",
+   "last": {
+    "abs": 4690,
+    "heroLabels": {
+     "gambit": "Gambit",
+     "invisible-woman": "Invisible Woman",
+     "loki": "Loki",
+     "mantis": "Mantis"
+    },
+    "heroes": [
+     "gambit",
+     "mantis",
+     "invisible-woman",
+     "loki"
+    ],
+    "l": 25,
+    "party": true,
+    "partyColor": "rgb(52, 211, 153)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": -10,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 2,
+    "w": 30
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "frac."
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "1915876500"
   },
   {
    "asEnemy": 0,
@@ -491,6 +2659,184 @@
    "seen": 1,
    "tag": "",
    "uid": "2056407895"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 43,
+      "name": null,
+      "slug": "mantis",
+      "wr": 56
+     },
+     {
+      "games": 33,
+      "name": null,
+      "slug": "invisible-woman",
+      "wr": 70
+     },
+     {
+      "games": 33,
+      "name": null,
+      "slug": "gambit",
+      "wr": 48
+     },
+     {
+      "games": 14,
+      "name": null,
+      "slug": "loki",
+      "wr": 43
+     },
+     {
+      "games": 11,
+      "name": null,
+      "slug": "white-fox",
+      "wr": 45
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 20
+     },
+     {
+      "games": 4,
+      "name": null,
+      "slug": "jeff-the-land-shark",
+      "wr": 25
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "emma-frost",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "cloak-dagger",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "ultron",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "invisible-woman"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "gambit"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "loki"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "invisible-woman"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "invisible-woman"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "loki"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 17,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "gambit"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -17,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -18,
+      "slug": "jeff-the-land-shark"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278622057
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4717,
+     "l": 74,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 76
+    }
+   ],
+   "icon": "31048201",
+   "last": {
+    "abs": 4717,
+    "heroLabels": {
+     "gambit": "Gambit",
+     "invisible-woman": "Invisible Woman",
+     "loki": "Loki",
+     "mantis": "Mantis"
+    },
+    "heroes": [
+     "invisible-woman",
+     "loki",
+     "mantis",
+     "gambit"
+    ],
+    "l": 74,
+    "party": true,
+    "partyColor": "rgb(96, 165, 250)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 17,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 2,
+    "w": 76
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "Timuus"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "2073175330"
   },
   {
    "asEnemy": 0,
@@ -689,6 +3035,278 @@
   {
    "asEnemy": 0,
    "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 12,
+      "name": null,
+      "slug": "jeff-the-land-shark",
+      "wr": 58
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "stratpool",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "rocket-raccoon",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "gambit",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "jeff-the-land-shark"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "rocket-raccoon"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "jeff-the-land-shark"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278620254
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4655,
+     "l": 7,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 10
+    }
+   ],
+   "icon": "31047201",
+   "last": {
+    "abs": 4655,
+    "heroLabels": {
+     "gambit": "Gambit",
+     "jeff-the-land-shark": "Jeff the Land Shark",
+     "rocket-raccoon": "Rocket Raccoon",
+     "stratpool": "Stratpool"
+    },
+    "heroes": [
+     "jeff-the-land-shark",
+     "gambit",
+     "rocket-raccoon",
+     "stratpool"
+    ],
+    "l": 7,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 55,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 2,
+    "w": 10
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "FruitBanana"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "4441699"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 14,
+      "name": null,
+      "slug": "the-hood",
+      "wr": 57
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "doctor-strange"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -17,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 25,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -29,
+      "slug": "daredevil"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -40,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "the-hood"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278612910
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4733,
+     "l": 6,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 10
+    }
+   ],
+   "icon": "31057207",
+   "last": {
+    "abs": 4733,
+    "heroLabels": {
+     "doctor-strange": "Doctor Strange",
+     "groot": "Groot",
+     "phoenix": "Phoenix",
+     "the-hood": "The Hood"
+    },
+    "heroes": [
+     "the-hood",
+     "phoenix",
+     "doctor-strange",
+     "groot"
+    ],
+    "l": 6,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 33,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 2,
+    "w": 10
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "KazaanisHigh"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "503047095"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
    "firstSeen": 1795075479822,
    "hist": [
     {
@@ -704,14 +3322,22 @@
      "season": 11,
      "t": 1795076189244,
      "w": 16
+    },
+    {
+     "abs": 4730,
+     "l": 9,
+     "season": 11,
+     "t": 1795278643457,
+     "w": 17
     }
    ],
    "icon": "30000189",
    "last": {
-    "abs": 4750,
+    "abs": 4730,
     "heroLabels": {
      "groot": "Groot",
      "jubilee": "Jubilee",
+     "magneto": "Magneto",
      "peni-parker": "Peni Parker",
      "venom": "Venom"
     },
@@ -719,26 +3345,26 @@
      "peni-parker",
      "venom",
      "groot",
-     "jubilee"
+     "magneto"
     ],
-    "l": 7,
+    "l": 9,
     "party": false,
     "partyColor": null,
     "rankIdx": 17,
     "rankLabel": "GM1",
-    "rs": 50,
+    "rs": 30,
     "season": 11,
-    "t": 1795076311436,
+    "t": 1795279104041,
     "team": 1,
-    "w": 16
+    "w": 17
    },
-   "lastSeen": 1795076311436,
+   "lastSeen": 1795279104041,
    "names": [
     "DleanJeans"
    ],
    "note": "",
    "partied": 0,
-   "seen": 2,
+   "seen": 3,
    "tag": "",
    "uid": "520435205"
   },
@@ -792,6 +3418,184 @@
    "uid": "52617249"
   },
   {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 29,
+      "name": null,
+      "slug": "hela",
+      "wr": 76
+     },
+     {
+      "games": 11,
+      "name": null,
+      "slug": "namor",
+      "wr": 27
+     },
+     {
+      "games": 10,
+      "name": null,
+      "slug": "gorr",
+      "wr": 60
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "emma-frost",
+      "wr": 100
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "winter-soldier",
+      "wr": 33
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "phoenix",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "star-lord",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "elsa-bloodstone",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "iron-man",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "gorr"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -22,
+      "slug": "namor"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "gorr"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "gorr"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -16,
+      "slug": "namor"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -23,
+      "slug": "gorr"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "gorr"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "gorr"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -23,
+      "slug": "gorr"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279098092
+   },
+   "firstSeen": 1795278643457,
+   "hist": [
+    {
+     "abs": 4627,
+     "l": 24,
+     "season": 11,
+     "t": 1795278643457,
+     "w": 38
+    }
+   ],
+   "icon": "31053208",
+   "last": {
+    "abs": 4627,
+    "heroLabels": {
+     "doctor-strange": "Doctor Strange",
+     "hela": "Hela",
+     "namor": "Namor",
+     "winter-soldier": "Winter Soldier"
+    },
+    "heroes": [
+     "hela",
+     "namor",
+     "winter-soldier",
+     "doctor-strange"
+    ],
+    "l": 24,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 27,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 2,
+    "w": 38
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "검 은 작 살"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "576889471"
+  },
+  {
    "asEnemy": 0,
    "asTeammate": 1,
    "firstSeen": 1795075479822,
@@ -839,6 +3643,308 @@
    "seen": 1,
    "tag": "",
    "uid": "581170252"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 6,
+      "name": null,
+      "slug": "iron-man",
+      "wr": 83
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "black-panther",
+      "wr": 80
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 40
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "blade",
+      "wr": 33
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 67
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 24,
+      "slug": "iron-man"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "black-panther"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 24,
+      "slug": "blade"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -18,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "doctor-strange"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -17,
+      "slug": "blade"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -16,
+      "slug": "doctor-strange"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 24,
+      "slug": "black-panther"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "iron-man"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278602093
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4729,
+     "l": 10,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 16
+    }
+   ],
+   "icon": "31026001",
+   "last": {
+    "abs": 4729,
+    "heroLabels": {
+     "black-panther": "Black Panther",
+     "blade": "Blade",
+     "iron-man": "Iron Man",
+     "luna-snow": "Luna Snow"
+    },
+    "heroes": [
+     "iron-man",
+     "luna-snow",
+     "black-panther",
+     "blade"
+    ],
+    "l": 10,
+    "party": true,
+    "partyColor": "rgb(52, 211, 153)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 29,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 1,
+    "w": 16
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "ahm's daddy"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "585343930"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 6,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 83
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "mantis",
+      "wr": 67
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "white-fox",
+      "wr": 100
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "rocket-raccoon",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "invisible-woman",
+      "wr": 0
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "emma-frost",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "emma-frost"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "rocket-raccoon"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 16,
+      "slug": "hela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "rocket-raccoon"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "white-fox"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278618353
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4786,
+     "l": 5,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 12
+    }
+   ],
+   "icon": "31060203",
+   "last": {
+    "abs": 4786,
+    "heroLabels": {
+     "luna-snow": "Luna Snow",
+     "mantis": "Mantis",
+     "rocket-raccoon": "Rocket Raccoon",
+     "white-fox": "White Fox"
+    },
+    "heroes": [
+     "luna-snow",
+     "rocket-raccoon",
+     "mantis",
+     "white-fox"
+    ],
+    "l": 5,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 86,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 2,
+    "w": 12
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "HiemalSeraph"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "615815417"
   },
   {
    "asEnemy": 0,
@@ -989,6 +4095,338 @@
   },
   {
    "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 15,
+      "name": null,
+      "slug": "gambit",
+      "wr": 40
+     },
+     {
+      "games": 13,
+      "name": null,
+      "slug": "cloak-dagger",
+      "wr": 46
+     },
+     {
+      "games": 13,
+      "name": null,
+      "slug": "white-fox",
+      "wr": 38
+     },
+     {
+      "games": 13,
+      "name": null,
+      "slug": "scarlet-witch",
+      "wr": 62
+     },
+     {
+      "games": 9,
+      "name": null,
+      "slug": "rogue",
+      "wr": 67
+     },
+     {
+      "games": 8,
+      "name": null,
+      "slug": "jubilee",
+      "wr": 50
+     },
+     {
+      "games": 6,
+      "name": null,
+      "slug": "invisible-woman",
+      "wr": 50
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "rocket-raccoon",
+      "wr": 80
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "loki",
+      "wr": 33
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "mantis",
+      "wr": 33
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "ultron"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "emma-frost"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "rocket-raccoon"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "jubilee"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -18,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "jubilee"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -19,
+      "slug": "gambit"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -16,
+      "slug": "cloak-dagger"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278607511
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4694,
+     "l": 51,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 57
+    }
+   ],
+   "icon": "31060203",
+   "last": {
+    "abs": 4694,
+    "heroLabels": {
+     "cloak-dagger": "Cloak & Dagger",
+     "invisible-woman": "Invisible Woman",
+     "jubilee": "Jubilee",
+     "white-fox": "White Fox"
+    },
+    "heroes": [
+     "cloak-dagger",
+     "white-fox",
+     "jubilee",
+     "invisible-woman"
+    ],
+    "l": 51,
+    "party": false,
+    "partyColor": null,
+    "rankIdx": 16,
+    "rankLabel": "GM2",
+    "rs": 94,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 1,
+    "w": 57
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "SweetNSalt"
+   ],
+   "note": "",
+   "partied": 0,
+   "seen": 1,
+   "tag": "",
+   "uid": "779016139"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 19,
+      "name": null,
+      "slug": "emma-frost",
+      "wr": 68
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "the-hood",
+      "wr": 60
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "magneto",
+      "wr": 60
+     },
+     {
+      "games": 4,
+      "name": null,
+      "slug": "angela",
+      "wr": 25
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 50
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "winter-soldier",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "emma-frost"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "emma-frost"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "winter-soldier"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "the-hood"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 21,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 23,
+      "slug": "emma-frost"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -19,
+      "slug": "emma-frost"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -21,
+      "slug": "angela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 20,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 22,
+      "slug": "emma-frost"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795278614712
+   },
+   "firstSeen": 1795278598359,
+   "hist": [
+    {
+     "abs": 4767,
+     "l": 19,
+     "season": 11,
+     "t": 1795278598359,
+     "w": 23
+    }
+   ],
+   "icon": "31057207",
+   "last": {
+    "abs": 4767,
+    "heroLabels": {
+     "doctor-strange": "Doctor Strange",
+     "emma-frost": "Emma Frost",
+     "magneto": "Magneto",
+     "the-hood": "The Hood"
+    },
+    "heroes": [
+     "emma-frost",
+     "the-hood",
+     "doctor-strange",
+     "magneto"
+    ],
+    "l": 19,
+    "party": true,
+    "partyColor": "rgb(96, 165, 250)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 67,
+    "season": 11,
+    "t": 1795278622463,
+    "team": 2,
+    "w": 23
+   },
+   "lastSeen": 1795278622463,
+   "names": [
+    "evil kraven"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "799535837"
+  },
+  {
+   "asEnemy": 0,
    "asTeammate": 1,
    "firstSeen": 1795075479822,
    "hist": [
@@ -1035,6 +4473,184 @@
    "seen": 1,
    "tag": "",
    "uid": "832426254"
+  },
+  {
+   "asEnemy": 1,
+   "asTeammate": 0,
+   "detail": {
+    "heroes": [
+     {
+      "games": 42,
+      "name": null,
+      "slug": "nightcrawler",
+      "wr": 50
+     },
+     {
+      "games": 22,
+      "name": null,
+      "slug": "luna-snow",
+      "wr": 50
+     },
+     {
+      "games": 19,
+      "name": null,
+      "slug": "invisible-woman",
+      "wr": 68
+     },
+     {
+      "games": 16,
+      "name": null,
+      "slug": "gambit",
+      "wr": 63
+     },
+     {
+      "games": 10,
+      "name": null,
+      "slug": "white-fox",
+      "wr": 30
+     },
+     {
+      "games": 5,
+      "name": null,
+      "slug": "namor",
+      "wr": 20
+     },
+     {
+      "games": 4,
+      "name": null,
+      "slug": "cloak-dagger",
+      "wr": 25
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "jubilee",
+      "wr": 67
+     },
+     {
+      "games": 3,
+      "name": null,
+      "slug": "rocket-raccoon",
+      "wr": 67
+     },
+     {
+      "games": 2,
+      "name": null,
+      "slug": "the-hood",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 18,
+      "slug": "jubilee"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -24,
+      "slug": "luna-snow"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 17,
+      "slug": "gambit"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -25,
+      "slug": "nightcrawler"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -23,
+      "slug": "white-fox"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 18,
+      "slug": "rocket-raccoon"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 18,
+      "slug": "gambit"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 18,
+      "slug": "gambit"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -24,
+      "slug": "invisible-woman"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -20,
+      "slug": "luna-snow"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279101781
+   },
+   "firstSeen": 1795278751948,
+   "hist": [
+    {
+     "abs": 4698,
+     "l": 69,
+     "season": 11,
+     "t": 1795278751948,
+     "w": 77
+    }
+   ],
+   "icon": "31052209",
+   "last": {
+    "abs": 4698,
+    "heroLabels": {
+     "gambit": "Gambit",
+     "invisible-woman": "Invisible Woman",
+     "luna-snow": "Luna Snow",
+     "nightcrawler": "Nightcrawler"
+    },
+    "heroes": [
+     "luna-snow",
+     "invisible-woman",
+     "gambit",
+     "nightcrawler"
+    ],
+    "l": 69,
+    "party": true,
+    "partyColor": "rgb(244, 114, 182)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": -2,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 2,
+    "w": 77
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "AKuMaTH"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "844670571"
   },
   {
    "asEnemy": 1,
@@ -1086,6 +4702,142 @@
    "uid": "864304877"
   },
   {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "detail": {
+    "heroes": [
+     {
+      "games": 4,
+      "name": null,
+      "slug": "invisible-woman",
+      "wr": 50
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "rocket-raccoon",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "nightcrawler",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "gambit",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "doctor-strange",
+      "wr": 100
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "doctor-strange"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "nightcrawler"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -40,
+      "slug": "invisible-woman"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "rocket-raccoon"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "invisible-woman"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "invisible-woman"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "gambit"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -40,
+      "slug": "invisible-woman"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279090811
+   },
+   "firstSeen": 1795278751948,
+   "hist": [
+    {
+     "abs": 4710,
+     "l": 2,
+     "season": 11,
+     "t": 1795278751948,
+     "w": 6
+    }
+   ],
+   "icon": "31032209",
+   "last": {
+    "abs": 4710,
+    "heroLabels": {
+     "bruce-banner": "Hulk",
+     "invisible-woman": "Invisible Woman",
+     "luna-snow": "Luna Snow",
+     "rocket-raccoon": "Rocket Raccoon"
+    },
+    "heroes": [
+     "invisible-woman",
+     "rocket-raccoon",
+     "luna-snow",
+     "bruce-banner"
+    ],
+    "l": 2,
+    "party": true,
+    "partyColor": "rgb(167, 139, 250)",
+    "rankIdx": 17,
+    "rankLabel": "GM1",
+    "rs": 10,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 1,
+    "w": 6
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "babyseally"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "875355320"
+  },
+  {
    "asEnemy": 1,
    "asTeammate": 0,
    "firstSeen": 1795075479822,
@@ -1133,6 +4885,112 @@
    "seen": 1,
    "tag": "",
    "uid": "917027791"
+  },
+  {
+   "asEnemy": 0,
+   "asTeammate": 1,
+   "detail": {
+    "heroes": [
+     {
+      "games": 2,
+      "name": null,
+      "slug": "magneto",
+      "wr": 100
+     },
+     {
+      "games": 1,
+      "name": null,
+      "slug": "mantis",
+      "wr": 0
+     }
+    ],
+    "matches": [
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 40,
+      "slug": "magneto"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -40,
+      "slug": "mantis"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -23,
+      "slug": "squirrel-girl"
+     },
+     {
+      "name": null,
+      "result": "L",
+      "rs": -26,
+      "slug": "angela"
+     },
+     {
+      "name": null,
+      "result": "W",
+      "rs": 19,
+      "slug": "squirrel-girl"
+     }
+    ],
+    "proficiency": [],
+    "season": 11,
+    "t": 1795279092626
+   },
+   "firstSeen": 1795278751948,
+   "hist": [
+    {
+     "abs": 4470,
+     "l": 3,
+     "season": 11,
+     "t": 1795278751948,
+     "w": 6
+    }
+   ],
+   "icon": "31020213",
+   "last": {
+    "abs": 4470,
+    "heroLabels": {
+     "loki": "Loki",
+     "luna-snow": "Luna Snow",
+     "magneto": "Magneto",
+     "mantis": "Mantis"
+    },
+    "heroes": [
+     "mantis",
+     "loki",
+     "magneto",
+     "luna-snow"
+    ],
+    "l": 3,
+    "party": true,
+    "partyColor": "rgb(96, 165, 250)",
+    "rankIdx": 14,
+    "rankLabel": "D1",
+    "rs": 70,
+    "season": 11,
+    "t": 1795279104041,
+    "team": 1,
+    "w": 6
+   },
+   "lastSeen": 1795279104041,
+   "names": [
+    "taruta-rirara"
+   ],
+   "note": "",
+   "partied": 1,
+   "seen": 1,
+   "tag": "",
+   "uid": "990777682"
   }
  ],
  "games": [
@@ -1295,13 +5153,534 @@
    },
    "season": 11,
    "t": 1795076189244
+  },
+  {
+   "id": "mwqmgug5",
+   "last": 1795278559575,
+   "mode": "Quick Play",
+   "players": {
+    "1243795687": {
+     "abs": 4639,
+     "heroes": [
+      "invisible-woman",
+      "luna-snow",
+      "emma-frost",
+      "hela"
+     ],
+     "icon": "31033208",
+     "idx": 5,
+     "l": 6,
+     "name": "ouTressLechess",
+     "party": true,
+     "partyColor": "rgb(52, 211, 153)",
+     "rankLabel": "GM2",
+     "rs": 39,
+     "team": 1,
+     "w": 9
+    },
+    "1684069305": {
+     "abs": 4806,
+     "heroes": [
+      "the-hood",
+      "emma-frost",
+      "venom",
+      "doctor-strange"
+     ],
+     "icon": "31041211",
+     "idx": 0,
+     "l": 4,
+     "name": "Daяк",
+     "party": true,
+     "partyColor": "rgb(167, 139, 250)",
+     "rankLabel": "C3",
+     "rs": 6,
+     "team": 1,
+     "w": 12
+    }
+   },
+   "season": 11,
+   "t": 1795278502949
+  },
+  {
+   "id": "mwqmiw2f",
+   "last": 1795278622463,
+   "mode": "Competitive",
+   "players": {
+    "4441699": {
+     "abs": 4655,
+     "heroes": [
+      "jeff-the-land-shark",
+      "gambit",
+      "rocket-raccoon",
+      "stratpool"
+     ],
+     "icon": "31047201",
+     "idx": 10,
+     "l": 7,
+     "name": "FruitBanana",
+     "party": false,
+     "partyColor": null,
+     "rankLabel": "GM2",
+     "rs": 55,
+     "team": 2,
+     "w": 10
+    },
+    "503047095": {
+     "abs": 4733,
+     "heroes": [
+      "the-hood",
+      "phoenix",
+      "doctor-strange",
+      "groot"
+     ],
+     "icon": "31057207",
+     "idx": 6,
+     "l": 6,
+     "name": "KazaanisHigh",
+     "party": false,
+     "partyColor": null,
+     "rankLabel": "GM1",
+     "rs": 33,
+     "team": 2,
+     "w": 10
+    },
+    "585343930": {
+     "abs": 4729,
+     "heroes": [
+      "iron-man",
+      "luna-snow",
+      "black-panther",
+      "blade"
+     ],
+     "icon": "31026001",
+     "idx": 0,
+     "l": 10,
+     "name": "ahm's daddy",
+     "party": true,
+     "partyColor": "rgb(52, 211, 153)",
+     "rankLabel": "GM1",
+     "rs": 29,
+     "team": 1,
+     "w": 16
+    },
+    "615815417": {
+     "abs": 4786,
+     "heroes": [
+      "luna-snow",
+      "rocket-raccoon",
+      "mantis",
+      "white-fox"
+     ],
+     "icon": "31060203",
+     "idx": 9,
+     "l": 5,
+     "name": "HiemalSeraph",
+     "party": false,
+     "partyColor": null,
+     "rankLabel": "GM1",
+     "rs": 86,
+     "team": 2,
+     "w": 12
+    },
+    "779016139": {
+     "abs": 4694,
+     "heroes": [
+      "cloak-dagger",
+      "white-fox",
+      "jubilee",
+      "invisible-woman"
+     ],
+     "icon": "31060203",
+     "idx": 3,
+     "l": 51,
+     "name": "SweetNSalt",
+     "party": false,
+     "partyColor": null,
+     "rankLabel": "GM2",
+     "rs": 94,
+     "team": 1,
+     "w": 57
+    },
+    "799535837": {
+     "abs": 4767,
+     "heroes": [
+      "emma-frost",
+      "the-hood",
+      "doctor-strange",
+      "magneto"
+     ],
+     "icon": "31057207",
+     "idx": 7,
+     "l": 19,
+     "name": "evil kraven",
+     "party": true,
+     "partyColor": "rgb(96, 165, 250)",
+     "rankLabel": "GM1",
+     "rs": 67,
+     "team": 2,
+     "w": 23
+    },
+    "1210012006": {
+     "abs": 4727,
+     "heroes": [
+      "jeff-the-land-shark",
+      "invisible-woman",
+      "white-fox",
+      "gambit"
+     ],
+     "icon": "31050215",
+     "idx": 4,
+     "l": 11,
+     "name": "Khúc Thị Hương",
+     "party": true,
+     "partyColor": "rgb(244, 114, 182)",
+     "rankLabel": "GM1",
+     "rs": 27,
+     "team": 1,
+     "w": 19
+    },
+    "1295751883": {
+     "abs": 4841,
+     "heroes": [
+      "winter-soldier",
+      "hela",
+      "cyclops",
+      "black-widow"
+     ],
+     "icon": "30000182",
+     "idx": 8,
+     "l": 27,
+     "name": "Dèjá vù",
+     "party": false,
+     "partyColor": null,
+     "rankLabel": "C3",
+     "rs": 41,
+     "team": 2,
+     "w": 32
+    },
+    "1465722323": {
+     "abs": 4600,
+     "heroes": [
+      "hela",
+      "winter-soldier",
+      "wolverine",
+      "magneto"
+     ],
+     "icon": "30000001",
+     "idx": 1,
+     "l": 16,
+     "name": "zxvcnx",
+     "party": true,
+     "partyColor": "rgb(52, 211, 153)",
+     "rankLabel": "GM2",
+     "rs": 0,
+     "team": 1,
+     "w": 14
+    },
+    "1809531375": {
+     "abs": 4726,
+     "heroes": [
+      "jeff-the-land-shark",
+      "luna-snow",
+      "mantis",
+      "peni-parker"
+     ],
+     "icon": "30000105",
+     "idx": 5,
+     "l": 42,
+     "name": "PeryFromVN",
+     "party": false,
+     "partyColor": null,
+     "rankLabel": "GM1",
+     "rs": 26,
+     "team": 1,
+     "w": 47
+    },
+    "1831046431": {
+     "abs": 4795,
+     "heroes": [
+      "winter-soldier",
+      "spider-man",
+      "psylocke",
+      "namor"
+     ],
+     "icon": "31028001",
+     "idx": 2,
+     "l": 28,
+     "name": "Paang",
+     "party": true,
+     "partyColor": "rgb(244, 114, 182)",
+     "rankLabel": "GM1",
+     "rs": 95,
+     "team": 1,
+     "w": 36
+    },
+    "2073175330": {
+     "abs": 4717,
+     "heroes": [
+      "invisible-woman",
+      "loki",
+      "mantis",
+      "gambit"
+     ],
+     "icon": "31048201",
+     "idx": 11,
+     "l": 74,
+     "name": "Timuus",
+     "party": true,
+     "partyColor": "rgb(96, 165, 250)",
+     "rankLabel": "GM1",
+     "rs": 17,
+     "team": 2,
+     "w": 76
+    }
+   },
+   "season": 11,
+   "t": 1795278598359
+  },
+  {
+   "id": "mwqmjuv5",
+   "last": 1795279104041,
+   "mode": "Competitive",
+   "players": {
+    "520435205": {
+     "abs": 4730,
+     "heroes": [
+      "peni-parker",
+      "venom",
+      "groot",
+      "magneto"
+     ],
+     "icon": "30000189",
+     "idx": 0,
+     "l": 9,
+     "name": "DleanJeans",
+     "party": false,
+     "partyColor": null,
+     "rankLabel": "GM1",
+     "rs": 30,
+     "team": 1,
+     "w": 17
+    },
+    "576889471": {
+     "abs": 4627,
+     "heroes": [
+      "hela",
+      "namor",
+      "winter-soldier",
+      "doctor-strange"
+     ],
+     "icon": "31053208",
+     "idx": 8,
+     "l": 24,
+     "name": "검 은 작 살",
+     "party": false,
+     "partyColor": null,
+     "rankLabel": "GM2",
+     "rs": 27,
+     "team": 2,
+     "w": 38
+    },
+    "844670571": {
+     "abs": 4698,
+     "heroes": [
+      "luna-snow",
+      "invisible-woman",
+      "gambit",
+      "nightcrawler"
+     ],
+     "icon": "31052209",
+     "idx": 10,
+     "l": 69,
+     "name": "AKuMaTH",
+     "party": true,
+     "partyColor": "rgb(244, 114, 182)",
+     "rankLabel": "GM1",
+     "rs": -2,
+     "team": 2,
+     "w": 77
+    },
+    "875355320": {
+     "abs": 4710,
+     "heroes": [
+      "invisible-woman",
+      "rocket-raccoon",
+      "luna-snow",
+      "bruce-banner"
+     ],
+     "icon": "31032209",
+     "idx": 4,
+     "l": 2,
+     "name": "babyseally",
+     "party": true,
+     "partyColor": "rgb(167, 139, 250)",
+     "rankLabel": "GM1",
+     "rs": 10,
+     "team": 1,
+     "w": 6
+    },
+    "990777682": {
+     "abs": 4470,
+     "heroes": [
+      "mantis",
+      "loki",
+      "magneto",
+      "luna-snow"
+     ],
+     "icon": "31020213",
+     "idx": 5,
+     "l": 3,
+     "name": "taruta-rirara",
+     "party": true,
+     "partyColor": "rgb(96, 165, 250)",
+     "rankLabel": "D1",
+     "rs": 70,
+     "team": 1,
+     "w": 6
+    },
+    "1470075262": {
+     "abs": 4570,
+     "heroes": [
+      "magneto",
+      "groot",
+      "the-hood",
+      "namor"
+     ],
+     "icon": "31032004",
+     "idx": 6,
+     "l": 73,
+     "name": "25rev",
+     "party": true,
+     "partyColor": "rgb(244, 114, 182)",
+     "rankLabel": "GM3",
+     "rs": 70,
+     "team": 2,
+     "w": 65
+    },
+    "1572271726": {
+     "abs": 4808,
+     "heroes": [
+      "doctor-strange",
+      "emma-frost",
+      "rogue",
+      "magneto"
+     ],
+     "icon": "31057205",
+     "idx": 7,
+     "l": 21,
+     "name": "VT Clover",
+     "party": true,
+     "partyColor": "rgb(52, 211, 153)",
+     "rankLabel": "C3",
+     "rs": 8,
+     "team": 2,
+     "w": 31
+    },
+    "1580505142": {
+     "abs": 4710,
+     "heroes": [
+      "hela",
+      "daredevil",
+      "spider-man",
+      "psylocke"
+     ],
+     "icon": "31055205",
+     "idx": 2,
+     "l": 1,
+     "name": "ReaperExodiа",
+     "party": true,
+     "partyColor": "rgb(167, 139, 250)",
+     "rankLabel": "GM1",
+     "rs": 10,
+     "team": 1,
+     "w": 5
+    },
+    "1588054915": {
+     "abs": 4550,
+     "heroes": [
+      "spider-man",
+      "winter-soldier",
+      "the-punisher",
+      "moon-knight"
+     ],
+     "icon": "31059201",
+     "idx": 3,
+     "l": 1,
+     "name": "ぽんずみこ",
+     "party": true,
+     "partyColor": "rgb(96, 165, 250)",
+     "rankLabel": "GM3",
+     "rs": 50,
+     "team": 1,
+     "w": 6
+    },
+    "1794411454": {
+     "abs": 4690,
+     "heroes": [
+      "winter-soldier",
+      "psylocke",
+      "hela",
+      "black-cat"
+     ],
+     "icon": "31041202",
+     "idx": 1,
+     "l": 2,
+     "name": "Johji",
+     "party": true,
+     "partyColor": "rgb(167, 139, 250)",
+     "rankLabel": "GM2",
+     "rs": 90,
+     "team": 1,
+     "w": 3
+    },
+    "1902689498": {
+     "abs": 4570,
+     "heroes": [
+      "the-punisher",
+      "hela",
+      "luna-snow",
+      "namor"
+     ],
+     "icon": "30000183",
+     "idx": 9,
+     "l": 20,
+     "name": "전투석",
+     "party": false,
+     "partyColor": null,
+     "rankLabel": "GM3",
+     "rs": 70,
+     "team": 2,
+     "w": 16
+    },
+    "1915876500": {
+     "abs": 4690,
+     "heroes": [
+      "gambit",
+      "mantis",
+      "invisible-woman",
+      "loki"
+     ],
+     "icon": "30000254",
+     "idx": 11,
+     "l": 25,
+     "name": "frac.",
+     "party": true,
+     "partyColor": "rgb(52, 211, 153)",
+     "rankLabel": "GM1",
+     "rs": -10,
+     "team": 2,
+     "w": 30
+    }
+   },
+   "season": 11,
+   "t": 1795278643457
   }
  ],
  "stats": {
   "checked": 0,
   "correct": 0,
-  "iconChecked": 1,
-  "iconSame": 1,
+  "iconChecked": 3,
+  "iconSame": 3,
   "suffixChecked": 0,
   "suffixOk": 0
  },
@@ -1309,8 +5688,11 @@
   "selfUid": "520435205",
   "overlay": true,
   "minShow": 0.5,
-  "useSuffix": true,
   "useIcons": true,
-  "qpHighRankOnly": true
+  "qpHighRankOnly": true,
+  "matchRankRange": 3,
+  "autoDetails": false,
+  "autoSaveFile": true,
+  "useSuffix": true
  }
 }
