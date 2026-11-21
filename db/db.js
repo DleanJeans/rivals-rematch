@@ -143,16 +143,43 @@
     td.appendChild(i); return td;
   }
 
+  // ---- Lobbies tab: a list first; clicking a lobby opens its two teams side by side
+  const openLobbies = new Set();                      // lobbies that are expanded (survives redraws)
+  const avgOf = (rows) => { const v = rows.map((r) => r.abs).filter((x) => x != null); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null; };
+  const signedSpan = (df) => { const sp = el('span', 'df', ' (' + (df >= 0 ? '+' : '') + df + ')'); sp.style.color = df >= 0 ? GOOD : BAD; return sp; };
+
+  /** The two team tables (built only when a lobby is opened). */
+  function lobbyBody(g, teams, avgs, byUid) {
+    const body = el('div', 'lobbody');
+    teams.forEach((trs, i) => {
+      const col = el('div', 'teamcol');
+      const tbl = el('table', 'team'); const hd = el('thead').appendChild(el('tr'));
+      hd.appendChild(el('th', 'tname', 'Team ' + (i + 1)));
+      const th = el('th', 'avg'); th.appendChild(el('span', 'dim', 'Avg: ')); th.appendChild(document.createTextNode(avgs[i] != null ? avgs[i] + ' RS' : '—'));
+      if (avgs[i] != null && avgs[1 - i] != null) th.appendChild(signedSpan(avgs[i] - avgs[1 - i]));
+      hd.appendChild(th); hd.appendChild(el('th', '', 'Winrate')); hd.appendChild(el('th', '', 'Top Heroes'));
+      const tb = el('tbody');
+      trs.forEach((r) => {
+        const tr = el('tr');
+        tr.appendChild(whoCell({ uid: r.uid, name: r.name, icon: r.icon, party: r.party, partyColor: r.partyColor, self: r.uid === data.settings.selfUid }));
+        tr.appendChild(rankCell(r.rankLabel, r.rs)); tr.appendChild(recordCell(r.w, r.l));
+        const det = (byUid[r.uid] || {}).detail; const hcell = heroesCell(r.heroes, r.heroLabels, det); const chev = chevron(tr, 'L' + g.id + r.uid, det, 4);
+        hcell.firstChild.appendChild(chev); tr.appendChild(hcell);
+        tb.appendChild(tr); chev.restore();
+      });
+      if (!trs.length) { const e = el('tr'); const td = el('td', 'dim', 'nobody saved on this team'); td.colSpan = 4; e.appendChild(td); tb.appendChild(e); }
+      tbl.appendChild(hd.parentNode); tbl.appendChild(tb); col.appendChild(tbl); body.appendChild(col);
+    });
+    return body;
+  }
+
   function renderLobbies() {
     const box = $('tab-lobbies'); box.textContent = '';
     const byUid = {}; data.all.forEach((p) => { byUid[p.uid] = p; });       // includes you, unlike the players tab
     if (!data.games.length) { box.appendChild(el('p', 'dim', 'No lobbies recorded yet.')); return; }
-    const avg = (rows) => { const v = rows.map((r) => r.abs).filter((x) => x != null); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null; };
+    box.appendChild(el('p', 'dim hint', 'Click a lobby to see both teams.'));
     data.games.slice().reverse().slice(0, 60).forEach((g) => {
-      const d = el('div', 'lob');
-      const n = Object.keys(g.players).length;
-      d.appendChild(el('h4', '', new Date(g.t).toLocaleString() + (g.mode ? ' · ' + g.mode : '') + ' · ' + n + ' players saved'));
-      // one record per saved player, older lobbies lack some fields -> fall back to what we know now
+      // one record per saved player; older lobbies lack some fields -> fall back to what we know now
       const rows = Object.keys(g.players).map((uid) => {
         const gp = g.players[uid], p = byUid[uid] || { names: [uid], last: {} }, l = p.last || {};
         return { uid, team: gp.team, idx: gp.idx, name: gp.name || p.names[0] || uid, icon: gp.icon || p.icon,
@@ -160,26 +187,44 @@
           heroes: gp.heroes || l.heroes, heroLabels: l.heroLabels, party: gp.party != null ? gp.party : l.party, partyColor: gp.partyColor || l.partyColor };
       });
       const teams = [1, 2].map((t) => rows.filter((r) => r.team === t).sort((a, b) => (a.idx != null && b.idx != null) ? a.idx - b.idx : (b.abs || 0) - (a.abs || 0)));
-      const avgs = teams.map(avg);
+      const avgs = teams.map(avgOf);
+      const others = rows.filter((r) => r.uid !== data.settings.selfUid);
+      const returning = others.filter((r) => (byUid[r.uid] || {}).seen > 1).length;
+      const starred = others.filter((r) => (byUid[r.uid] || {}).starred).length;
+
+      const d = el('div', 'lob');
+      const head = el('div', 'lobhead'); head.tabIndex = 0; head.setAttribute('role', 'button');
+      const arrow = el('span', 'arr', '▸');
+      head.appendChild(arrow);
+      const when = el('span', 'when'); when.appendChild(el('b', '', new Date(g.t).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }))); when.appendChild(el('small', 'dim', ' ' + ago(g.t)));
+      head.appendChild(when);
+      if (g.mode) head.appendChild(el('span', 'mode ' + (/quick/i.test(g.mode) ? 'qp' : 'comp'), g.mode));
+      head.appendChild(el('span', 'dim', rows.length + ' players saved'));
+      const sides = el('span', 'sides');
       teams.forEach((trs, i) => {
-        if (!trs.length) return;
-        const tbl = el('table', 'team'); const hd = el('thead').appendChild(el('tr'));
-        hd.appendChild(el('th', 'tname', 'Team ' + (i + 1)));
-        const th = el('th', 'avg'); th.appendChild(el('span', 'dim', 'Avg: ')); th.appendChild(document.createTextNode(avgs[i] != null ? avgs[i] + ' RS' : '—'));
-        const other = avgs[1 - i];
-        if (avgs[i] != null && other != null) { const df = avgs[i] - other, sp = el('span', '', ' (' + (df >= 0 ? '+' : '') + df + ')'); sp.style.color = df >= 0 ? GOOD : BAD; th.appendChild(sp); }
-        hd.appendChild(th); hd.appendChild(el('th', '', 'Winrate')); hd.appendChild(el('th', '', 'Top Heroes'));
-        const tb = el('tbody');
-        trs.forEach((r) => {
-          const tr = el('tr');
-          tr.appendChild(whoCell({ uid: r.uid, name: r.name, icon: r.icon, party: r.party, partyColor: r.partyColor, self: r.uid === data.settings.selfUid }));
-          tr.appendChild(rankCell(r.rankLabel, r.rs)); tr.appendChild(recordCell(r.w, r.l));
-          const det = (byUid[r.uid] || {}).detail; const hcell = heroesCell(r.heroes, r.heroLabels, det); const chev = chevron(tr, 'L' + g.id + r.uid, det, 4);
-          hcell.firstChild.appendChild(chev); tr.appendChild(hcell);
-          tb.appendChild(tr); chev.restore();
-        });
-        tbl.appendChild(hd.parentNode); tbl.appendChild(tb); d.appendChild(tbl);
+        const side = el('span', 'side t' + (i + 1));
+        trs.slice(0, 6).forEach((r) => { if (r.icon) { const im = document.createElement('img'); im.className = 'mini'; im.src = ICON(r.icon); im.alt = ''; im.title = r.name; side.appendChild(im); } });
+        const av = el('span', 'savg'); av.appendChild(document.createTextNode(avgs[i] != null ? avgs[i] + ' RS' : '—'));
+        if (avgs[i] != null && avgs[1 - i] != null) av.appendChild(signedSpan(avgs[i] - avgs[1 - i]));
+        side.appendChild(av); sides.appendChild(side);
+        if (i === 0) sides.appendChild(el('span', 'vs', 'vs'));
       });
+      head.appendChild(sides);
+      if (returning) head.appendChild(el('span', 'badge', returning + ' seen before'));
+      if (starred) head.appendChild(el('span', 'badge star', '★ ' + starred));
+      d.appendChild(head);
+
+      let body = null;
+      const apply = () => {
+        const open = openLobbies.has(g.id);
+        head.setAttribute('aria-expanded', String(open)); arrow.textContent = open ? '▾' : '▸'; d.classList.toggle('open', open);
+        if (open && !body) { body = lobbyBody(g, teams, avgs, byUid); d.appendChild(body); }
+        if (body) body.hidden = !open;
+      };
+      const toggle = () => { if (openLobbies.has(g.id)) openLobbies.delete(g.id); else openLobbies.add(g.id); apply(); };
+      head.addEventListener('click', toggle);
+      head.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+      apply();
       box.appendChild(d);
     });
   }
@@ -226,7 +271,10 @@
     try {
       let h = await FS.getHandle();
       if (opt.relink || (!h && opt.interactive)) h = await FS.link();
-      if (!h) { setStatus('Not linked: click “Save to data/” and pick the repo\'s data folder.'); return false; }
+      if (!h) {                                   // never linked: stay quiet unless the user actually asked to save to a folder
+        if (opt.interactive || location.hash === '#save') setStatus('Not linked: click “Save to data/” and pick the repo\'s data folder.');
+        return false;
+      }
       if (!(await FS.permitted(h, !!opt.interactive))) { setStatus('Click “Save to data/” to allow writing again.', true); return false; }
       const snap = await S.snapshot();
       const m = await chrome.storage.local.get(['rdt_filesig', 'rdt_fsmeta']);

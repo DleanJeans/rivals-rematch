@@ -75,3 +75,35 @@ button.primary{background:var(--acc);border-color:var(--acc);color:var(--onacc);
 tr.detail,tr.detail:hover{background:none!important}
 tr.detail>td{padding:0!important;border-bottom:1px solid var(--line)}
 .heroes{align-items:center}.heroes .chev{margin-left:4px}
+
+/* ---- Lobbies: list of lobbies; an open one shows its two teams side by side ---- */
+.lob{padding:0;overflow:hidden}
+.lobhead{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;user-select:none;flex-wrap:wrap}
+.lobhead:hover{background:color-mix(in srgb,var(--tx) 5%,transparent)}
+.lobhead:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.lobhead .arr{width:14px;color:var(--dim)}
+.lobhead .when small{margin-left:4px}
+.lobhead .mode{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:1px 8px;color:var(--dim)}
+.lobhead .mode.comp{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 45%,var(--line))}
+.sides{display:flex;align-items:center;gap:10px;margin-left:auto}
+.side{display:inline-flex;align-items:center;gap:3px}
+.side .mini{width:22px;height:22px;border-radius:5px;background:var(--line)}
+.side .savg{margin-left:6px;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.side.t1 .mini{box-shadow:0 0 0 1px color-mix(in srgb,var(--blue) 60%,transparent)}
+.side.t2 .mini{box-shadow:0 0 0 1px color-mix(in srgb,var(--red) 60%,transparent)}
+.vs{font-size:11px;color:var(--dim)}
+.lobhead .badge{font-size:12px;border-radius:6px;padding:1px 8px;background:color-mix(in srgb,var(--tx) 10%,transparent);color:var(--tx)}
+.lobhead .badge.star{background:color-mix(in srgb,var(--acc) 22%,transparent)}
+.lobbody{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--line)}
+.lobbody[hidden]{display:none}
+.teamcol{min-width:0;padding:4px 10px 10px}
+.teamcol+.teamcol{border-left:1px solid var(--line)}
+.lob table.team{margin:0;width:100%}
+.lob table.team th:nth-child(1){width:auto}
+.lob .teamcol img.av{width:32px;height:32px}
+.lob .teamcol .heroes img{width:28px;height:28px}
+.lob .teamcol td,.lob .teamcol th{padding:6px 8px}
+.lob .teamcol .dp{grid-template-columns:1fr}
+.lob .teamcol .dp .col+.col{border-left:0;border-top:1px solid var(--line)}
+p.hint{margin:0 0 10px}
+@media (max-width:1000px){.lobbody{grid-template-columns:1fr}.teamcol+.teamcol{border-left:0;border-top:1px solid var(--line)}.sides{margin-left:0;width:100%}}

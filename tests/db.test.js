@@ -13,7 +13,7 @@ seed['p:11'].detail = { t: now, season: 11,
   proficiency: [{ slug: 'hulk', name: 'Hulk', level: 44 }, { slug: 'thor', name: 'Thor', level: 30 }, { slug: 'groot', name: 'Groot', level: 28 }],
   matches: [{ slug: 'hulk', name: 'Hulk', result: 'W', rs: 14 }, { slug: 'groot', name: 'Groot', result: 'L', rs: -22 }, { slug: 'hulk', name: 'Hulk', result: 'W', rs: 0 }] };
 mk('520435205', 'DleanJeans', 'GM1', 32, 4732, 15, 7, 0, 0, []);
-seed.rdt_games = [{ id: 'a', t: now, last: now, season: 11, players: { 11: { team: 2, w: 6, l: 3 }, 222: { team: 1, w: 17, l: 14 } } }];
+seed.rdt_games = [{ id: 'a', t: now, last: now, season: 11, mode: 'Competitive', players: { 11: { team: 2, w: 6, l: 3, abs: 4770, icon: '1', name: 'PlayerA.', rankLabel: 'GM1', rs: 70, heroes: ['hulk', 'thor'] }, 222: { team: 1, w: 17, l: 14, abs: 4724, icon: '1', name: 'PlayerC42', rankLabel: 'GM1', rs: 24, heroes: ['luna-snow'] } } }];
 seed.rdt_stats = { checked: 8, correct: 7, suffixChecked: 8, suffixOk: 8 };
 
 (async () => {
@@ -84,9 +84,30 @@ seed.rdt_stats = { checked: 8, correct: 7, suffixChecked: 8, suffixOk: 8 };
   await page.evaluate(() => RDT.store.deletePlayer('11'));
   const n = await page.evaluate(async (e) => RDT.store.importAll(e), exp);
   ok(n === 4 && await page.evaluate(() => 'p:11' in window.__st), 'import restores a deleted player (merge)');
-  await page.click('[data-tab=lobbies]'); ok((await page.textContent('#tab-lobbies')).includes('2 players saved'), 'lobby log renders');
+  // --- Lobbies tab: a list first, two teams side by side when a lobby is opened
+  await page.click('[data-tab=lobbies]');
+  const head = await page.textContent('#tab-lobbies .lobhead');
+  ok(/2 players saved/.test(head) && /Competitive/.test(head), `lobbies are listed as one line each: "${head.replace(/\s+/g, ' ').trim()}"`);
+  ok(/4724 RS/.test(head) && /4770 RS/.test(head) && /\(-46\)/.test(head) && /\(\+46\)/.test(head), 'the line shows both team averages with the difference');
+  ok((await page.$$('#tab-lobbies .side.t1 .mini')).length === 1 && (await page.$$('#tab-lobbies .side.t2 .mini')).length === 1, 'and a strip of avatars per team');
+  ok(/2 seen before/.test(head), 'and how many players you have seen before');
+  ok((await page.$$('#tab-lobbies table.team')).length === 0 && (await page.getAttribute('#tab-lobbies .lobhead', 'aria-expanded')) === 'false', 'collapsed by default: no team tables yet');
+  await page.click('#tab-lobbies .lobhead'); await page.waitForSelector('#tab-lobbies .teamcol');
+  ok((await page.$$('#tab-lobbies .teamcol')).length === 2 && (await page.getAttribute('#tab-lobbies .lobhead', 'aria-expanded')) === 'true', 'clicking the lobby opens two team columns');
+  const [c1, c2] = await page.$$eval('#tab-lobbies .teamcol', (c) => c.map((x) => { const r = x.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; }));
+  ok(c2.x >= c1.x + c1.w - 2 && Math.abs(c2.y - c1.y) < 4, `teams are side by side (team 2 starts at x=${Math.round(c2.x)} right of team 1 which ends at x=${Math.round(c1.x + c1.w)}, same top)`);
+  ok(/Team 1/.test(await page.textContent('#tab-lobbies .teamcol:nth-child(1) thead')) && /PlayerC42/.test(await page.textContent('#tab-lobbies .teamcol:nth-child(1)')) && /PlayerA\./.test(await page.textContent('#tab-lobbies .teamcol:nth-child(2)')), 'each player is in the right column');
   await page.click('#tab-lobbies tr:has(a:text-is("PlayerA.")) .chev'); await page.waitForSelector('#tab-lobbies tr.detail .dp .col');
-  ok((await page.$$('#tab-lobbies tr.detail .dp .col')).length === 3, 'lobby rows have the same dropdown');
+  ok((await page.$$('#tab-lobbies tr.detail .dp .col')).length === 3, 'players inside still have the Heroes / Proficiency / Match history dropdown');
+  await page.click('#tab-lobbies tr:has(a:text-is("PlayerA.")) .chev');
+  await page.click('#tab-lobbies .lobhead');
+  ok(!(await page.isVisible('#tab-lobbies .lobbody')), 'clicking again collapses it back to the list');
+  await page.focus('#tab-lobbies .lobhead'); await page.keyboard.press('Enter');
+  ok(await page.isVisible('#tab-lobbies .lobbody'), 'keyboard: Enter on a focused lobby opens it');
+  await page.setViewportSize({ width: 800, height: 700 }); await page.waitForTimeout(150);
+  const [n1, n2] = await page.$$eval('#tab-lobbies .teamcol', (c) => c.map((x) => { const r = x.getBoundingClientRect(); return { y: r.y, h: r.height, x: r.x }; }));
+  ok(n2.y >= n1.y + n1.h - 2 && Math.abs(n2.x - n1.x) < 4, 'on a narrow window the teams stack instead, so nothing is squeezed');
+  await page.setViewportSize({ width: 1280, height: 720 });
   await page.screenshot({ path: path.join(__dirname, 'out_db.png') });
   await b.close(); console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);
 })();
