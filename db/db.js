@@ -21,6 +21,7 @@
   const key = {
     name: (p) => (p.names[0] || '').toLowerCase(), abs: (p) => (p.last && p.last.abs) || -1e9,
     wr, seen: (p) => p.seen, when: (p) => p.lastSeen,
+    online: (p) => { const o = S.onlineOf(p); return o === true ? 2 : o === false ? 1 : 0; },
   };
 
   async function reload() {
@@ -135,7 +136,7 @@
       tr.appendChild(whoCell({ uid: p.uid, name: p.names[0] || p.uid, icon: p.icon, aka: p.names.slice(1, 4), party: l.party, partyColor: l.partyColor }));
       tr.appendChild(rankCell(l.rankLabel, l.rs));
       tr.appendChild(recordCell(l.w, l.l));
-      const hcell = heroesCell(l.heroes, l.heroLabels, p.detail); const chev = chevron(tr, 'P' + p.uid, p.detail, 10); hcell.firstChild.appendChild(chev); tr.appendChild(hcell);
+      const hcell = heroesCell(l.heroes, l.heroLabels, p.detail); const chev = chevron(tr, 'P' + p.uid, p.detail, 11); hcell.firstChild.appendChild(chev); tr.appendChild(hcell);
       const seen = el('td'); seen.appendChild(el('div', '', '×' + p.seen));
       const rel = el('div', 'rel');
       if (p.asTeammate) rel.appendChild(el('b', 'm', 'mate ' + p.asTeammate));
@@ -143,6 +144,9 @@
       if (p.asEnemy) rel.appendChild(el('b', 'e', 'enemy ' + p.asEnemy));
       seen.appendChild(rel); tr.appendChild(seen);
       tr.appendChild(el('td', 'dim', ago(p.lastSeen)));
+      const on = S.onlineOf(p), ot = el('td', on === true ? 'online' : 'dim', on === true ? '\u25CF In game' : on === false ? 'Offline' : '\u2014');
+      if (on != null) { ot.title = 'Checked ' + ago(p.online.t) + (p.online.mode ? ' (' + p.online.mode + ')' : ''); ot.appendChild(el('div', 'rel', ago(p.online.t))); }
+      tr.appendChild(ot);
       tr.appendChild(editCell(p, 'tag', 'tag', 'e.g. toxic'));
       tr.appendChild(editCell(p, 'note', '', 'note'));
       const del = el('td'); const x = el('button', 'x', '✕'); x.title = 'Forget this player';

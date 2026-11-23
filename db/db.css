@@ -114,3 +114,5 @@ p.hint{margin:0 0 10px}
 @media (max-width:1000px){.lobbody{grid-template-columns:1fr}.teamcol+.teamcol{border-left:0;border-top:1px solid var(--line)}.sides{margin-left:0;width:100%}}
 .auto{display:flex;gap:8px;align-items:center}
 tr.auto-now td{background:color-mix(in srgb,var(--acc) 22%,transparent)}tr.auto-now td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
+
+.online{color:#4caf50;font-weight:600}
