@@ -53,7 +53,7 @@ const fx = (f) => fs.readFileSync(path.join(ext, 'tests/fixtures', f), 'utf8').r
   await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
   await popup.waitForFunction(() => /12 players/.test(document.getElementById('counts').textContent), null, { timeout: 8000 });
   await site.close();                                               // Auto Discover needs no rivalsdata tab open
-  ok(/Start Auto Discover/.test(await popup.textContent('#autotoggle')) && (await popup.inputValue('#autodelay')) === '60', 'popup offers "Start Auto Discover" with a conservative 60 s delay');
+  ok(/Start Auto Discover/.test(await popup.textContent('#autotoggle')) && (await popup.inputValue('#autodelay')) === '1', 'popup offers "Start Auto Discover" with a 1 s delay');
 
   // Players of a lobby saved in the last 30 min are in the same match: Auto Discover must skip them. Age the lobby we just
   // saved (as if it ended long ago) so the walk starts; the first Competitive profile it reads then brings the others back into "same match".

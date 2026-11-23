@@ -457,6 +457,10 @@
     const mode = await until(status, T.status);                                       // the live status arrives a moment later
     try { root.history.replaceState(null, '', root.location.href.replace(/#.*$/, '')); } catch (_) { /* keep the hash */ }
     if (gone()) return;
+    try {                                                                              // remember what we saw; Auto Discover trusts it for 30 minutes (S.ONLINE_TTL)
+      const um = /\/player\/([^/?#]+)/.exec(root.location.pathname || '');
+      if (um) await S.updatePlayer(decodeURIComponent(um[1]), { online: { t: Date.now(), inGame: !!(mode && mode.includes('competitive')), mode: mode || null } });
+    } catch (_) { /* optional */ }
     if (!mode || !mode.includes('competitive')) {
       dbg('not in Competitive (' + (mode || 'no status') + ')');
       if (auto) { report('offline'); return; }
