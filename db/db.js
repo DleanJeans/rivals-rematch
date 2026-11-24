@@ -463,6 +463,18 @@
     catch (err) { alert('Import failed: ' + err.message); }
     e.target.value = '';
   });
+  (function () {   // purge by rank
+    const sel = $('purgeRank');
+    for (let i = RDT.TIERS.length * 3 - 1; i >= 1; i--) { const l = RDT.rankLabelOf(i); if (l) sel.add(new Option(l, i)); }
+    sel.value = 14;
+    $('purgeBtn').addEventListener('click', async () => {
+      const idx = +sel.value, label = RDT.rankLabelOf(idx);
+      const n = await S.purgeBelow(idx, true);
+      if (!n) { alert('No saved players are ranked below ' + label + '.'); return; }
+      if (!confirm('Remove ' + n + ' saved player' + (n === 1 ? '' : 's') + ' ranked below ' + label + '?\n\nYou, starred, tagged and noted players are kept. This cannot be undone.')) return;
+      await S.purgeBelow(idx); reload();
+    });
+  })();
   $('wipe').addEventListener('click', async () => {
     if (confirm('Delete ALL saved players, lobbies and stats? Export first if unsure.')) { await S.wipe(); reload(); }
   });

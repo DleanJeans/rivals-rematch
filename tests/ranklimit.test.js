@@ -23,5 +23,14 @@ const lobby = () => ({ season: 11, qpLobby: false, rows: [row('100', GM1, 0, 0),
   Object.keys(mem).filter((k) => k.startsWith('p:') || k === 'rdt_games').forEach((k) => delete mem[k]);
   r = await S.ingest(lobby(), await S.getSettings());
   ok(r.saved === 2 && r.rankSkipped === 3, `limit 0: only players of your own rank and above, plus you (${r.saved} saved)`);
+  // purge below a rank
+  Object.keys(mem).forEach((k) => delete mem[k]);
+  await S.saveSettings(Object.assign(await S.getSettings(), { selfUid: '100', saveRankLimit: false }));
+  { const lb = lobby(); lb.rows.forEach((x) => { x.rs = 50; x.rankLabel = 'x'; }); await S.ingest(lb, await S.getSettings()); }
+  await S.updatePlayer('4', { starred: true });
+  const D1i = R.rankIdx(R.parseRank('D1', 'diamond'));
+  ok(await S.purgeBelow(D1i, true) === 1 && mem['p:3'], 'dry run counts P1 (B1 is starred and kept) without deleting');
+  ok(await S.purgeBelow(D1i) === 1 && !mem['p:3'] && mem['p:4'] && mem['p:2'] && mem['p:100'], 'purge removes P1 only; D1, you and the starred B1 stay');
+  ok(!!mem.rdt_deleted && mem.rdt_deleted.players['3'], 'purged player is tombstoned so a seed or import does not bring them back');
   console.log(fail ? `\n${fail} FAILED` : '\nall passed'); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.log('  ✗', e.stack); process.exit(1); });
