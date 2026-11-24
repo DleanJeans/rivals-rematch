@@ -86,7 +86,8 @@
   .who a{color:#fff;font-weight:600;text-decoration:none}.who a:hover{text-decoration:underline}
   .who .q{color:#8e94a4;font-weight:400}
   .meta{grid-column:2/4;color:#8e94a4;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
-  .heroes{display:flex;gap:3px}.heroes img{width:26px;height:26px;border-radius:4px;background:#2a2d36}
+  .heroes{display:flex;gap:4px}.hw{display:flex;flex-direction:column;align-items:center;gap:1px}.hw .lv{font-size:10px;line-height:1;color:#c9cdd8;font-variant-numeric:tabular-nums}
+  .heroes{display:flex;gap:4px}.heroes img{width:26px;height:26px;border-radius:4px;background:#2a2d36}
   .badge{padding:0 5px;border-radius:4px;background:#2a2d36;color:#cdd}
   .badge.tag{background:#5a2a2a;color:#ffd0d0}
   .badge.star{background:#5a4a12;color:#ffe08a}
@@ -252,9 +253,17 @@
       if (it.match.uid) {
         const p = it.player, l = p.last || {};
         const meta = el('div', 'meta');
-        if (l.heroes && l.heroes.length) {
+        // Hero tiles with the saved proficiency level under each (falls back to the top proficiency heroes when no heroes were saved).
+        const prof = (p.detail && p.detail.proficiency) || [];
+        const slugs = l.heroes && l.heroes.length ? l.heroes.slice(0, 4) : prof.slice().sort((a, b) => (b.level || 0) - (a.level || 0)).slice(0, 4).map((x) => x.slug);
+        if (slugs.length) {
           const hs = el('span', 'heroes');
-          l.heroes.slice(0, 4).forEach((h) => hs.appendChild(R.ui.heroTile(h, p.detail, dtip, l.heroLabels)));
+          slugs.forEach((h) => {
+            const w = el('span', 'hw'); w.appendChild(R.ui.heroTile(h, p.detail, dtip, l.heroLabels));
+            const st = R.ui.heroStat(p.detail, h);
+            if (st && st.level != null) w.appendChild(el('span', 'lv', 'Lv ' + st.level));
+            hs.appendChild(w);
+          });
           meta.appendChild(hs);
         }
         const chev = el('button', 'chev', hudOpen.has(p.uid) ? '▴ details' : '▾ details'); chev.title = 'Heroes, proficiency and match history';
