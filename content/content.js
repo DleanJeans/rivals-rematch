@@ -475,7 +475,7 @@
     if (gone()) return;
     try {                                                                              // remember what we saw; Auto Discover trusts it for 30 minutes (S.ONLINE_TTL)
       const um = /\/player\/([^/?#]+)/.exec(root.location.pathname || '');
-      if (um) await S.updatePlayer(decodeURIComponent(um[1]), { online: { t: Date.now(), inGame: !!(mode && mode.includes('competitive')), mode: mode || null } });
+      if (um) await S.updatePlayer(decodeURIComponent(um[1]), { bugged: null, online: { t: Date.now(), inGame: !!(mode && mode.includes('competitive')), mode: mode || null } });
     } catch (_) { /* optional */ }
     if (!mode || !mode.includes('competitive')) {
       dbg('not in Competitive (' + (mode || 'no status') + ')');

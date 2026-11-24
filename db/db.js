@@ -157,6 +157,7 @@
       tr.appendChild(el('td', 'dim', ago(p.lastSeen)));
       const on = S.onlineOf(p), ot = el('td', on === true ? 'online' : 'dim', on === true ? '\u25CF In game' : on === false ? 'Offline' : '\u2014');
       if (on != null) { ot.title = 'Checked ' + ago(p.online.t) + (p.online.mode ? ' (' + p.online.mode + ')' : ''); ot.appendChild(el('div', 'rel', ago(p.online.t))); }
+      if (p.bugged) { ot.appendChild(el('div', 'rel bugged', '\u26A0 Bugged profile')); ot.title = 'The site showed an error page for this profile ' + ago(p.bugged); }
       tr.appendChild(ot);
       tr.appendChild(editCell(p, 'tag', 'tag', 'e.g. toxic'));
       tr.appendChild(editCell(p, 'note', '', 'note'));

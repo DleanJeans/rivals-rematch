@@ -106,6 +106,7 @@ function finish(tabId, outcome, info) {
     } else if (outcome === 'broken') {
       st.checked[cur.uid] = Date.now() - fresh + 3 * 60e3;                   // the profile page itself errors: skip it, look again in 3 minutes
       line = cur.name + ': profile page shows an error, skipped';
+      try { await S.updatePlayer(cur.uid, { bugged: Date.now() }); } catch (_) { /* optional */ }
     } else if (outcome === 'offline') line = cur.name + ': not in a Competitive game';
     else if (outcome === 'nolive') line = cur.name + ': in a Competitive game but the Live Game never appeared';
     else line = cur.name + ': page did not load (rate limited?)';
