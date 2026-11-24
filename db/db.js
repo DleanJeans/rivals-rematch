@@ -97,17 +97,29 @@
 
   // the players Auto Discover is checking right now are highlighted (and the first one scrolled to)
   let autoNow = [];
+  const followOn = () => { const c = $('autoscroll'); return !c || c.checked; };
+  try { const c = $('autoscroll'); if (c) { c.checked = localStorage.getItem('rdt_autoscroll') !== '0'; c.addEventListener('change', () => { try { localStorage.setItem('rdt_autoscroll', c.checked ? '1' : '0'); } catch (_) {} }); } } catch (_) { /* storage blocked */ }
+  // Auto Discover started from this page follows the table's order; keep the worker's copy current when the sort/filter changes
+  let shownOrder = [], autoByPage = false, pushed = '';
+  function fullOrder() { const seen = new Set(shownOrder); return shownOrder.concat(data.players.filter((p) => !seen.has(p.uid)).map((p) => p.uid)); }
+  function pushOrder() {
+    if (!autoByPage) return;
+    const o = fullOrder(), j = o.join();
+    if (j === pushed) return;
+    pushed = j; try { chrome.storage.local.set({ rdt_auto_order: o }); } catch (_) { /* tests without the extension APIs */ }
+  }
   function markAuto(uids) {
     if (uids.join() === autoNow.join()) return;
     autoNow = uids;
     let hit = null;
     document.querySelectorAll('#tbl tbody tr[data-uid]').forEach((r) => { const on = uids.includes(r.dataset.uid); r.classList.toggle('auto-now', on); if (on && !hit) hit = r; });
-    if (hit && hit.scrollIntoView) hit.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (hit && hit.scrollIntoView && followOn()) hit.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
   try {
     const cur = (st) => (st && st.running && st.inflight ? Object.keys(st.inflight).map((k) => st.inflight[k].uid).sort() : []);
-    chrome.storage.local.get('rdt_auto', (r) => markAuto(cur(r && r.rdt_auto)));
-    chrome.storage.onChanged.addListener((ch, area) => { if (area === 'local' && ch.rdt_auto) markAuto(cur(ch.rdt_auto.newValue)); });
+    const follow = (st) => { autoByPage = !!(st && st.running && st.byPage); pushed = ''; pushOrder(); };
+    chrome.storage.local.get('rdt_auto', (r) => { markAuto(cur(r && r.rdt_auto)); follow(r && r.rdt_auto); });
+    chrome.storage.onChanged.addListener((ch, area) => { if (area === 'local' && ch.rdt_auto) { markAuto(cur(ch.rdt_auto.newValue)); const b = !!(ch.rdt_auto.newValue && ch.rdt_auto.newValue.running && ch.rdt_auto.newValue.byPage); if (b !== autoByPage) follow(ch.rdt_auto.newValue); } });
   } catch (_) { /* tests without the extension APIs */ }
 
   function renderPlayers() {
@@ -122,6 +134,8 @@
     });
     const f = key[sortKey] === wr ? (p) => wr(p.last) : key[sortKey];
     list.sort((a, b) => ((b.starred ? 1 : 0) - (a.starred ? 1 : 0)) || (f(a) > f(b) ? 1 : f(a) < f(b) ? -1 : 0) * sortDir); // starred first
+    shownOrder = list.map((p) => p.uid);
+    pushOrder();
     $('count').textContent = list.length + ' shown';
     $('empty').hidden = data.players.length > 0;
     $('tbl').hidden = data.players.length === 0;
@@ -302,7 +316,7 @@
   ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sQp', 'sQpSave', 'sSavedHeroes', 'sAuto', 'sDetails', 'sRange', 'sRankSave', 'sSaveRange'].forEach((id) => $(id).addEventListener('change', saveSettings));
 
   try { $('ver').textContent = 'v' + chrome.runtime.getManifest().version; } catch (_) { /* no manifest in tests */ }
-  try { RDT.autoUI.init({ toggle: $('autotoggle'), delay: $('autodelay'), status: $('autostatus'), parallel: $('autoparallel') }); } catch (_) { /* tests without the extension APIs */ }
+  try { RDT.autoUI.init({ toggle: $('autotoggle'), delay: $('autodelay'), status: $('autostatus'), parallel: $('autoparallel'), order: fullOrder }); } catch (_) { /* tests without the extension APIs */ }
 
 
   // ---- write the database into <repo>/data/players.json
