@@ -6,6 +6,8 @@
   const HERO = (s) => 'https://rivalsdata.com/assets/heroes/' + encodeURIComponent(s) + '.webp';
   let data = { players: [], games: [], stats: {}, settings: {} };
   let sortKey = 'when', sortDir = -1;
+  let page = 0, pageSize = 500;                        // pageSize 0 = show everything
+  try { const v = parseInt(localStorage.getItem('rdt_pagesize'), 10); if (v >= 0) pageSize = v; } catch (_) { /* storage blocked */ }
   document.head.appendChild(Object.assign(document.createElement('style'), { textContent: RDT.ui.css }));
   const tip = RDT.ui.makeTip(document.body);          // hero tooltip (name + record / level)
   const openRows = new Set();                          // rows whose dropdown is open (survives redraws)
@@ -30,7 +32,7 @@
     data.players = data.players.filter((p) => p.uid !== data.settings.selfUid);   // you are not a lobby contact
     $('cPlayers').textContent = data.players.length;
     $('cGames').textContent = data.games.length;
-    renderPlayers(); renderLobbies(); renderSettings();
+    renderPlayers(true); renderLobbies(); renderSettings();
   }
 
 
@@ -112,7 +114,12 @@
     if (uids.join() === autoNow.join()) return;
     autoNow = uids;
     let hit = null;
-    document.querySelectorAll('#tbl tbody tr[data-uid]').forEach((r) => { const on = uids.includes(r.dataset.uid); r.classList.toggle('auto-now', on); if (on && !hit) hit = r; });
+    const find = () => { document.querySelectorAll('#tbl tbody tr[data-uid]').forEach((r) => { const on = uids.includes(r.dataset.uid); r.classList.toggle('auto-now', on); if (on && !hit) hit = r; }); };
+    find();
+    if (!hit && uids.length && followOn() && pageSize) {      // following a player on another page: switch to that page
+      const i = shownOrder.indexOf(uids[0]);
+      if (i >= 0 && Math.floor(i / pageSize) !== page) { page = Math.floor(i / pageSize); renderPlayers(true); find(); }
+    }
     if (hit && hit.scrollIntoView && followOn()) hit.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
   try {
@@ -122,7 +129,18 @@
     chrome.storage.onChanged.addListener((ch, area) => { if (area === 'local' && ch.rdt_auto) { markAuto(cur(ch.rdt_auto.newValue)); const b = !!(ch.rdt_auto.newValue && ch.rdt_auto.newValue.running && ch.rdt_auto.newValue.byPage); if (b !== autoByPage) follow(ch.rdt_auto.newValue); } });
   } catch (_) { /* tests without the extension APIs */ }
 
-  function renderPlayers() {
+  function drawPager(total, pages, from, to) {
+    document.querySelectorAll('.pager').forEach((box) => {
+      box.textContent = ''; box.hidden = pages <= 1;
+      const btn = (label, title, pg) => { const b = el('button', '', label); b.title = title; b.disabled = pg === page; b.addEventListener('click', () => { page = pg; renderPlayers(true); if (box.dataset.pos === 'bottom') window.scrollTo(0, 0); }); box.appendChild(b); };
+      btn('«', 'First page', 0); btn('‹', 'Previous page', Math.max(0, page - 1));
+      box.appendChild(el('span', 'dim', 'Page ' + (page + 1) + ' of ' + pages + ' · ' + (from + 1) + '–' + to + ' of ' + total));
+      btn('›', 'Next page', Math.min(pages - 1, page + 1)); btn('»', 'Last page', pages - 1);
+    });
+  }
+
+  function renderPlayers(keepPage) {
+    if (keepPage !== true) page = 0;                // a new search/filter/sort starts at the first page
     const q = $('q').value.trim().toLowerCase(), role = $('role').value;
     let list = data.players.filter((p) => {
       if (q && ![p.uid, p.tag, p.note].concat(p.names).join(' ').toLowerCase().includes(q)) return false;
@@ -136,14 +154,19 @@
     list.sort((a, b) => ((b.starred ? 1 : 0) - (a.starred ? 1 : 0)) || (f(a) > f(b) ? 1 : f(a) < f(b) ? -1 : 0) * sortDir); // starred first
     shownOrder = list.map((p) => p.uid);
     pushOrder();
-    $('count').textContent = list.length + ' shown';
+    const total = list.length, pages = pageSize ? Math.max(1, Math.ceil(total / pageSize)) : 1;
+    page = Math.min(page, pages - 1);
+    const from = pageSize ? page * pageSize : 0, to = pageSize ? Math.min(total, from + pageSize) : total;
+    $('count').textContent = total + ' shown';
+    drawPager(total, pages, from, to);
     $('empty').hidden = data.players.length > 0;
     $('tbl').hidden = data.players.length === 0;
     const tb = document.querySelector('#tbl tbody'); tb.textContent = '';
-    list.slice(0, 500).forEach((p, idx) => {
+    list.slice(from, to).forEach((p, i) => {
+      const idx = from + i;
       const l = p.last || {};
       const tr = el('tr'); if (p.starred) tr.className = 'starred'; tr.dataset.uid = p.uid; if (autoNow.includes(p.uid)) tr.classList.add('auto-now');
-      tr.appendChild(el('td', 'num dim', String(idx + 1)));   // row number in the displayed order, always from 1
+      tr.appendChild(el('td', 'num dim', String(idx + 1)));   // row number in the displayed order, continuing across pages
       tr.appendChild(whoCell({ uid: p.uid, name: p.names[0] || p.uid, icon: p.icon, aka: p.names.slice(1, 4), party: l.party, partyColor: l.partyColor }));
       tr.appendChild(rankCell(l.rankLabel, l.rs));
       tr.appendChild(recordCell(l.w, l.l));
@@ -421,7 +444,9 @@
   }));
   function markSort() { document.querySelectorAll('th[data-s]').forEach((th) => { th.classList.toggle('sorted', th.dataset.s === sortKey); th.dataset.dir = th.dataset.s === sortKey ? (sortDir > 0 ? 'asc' : 'desc') : ''; }); }
   markSort();
-  $('q').addEventListener('input', renderPlayers); $('role').addEventListener('change', renderPlayers);
+  $('q').addEventListener('input', () => renderPlayers()); $('role').addEventListener('change', () => renderPlayers());
+  $('pagesize').value = String(pageSize); if ($('pagesize').value !== String(pageSize)) { pageSize = 500; $('pagesize').value = '500'; }
+  $('pagesize').addEventListener('change', () => { pageSize = +$('pagesize').value; try { localStorage.setItem('rdt_pagesize', String(pageSize)); } catch (_) {} renderPlayers(); });
   document.querySelectorAll('th[data-s]').forEach((th) => th.addEventListener('click', () => {
     const k = th.dataset.s; sortDir = sortKey === k ? -sortDir : (k === 'name' ? 1 : -1); sortKey = k; markSort(); renderPlayers();
   }));

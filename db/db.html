@@ -35,6 +35,8 @@
         <option value="tagged">Tagged / noted</option>
       </select>
       <span id="count" class="dim"></span>
+      <label class="dim" title="Players per page">Per page <select id="pagesize"><option value="100">100</option><option value="250">250</option><option value="500">500</option><option value="1000">1000</option><option value="0">All</option></select></label>
+      <span class="pager" data-pos="top" hidden></span>
       <span class="sp"></span>
       <span class="auto" title="Goes through every saved player slowly, one at a time: opens their profile, and if they are in a Competitive game reads that lobby (new players get saved). Keeps running while this page is closed.">
         <button id="autotoggle">Start Auto Discover</button>
@@ -51,6 +53,7 @@
       </tr></thead>
       <tbody></tbody>
     </table>
+    <div class="pager bottom" data-pos="bottom" hidden></div>
     <p id="empty" class="dim" hidden>Nothing saved yet. Open a player's <b>Live Game</b> tab on rivalsdata.com during a match — names are saved automatically.</p>
   </section>
 

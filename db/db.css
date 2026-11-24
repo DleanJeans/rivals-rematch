@@ -121,3 +121,5 @@ tr.auto-now td{background:color-mix(in srgb,var(--acc) 22%,transparent)}tr.auto-
 .online{color:#4caf50;font-weight:600}
 .num{width:28px;text-align:right}
 .rel.bugged { color: #d9534f; }
+
+.pager{display:inline-flex;gap:6px;align-items:center}.pager[hidden]{display:none}.pager.bottom{display:flex;justify-content:center;margin:12px 0}.pager button{min-width:2em}
