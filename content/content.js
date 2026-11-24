@@ -457,9 +457,22 @@
     const gone = () => dead || !alive();
     const until = async (fn, ms) => {
       const t0 = Date.now();
-      for (;;) { const v = fn(); if (v) return v; if (Date.now() - t0 > ms || gone()) return null; await sleep(150); }
+      for (;;) { const v = fn(); if (v) return v; if (Date.now() - t0 > ms || gone()) return null; await sleep(50); }
     };
-    const status = () => { const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : ''); return m ? m[1].trim().toLowerCase() : null; };
+    const status = () => {
+      const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : '');
+      if (m) return m[1].trim().toLowerCase();
+      // Offline players show "Offline - Last seen ..." instead: recognise it at once instead of waiting out the whole status timeout for an "In game" that never comes.
+      for (const e of doc.querySelectorAll('span, p, div')) { if (!e.firstElementChild && /^(Offline|Online|In lobby|In menu|Away|Idle)\b/i.test((e.textContent || '').trim())) return e.textContent.trim().split(/\s|-/)[0].toLowerCase(); }
+      return null;
+    };
+    const status = () => {
+      const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : '');
+      if (m) return m[1].trim().toLowerCase();
+      // Offline players show "Offline - Last seen ..." instead: recognise it at once instead of waiting out the whole status timeout for an "In game" that never comes.
+      for (const e of doc.querySelectorAll('span, p, div')) { if (!e.firstElementChild && /^(Offline|Online|In lobby|In menu|Away|Idle)\b/i.test((e.textContent || '').trim())) return e.textContent.trim().split(/\s|-/)[0].toLowerCase(); }
+      return null;
+    };
     const broken = () => /Something went wrong/i.test(doc.body ? doc.body.textContent : '') && !doc.getElementById('live-game');   // the site's own error page
     const tab = await until(() => doc.getElementById('live-game') || broken(), T.load);   // the profile has loaded once its tabs exist
     if (tab && !tab.id) { dbg('the site shows an error for this profile, skipping it'); if (auto) report('broken'); return; }
@@ -482,14 +495,15 @@
     // hydrated yet: so send the full pointer sequence and repeat until the tab reports itself selected.
     dbg('Competitive: opening Live Game');
     const selected = () => tab.getAttribute('aria-selected') === 'true';
-    for (let i = 0; i < 20 && !selected() && !gone(); i++) {
+    for (let i = 0; i < 80 && !selected() && !gone(); i++) {
+      if (i % 5) { await sleep(50); continue; }            // fire the click sequence every ~250 ms, but notice the tab turning selected within 50 ms
       const W = root;
       const fire = (type, Ctor, extra) => { try { tab.dispatchEvent(new (W[Ctor] || W.MouseEvent)(type, Object.assign({ bubbles: true, cancelable: true, composed: true, button: 0, view: W }, extra))); } catch (_) { /* ignore */ } };
       const P = { pointerId: 1, pointerType: 'mouse', isPrimary: true };
       fire('pointerdown', 'PointerEvent', P); fire('mousedown', 'MouseEvent'); fire('pointerup', 'PointerEvent', P); fire('mouseup', 'MouseEvent');
       tab.click();
-      if (i % 4 === 3 && !selected()) { try { tab.focus(); for (const t of ['keydown', 'keyup']) fire(t, 'KeyboardEvent', { key: 'Enter', code: 'Enter' }); } catch (_) { /* ignore */ } }
-      await sleep(250);
+      if (i % 20 === 15 && !selected()) { try { tab.focus(); for (const t of ['keydown', 'keyup']) fire(t, 'KeyboardEvent', { key: 'Enter', code: 'Enter' }); } catch (_) { /* ignore */ } }
+      await sleep(50);
     }
     dbg(selected() ? 'Live Game open' : 'could not open Live Game');
     if (await until(() => R.scrapeLive(doc), T.live)) {
