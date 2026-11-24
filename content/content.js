@@ -26,6 +26,9 @@
   let lastSig = '', running = false, again = false, current = null;
   let hudCollapsed = null; // null = auto
   let pending = new Map(); // ban-phase guesses awaiting the reveal: key -> {uid, t}
+  let wrong = new Map();   // revealed uid -> {name, p, t}: a >60% ban-phase guess that turned out to be someone else
+  const WRONG_MIN = 0.6;
+  let flagEls = [];
   let stats = {};
   let statusText = 'starting…';
   let lastResult = { noPanel: true };
@@ -67,6 +70,7 @@
   .mid{border-color:#b8892a}.mid .pc{background:#6b4f12;color:#ffe2a1}
   .lo{border-color:#4a4f5c;color:#aab}.lo .pc{background:#30343e;color:#bbc}
   .none{border-style:dashed;color:#8a90a0;font-weight:400}
+  .flag{position:fixed;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#7a1f2b;border:1px solid #e0566a;color:#ffd7dc;font-size:12px;font-weight:700;line-height:1;pointer-events:auto;cursor:help}
   .tip{position:fixed;inset:auto;margin:0;z-index:2147483002;display:none;max-width:320px;background:#12141a;border:1px solid #4a4f5c;border-radius:8px;
     padding:8px 10px;color:#dfe2ea;font-size:12px;line-height:1.45;pointer-events:none;box-shadow:0 6px 24px #000a}
   .tip b{color:#fff}.tip .dim{color:#8e94a4}
@@ -192,11 +196,42 @@
       const off = r.bottom < 0 || r.top > root.innerHeight;
       s.display = off ? 'none' : 'flex';
     });
+    flagEls.forEach((f) => {
+      if (!f.row.nameEl.isConnected) { f.el.style.display = 'none'; return; }
+      const r = f.row.nameEl.getBoundingClientRect();
+      f.el.style.left = Math.max(0, r.right - 22) + 'px'; f.el.style.top = (r.top + Math.max(0, (r.height - 18) / 2)) + 'px';
+      f.el.style.display = r.bottom < 0 || r.top > root.innerHeight ? 'none' : 'flex';
+    });
   }
 
   function hideTip() {
     tip.style.display = 'none';
     try { if (tip.matches(':popover-open')) tip.hidePopover(); } catch (_) { /* older Chrome: z-index fallback */ }
+  }
+
+  function renderFlags(lobby) {
+    flagEls = [];
+    if (!chipLayer || !wrong.size) return;
+    lobby.rows.forEach((row) => {
+      const w = row.uid && wrong.get(row.uid);
+      if (!w || !row.nameEl) return;
+      const f = el('div', 'flag', '!');
+      f.addEventListener('mouseenter', () => {
+        tip.textContent = '';
+        tip.appendChild(el('div', '', 'Guessed wrong'));
+        const d = el('div', ''); d.appendChild(doc.createTextNode('Earlier I guessed this was ')); d.appendChild(el('b', '', w.name)); d.appendChild(doc.createTextNode(' with ' + pct(w.p) + ' confidence.'));
+        tip.appendChild(d);
+        tip.style.display = 'block';
+        try { if (tip.showPopover && !tip.matches(':popover-open')) tip.showPopover(); } catch (_) { /* z-index fallback */ }
+        const r = f.getBoundingClientRect();
+        tip.style.left = Math.max(8, Math.min(r.left, root.innerWidth - 330)) + 'px';
+        tip.style.top = Math.min(r.bottom + 6, root.innerHeight - tip.offsetHeight - 8) + 'px';
+      });
+      f.addEventListener('mouseleave', hideTip);
+      chipLayer.appendChild(f);
+      flagEls.push({ el: f, row });
+    });
+    position();
   }
 
   function showTip(it, anchor) {
@@ -304,7 +339,9 @@
       if (!r) continue;
       pending.delete(k); checked++;
       if (r.uid === g.uid) correct++;
+      else if (g.p > WRONG_MIN) wrong.set(r.uid, { name: g.name, p: g.p, t: Date.now() });
     }
+    for (const [u, w] of Array.from(wrong)) if (Date.now() - w.t > 6 * 3600e3) wrong.delete(u);
     if (checked) stats = await S.recordOutcome(checked, correct);
   }
 
@@ -366,11 +403,12 @@
       current.items.forEach((it) => {
         if (it.match.uid && it.match.p >= settings.minShow) {
           pending.set(it.row.team + '|' + it.row.rankIdx + '|' + it.row.icon,
-            { uid: it.match.uid, t: Date.now() });
+            { uid: it.match.uid, p: it.match.p, name: (it.player && it.player.names[0]) || it.match.uid, t: Date.now() });
         }
       });
       lastResult.matched = current.items.filter((i) => i.match.uid && i.match.p >= settings.minShow).length;
       render(current.items, settings);
+      renderFlags(lobby);
       return lastResult;
     } catch (e) {
       if (isInvalidated(e) || !alive()) { retire(); return; }          // extension was reloaded: not an error worth showing
