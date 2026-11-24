@@ -419,9 +419,11 @@
     document.querySelectorAll('#tabs button').forEach((x) => x.classList.toggle('on', x === b));
     ['players', 'lobbies', 'settings'].forEach((t) => { $('tab-' + t).hidden = t !== b.dataset.tab; });
   }));
+  function markSort() { document.querySelectorAll('th[data-s]').forEach((th) => { th.classList.toggle('sorted', th.dataset.s === sortKey); th.dataset.dir = th.dataset.s === sortKey ? (sortDir > 0 ? 'asc' : 'desc') : ''; }); }
+  markSort();
   $('q').addEventListener('input', renderPlayers); $('role').addEventListener('change', renderPlayers);
   document.querySelectorAll('th[data-s]').forEach((th) => th.addEventListener('click', () => {
-    const k = th.dataset.s; sortDir = sortKey === k ? -sortDir : (k === 'name' ? 1 : -1); sortKey = k; renderPlayers();
+    const k = th.dataset.s; sortDir = sortKey === k ? -sortDir : (k === 'name' ? 1 : -1); sortKey = k; markSort(); renderPlayers();
   }));
   $('exportBtn').addEventListener('click', async () => {
     const blob = new Blob([JSON.stringify(await S.exportAll(), null, 1)], { type: 'application/json' });

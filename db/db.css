@@ -15,6 +15,9 @@ table{width:100%;border-collapse:collapse;background:var(--card);border:1px soli
 th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
 th{font-size:12px;color:var(--dim);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap}
 th[data-s]:hover{color:var(--tx)}
+th.sorted{color:var(--tx)}
+th.sorted[data-dir=asc]::after{content:' \25B2'}th.sorted[data-dir=desc]::after{content:' \25BC'}
+th.sorted::after{font-size:9px;vertical-align:1px}
 tr:last-child td{border-bottom:0}
 td.nm a{color:var(--tx);font-weight:600;text-decoration:none}td.nm a:hover{text-decoration:underline}
 td.nm small{display:block;color:var(--dim);font-weight:400}
