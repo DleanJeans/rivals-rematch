@@ -527,11 +527,21 @@
     dbg('Competitive: opening Live Game');
     const selected = () => tab.getAttribute('aria-selected') === 'true';
     // A captcha can flash up for a split second and swallow the click: while one is showing, do not click (it would be lost), wait for it
-    // to go, then click again. Bounded: at most T.open ms in total, so a stuck page cannot hang the tab.
+    // to go, then click again. There is no time cap: keep clicking until the tab is selected, but stop when the page is closed or
+    // navigated away (gone), the tab was removed (the player has no Live Game tab), the site shows its error page, or the player is no
+    // longer in a Competitive game. Auto Discover's stop button closes the tab, which ends this loop too.
     const captcha = () => !!doc.querySelector('iframe[src*="captcha" i], iframe[src*="turnstile" i], iframe[title*="challenge" i], .g-recaptcha, .h-captcha, .cf-turnstile, #challenge-running, #cf-challenge-running');
-    const tOpen = Date.now(), openMax = T.open || 20000;
+    const tOpen = Date.now(), openMax = T.open || Infinity, every = T.openEvery || 1000;
+    let stop = null, lastCheck = Date.now();
     for (let i = 0; !selected() && !gone() && Date.now() - tOpen < openMax; i++) {
-      if (captcha()) { dbg('captcha showing, waiting to click again'); await sleep(100); i = -1; continue; }
+      if (!tab.isConnected || !doc.getElementById('live-game')) { stop = 'nolive'; break; }          // the Live Game tab no longer exists
+      if (broken()) { stop = 'broken'; break; }
+      if (Date.now() - lastCheck > 5000) {                                                            // still in a Competitive game?
+        lastCheck = Date.now(); const m = status();
+        if (m && !m.includes('competitive')) { stop = 'offline'; break; }
+      }
+      if (captcha()) { dbg('captcha showing, waiting to click again'); await sleep(250); i = -1; continue; }
+      if (i >= 12 && i % 20 === 0) dbg('Live Game not open yet, retrying');
       if (i % 5) { await sleep(50); continue; }            // fire the click sequence every ~250 ms, but notice the tab turning selected within 50 ms
       const W = root;
       const fire = (type, Ctor, extra) => { try { tab.dispatchEvent(new (W[Ctor] || W.MouseEvent)(type, Object.assign({ bubbles: true, cancelable: true, composed: true, button: 0, view: W }, extra))); } catch (_) { /* ignore */ } };
@@ -539,7 +549,13 @@
       fire('pointerdown', 'PointerEvent', P); fire('mousedown', 'MouseEvent'); fire('pointerup', 'PointerEvent', P); fire('mouseup', 'MouseEvent');
       tab.click();
       if (i % 20 === 15 && !selected()) { try { tab.focus(); for (const t of ['keydown', 'keyup']) fire(t, 'KeyboardEvent', { key: 'Enter', code: 'Enter' }); } catch (_) { /* ignore */ } }
-      await sleep(50);
+      if (i >= 10) await sleep(every);                       // after the first few quick attempts, retry about once a second
+      else await sleep(50);
+    }
+    if (stop && !selected()) {
+      dbg(stop === 'broken' ? 'the site shows an error for this profile, skipping it' : stop === 'offline' ? 'no longer in Competitive' : 'no Live Game tab');
+      if (auto) report(stop);
+      return;
     }
     dbg(selected() ? 'Live Game open' : 'could not open Live Game');
     if (await until(() => R.scrapeLive(doc), T.live)) {
