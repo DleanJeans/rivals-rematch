@@ -147,7 +147,7 @@
       const cls = chipClass(it.match, settings.minShow);
       const c = el('div', 'chip ' + cls);
       const player = it.player;
-      const label = !it.match.uid ? 'no match' : (cls === 'lo' ? '(maybe) ' : '') + (player.names[0] || player.uid);
+      const label = !it.match.uid ? 'no match' + (it.row.slot ? ' #' + it.row.slot : '') : (player.names[0] || player.uid);
       c.appendChild(el('span', 'nm', label));
       if (it.match.uid) c.appendChild(el('span', 'pc', pct(it.match.p)));
       c.addEventListener('mouseenter', () => showTip(it, c));
