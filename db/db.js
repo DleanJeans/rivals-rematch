@@ -23,7 +23,7 @@
   const key = {
     name: (p) => (p.names[0] || '').toLowerCase(), abs: (p) => (p.last && p.last.abs) || -1e9,
     wr, seen: (p) => p.seen, when: (p) => p.lastSeen,
-    online: (p) => { const o = S.onlineOf(p); return o === true ? 2 : o === false ? 1 : 0; },
+    online: (p) => { const o = S.onlineState(p); return o === 'game' ? 3 : o === 'queue' ? 2 : o === 'offline' ? 1 : 0; },
   };
 
   async function reload() {
@@ -178,7 +178,7 @@
       if (p.asEnemy) rel.appendChild(el('b', 'e', 'enemy ' + p.asEnemy));
       seen.appendChild(rel); tr.appendChild(seen);
       tr.appendChild(el('td', 'dim', ago(p.lastSeen)));
-      const on = S.onlineOf(p), ot = el('td', on === true ? 'online' : 'dim', on === true ? '\u25CF In game' : on === false ? 'Offline' : '\u2014');
+      const on = S.onlineState(p), ot = el('td', on === 'game' || on === 'queue' ? 'online' : 'dim', on === 'game' ? '\u25CF In game' : on === 'queue' ? '\u25CF In queue' : on === 'offline' ? 'Offline' : '\u2014');
       if (on != null) { ot.title = 'Checked ' + ago(p.online.t) + (p.online.mode ? ' (' + p.online.mode + ')' : ''); ot.appendChild(el('div', 'rel', ago(p.online.t))); }
       if (p.bugged) { ot.appendChild(el('div', 'rel bugged', '\u26A0 Bugged profile')); ot.title = 'The site showed an error page for this profile ' + ago(p.bugged); }
       tr.appendChild(ot);

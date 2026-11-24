@@ -496,11 +496,12 @@
       const t0 = Date.now();
       for (;;) { const v = fn(); if (v) return v; if (Date.now() - t0 > ms || gone()) return null; await sleep(50); }
     };
+    const QUEUE_RE = /^(In queue|In the queue|Queu(e)?ing|Searching|Finding (a )?match|In matchmaking)\b/i;   // wording unconfirmed on a real profile: several likely labels
     const status = () => {
       const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : '');
       if (m) return m[1].trim().toLowerCase();
       // Offline players show "Offline - Last seen ..." instead: recognise it at once instead of waiting out the whole status timeout for an "In game" that never comes.
-      for (const e of doc.querySelectorAll('span, p, div')) { if (!e.firstElementChild && /^(Offline|Online|In lobby|In menu|Away|Idle)\b/i.test((e.textContent || '').trim())) return e.textContent.trim().split(/\s|-/)[0].toLowerCase(); }
+      for (const e of doc.querySelectorAll('span, p, div')) { if (!e.firstElementChild && QUEUE_RE.test((e.textContent || '').trim())) return 'queue'; if (/^(Offline|Online|In lobby|In menu|Away|Idle)\b/i.test((e.textContent || '').trim())) return e.textContent.trim().split(/\s|-/)[0].toLowerCase(); }
       return null;
     };
     const broken = () => /Something went wrong/i.test(doc.body ? doc.body.textContent : '') && !doc.getElementById('live-game');   // the site's own error page
@@ -513,7 +514,7 @@
     if (gone()) return;
     try {                                                                              // remember what we saw; Auto Discover trusts it for 30 minutes (S.ONLINE_TTL)
       const um = /\/player\/([^/?#]+)/.exec(root.location.pathname || '');
-      if (um) await S.updatePlayer(decodeURIComponent(um[1]), { bugged: null, online: { t: Date.now(), inGame: !!(mode && mode.includes('competitive')), mode: mode || null } });
+      if (um) await S.updatePlayer(decodeURIComponent(um[1]), { bugged: null, online: { t: Date.now(), inGame: !!(mode && mode.includes('competitive')), queue: mode === 'queue', mode: mode || null } });
     } catch (_) { /* optional */ }
     if (!mode || !mode.includes('competitive')) {
       dbg('not in Competitive (' + (mode || 'no status') + ')');

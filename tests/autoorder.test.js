@@ -45,5 +45,17 @@ const next = async () => {                                                   // 
   await new Promise((r) => setTimeout(r, 1500));
   ok(created.length >= 2 && uidOf(created[1]) === '2', 'after the sort changed mid-run the next pick follows the new order (got ' + created.map(uidOf) + ')');
   await msg({ type: 'rdt-auto-stop' });
+  // In Queue: rechecked after 10 min (not the 20 min rule), ordered with in-game players
+  created = []; delete mem.rdt_auto_order;
+  mem['p:1'].online = { t: Date.now(), inGame: false, queue: true };
+  mem['p:2'].online = { t: Date.now(), inGame: false };
+  mem['p:3'].online = { t: Date.now(), inGame: true };
+  mem['p:4'].online = { t: Date.now(), inGame: false, queue: true };
+  const ago = (min) => Date.now() - min * 60e3;
+  mem.rdt_auto = { checked: { 1: ago(12), 2: ago(12), 3: ago(12), 4: ago(8) }, inflight: {}, delaySec: 0.1, parallel: 1, errors: 0, on: true };
+  await msg({ type: 'rdt-auto-start', delaySec: 0.1, parallel: 1 });
+  await new Promise((r) => setTimeout(r, 100));
+  ok(created.length && uidOf(created[0]) === '1', 'queued player checked 12 min ago is rechecked (10 min rule); others checked 12 min ago and the queued one checked 8 min ago are skipped (got ' + created.map(uidOf) + ')');
+  await msg({ type: 'rdt-auto-stop' });
   console.log(fail ? fail + ' failed' : 'all passed'); process.exit(fail ? 1 : 0);
 })();

@@ -9,7 +9,7 @@ importScripts('../lib/shared.js', '../lib/store.js');
 
 const S = RDT.store;
 const KEY = 'rdt_auto', ORDER = 'rdt_auto_order', NEXT = 'rdt-auto-next', LIMIT = 'rdt-auto-timeout';
-const DEFAULTS = { delaySec: 1, recheckMin: 20, minDelaySec: 0.1, maxDelaySec: 600, tabTimeoutSec: 75, maxErrors: 6 };
+const DEFAULTS = { delaySec: 1, recheckMin: 20, queueRecheckMin: 10, minDelaySec: 0.1, maxDelaySec: 600, tabTimeoutSec: 75, maxErrors: 6 };
 
 const rd = () => new Promise((res) => chrome.storage.local.get(KEY, (r) => res(Object.assign({ running: false, checked: {}, stats: { checked: 0, inGame: 0, saved: 0, newPlayers: 0 }, errors: 0, delaySec: DEFAULTS.delaySec, parallel: 1, inflight: {} }, r[KEY] || {}))));
 const wr = (st) => new Promise((res) => chrome.storage.local.set({ [KEY]: st }, res));
@@ -34,11 +34,11 @@ async function pick(st, busy) {
   const all = await S.loadAll();
   const inMatch = new Set();                                      // saved players in a lobby from the last while: they are in (or just left) a match we already read
   all.games.filter((g) => now - (g.last || 0) < fresh).forEach((g) => Object.keys(g.players || {}).forEach((u) => inMatch.add(u)));
-  const todo = all.players.filter((p) => p.uid && p.uid !== settings.selfUid && !inMatch.has(p.uid) && !(busy && busy.has(p.uid)) && !(st.checked[p.uid] && now - st.checked[p.uid] < fresh));
+  const todo = all.players.filter((p) => p.uid && p.uid !== settings.selfUid && !inMatch.has(p.uid) && !(busy && busy.has(p.uid)) && !(st.checked[p.uid] && now - st.checked[p.uid] < (S.onlineState(p, now) === 'queue' ? DEFAULTS.queueRecheckMin * 60e3 : fresh)));
   const byDefault = (a, b) => {
     const ca = st.checked[a.uid] || 0, cb = st.checked[b.uid] || 0;
-    const oa = S.onlineOf(a, now), ob = S.onlineOf(b, now);       // stored online status (30 min): known in-game first, known offline last
-    const ra = oa === true ? 0 : oa === false ? 2 : 1, rb = ob === true ? 0 : ob === false ? 2 : 1;
+    const oa = S.onlineState(a, now), ob = S.onlineState(b, now);  // stored online status (30 min): known in-game or in queue first, known offline last
+    const rk = (o) => (o === 'game' || o === 'queue' ? 0 : o === 'offline' ? 2 : 1), ra = rk(oa), rb = rk(ob);
     if (ra !== rb) return ra - rb;
     if (!ca !== !cb) return ca ? 1 : -1;                         // never checked first
     if (ca !== cb) return ca - cb;                               // then the one checked longest ago
