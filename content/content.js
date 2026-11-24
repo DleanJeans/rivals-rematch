@@ -460,7 +460,9 @@
       for (;;) { const v = fn(); if (v) return v; if (Date.now() - t0 > ms || gone()) return null; await sleep(150); }
     };
     const status = () => { const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : ''); return m ? m[1].trim().toLowerCase() : null; };
-    const tab = await until(() => doc.getElementById('live-game'), T.load);          // the profile has loaded once its tabs exist
+    const broken = () => /Something went wrong/i.test(doc.body ? doc.body.textContent : '') && !doc.getElementById('live-game');   // the site's own error page
+    const tab = await until(() => doc.getElementById('live-game') || broken(), T.load);   // the profile has loaded once its tabs exist
+    if (tab && !tab.id) { dbg('the site shows an error for this profile, skipping it'); if (auto) report('broken'); return; }
     if (!tab) { dbg('no tabs found, page did not load'); if (auto) report('error'); return; }
     dbg('waiting for the game status');
     const mode = await until(status, T.status);                                       // the live status arrives a moment later

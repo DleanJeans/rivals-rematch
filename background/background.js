@@ -83,7 +83,7 @@ function step() {
   });
 }
 
-/** One tab reported (or timed out). outcome: offline | competitive | nolive | error */
+/** One tab reported (or timed out). outcome: offline | competitive | hidden | nolive | broken | error */
 function finish(tabId, outcome, info) {
   return locked(async () => {
     const st = await rd();
@@ -103,6 +103,9 @@ function finish(tabId, outcome, info) {
       st.checked[cur.uid] = Date.now() - fresh + 3 * 60e3;                   // names never appeared: look again in 3 minutes
       st.stats.saved += (info && info.saved) || 0; st.stats.newPlayers += (info && info.newPlayers) || 0;
       line = cur.name + ': match still in its ban phase, will look again soon';
+    } else if (outcome === 'broken') {
+      st.checked[cur.uid] = Date.now() - fresh + 3 * 60e3;                   // the profile page itself errors: skip it, look again in 3 minutes
+      line = cur.name + ': profile page shows an error, skipped';
     } else if (outcome === 'offline') line = cur.name + ': not in a Competitive game';
     else if (outcome === 'nolive') line = cur.name + ': in a Competitive game but the Live Game never appeared';
     else line = cur.name + ': page did not load (rate limited?)';
