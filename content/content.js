@@ -487,7 +487,12 @@
     // hydrated yet: so send the full pointer sequence and repeat until the tab reports itself selected.
     dbg('Competitive: opening Live Game');
     const selected = () => tab.getAttribute('aria-selected') === 'true';
-    for (let i = 0; i < 80 && !selected() && !gone(); i++) {
+    // A captcha can flash up for a split second and swallow the click: while one is showing, do not click (it would be lost), wait for it
+    // to go, then click again. Bounded: at most T.open ms in total, so a stuck page cannot hang the tab.
+    const captcha = () => !!doc.querySelector('iframe[src*="captcha" i], iframe[src*="turnstile" i], iframe[title*="challenge" i], .g-recaptcha, .h-captcha, .cf-turnstile, #challenge-running, #cf-challenge-running');
+    const tOpen = Date.now(), openMax = T.open || 20000;
+    for (let i = 0; !selected() && !gone() && Date.now() - tOpen < openMax; i++) {
+      if (captcha()) { dbg('captcha showing, waiting to click again'); await sleep(100); i = -1; continue; }
       if (i % 5) { await sleep(50); continue; }            // fire the click sequence every ~250 ms, but notice the tab turning selected within 50 ms
       const W = root;
       const fire = (type, Ctor, extra) => { try { tab.dispatchEvent(new (W[Ctor] || W.MouseEvent)(type, Object.assign({ bubbles: true, cancelable: true, composed: true, button: 0, view: W }, extra))); } catch (_) { /* ignore */ } };
