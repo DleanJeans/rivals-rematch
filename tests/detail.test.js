@@ -159,15 +159,15 @@ const mock = `window.chrome = { runtime: { onMessage: { addListener(fn) { window
   ok(r3.read === 0 && r3.failed === 11, `no panel => 0 read, 11 failed (${JSON.stringify(r3)})`);
   await p3.close();
 
-  console.log('\n[4] Quick Play lobby: not saved, so its hero details are not read either');
+  console.log('\n[4] Quick Play lobby with nobody at GM+: nothing saved, nothing read');
   const nPlayers = () => [...store].filter(([k]) => k.startsWith('p:')).length;
   const nBefore = nPlayers();
   const pq = await page(read('tests/fixtures/ban_qp.html'), sim);
   await pq.waitForTimeout(900);
   const sq = await pq.evaluate(() => new Promise((res) => window.__msg({ type: 'rdt-scan' }, null, res)));
-  ok(sq.qpNotSaved === true && sq.saved === 0, `popup scan reports "Quick Play lobby: not saved" (${JSON.stringify({ saved: sq.saved, qpNotSaved: sq.qpNotSaved })})`);
+  ok(sq.qp === true && sq.saved <= 1 && !sq.newGame, `popup scan reports a Quick Play lobby with no lobby recorded (only your own GM+ row can update) (${JSON.stringify({ saved: sq.saved, qp: sq.qp })})`);
   const dq = await ask(pq);
-  ok(dq.qpSkipped === true && !('read' in dq), `hero details are skipped too (${JSON.stringify(dq)})`);
+  ok(!dq.read, `no hero details are read (${JSON.stringify(dq)})`);
   ok(nPlayers() === nBefore && !(await pq.evaluate(() => (window.__opened || []).length)), 'nothing was stored and no row was opened');
   await pq.close();
 

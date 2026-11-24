@@ -326,9 +326,9 @@
       curGameId = ing.gameId || null;
       if (settings.autoDetails && ing.newGame && !detailing) readDetails().catch(() => {});
       const hiddenN = lobby.rows.filter((r) => r.masked).length;
-      lastResult = { noPanel: false, qpNotSaved: !!ing.qpNotSaved, total: lobby.rows.length, saved: ing.saved, newPlayers: ing.newPlayers || 0, oldPlayers: ing.oldPlayers || 0, added: ing.added || 0, skipped: ing.skipped || 0, rankSkipped: ing.rankSkipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
-      statusText = ing.qpNotSaved ? 'Quick Play lobby: not saved (Settings → What gets saved)' : ing.saved
-        ? 'saved ' + ing.saved + ' from this lobby' + (ing.skipped ? ', ' + ing.skipped + ' below GM skipped (Quick Play)' : '') + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
+      lastResult = { noPanel: false, total: lobby.rows.length, saved: ing.saved, newPlayers: ing.newPlayers || 0, oldPlayers: ing.oldPlayers || 0, added: ing.added || 0, skipped: ing.skipped || 0, rankSkipped: ing.rankSkipped || 0, qp: !!lobby.qpLobby, newGame: ing.newGame, hidden: hiddenN, matched: 0 };
+      statusText = ing.saved
+        ? (lobby.qpLobby ? 'Quick Play: updated ' + ing.saved + ' GM+ player' + (ing.saved === 1 ? '' : 's') + ' (lobby not saved)' + (ing.skipped ? ', ' + ing.skipped + ' below GM skipped' : '') : 'saved ' + ing.saved + ' from this lobby' + (ing.skipped ? ', ' + ing.skipped + ' below GM skipped (Quick Play)' : ''))+ (hiddenN ? ', ' + hiddenN + ' hidden' : '') + (hiddenN ? ', ' + hiddenN + ' hidden' : '')
         : ing.skipped ? 'Quick Play: nobody at GM or above to save'
         : 'all ' + lobby.rows.length + ' names hidden — saved once revealed';
 
@@ -427,7 +427,6 @@
       const lobby = R.scrapeLive(doc);
       if (!lobby) return { noPanel: true };
       const settings = await S.getSettings();
-      if (lobby.qpLobby && !settings.saveQuickPlay) return { qpSkipped: true };         // Quick Play lobbies are not saved, so neither are their details
       const stored = new Map((await S.loadPlayers()).map((p) => [p.uid, p]));     // players that were actually saved
       const rows = lobby.rows.filter((r) => r.uid && r.uid !== settings.selfUid && stored.has(r.uid));   // never your own row
       let read = 0, failed = 0, already = 0;
@@ -458,13 +457,6 @@
     const until = async (fn, ms) => {
       const t0 = Date.now();
       for (;;) { const v = fn(); if (v) return v; if (Date.now() - t0 > ms || gone()) return null; await sleep(50); }
-    };
-    const status = () => {
-      const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : '');
-      if (m) return m[1].trim().toLowerCase();
-      // Offline players show "Offline - Last seen ..." instead: recognise it at once instead of waiting out the whole status timeout for an "In game" that never comes.
-      for (const e of doc.querySelectorAll('span, p, div')) { if (!e.firstElementChild && /^(Offline|Online|In lobby|In menu|Away|Idle)\b/i.test((e.textContent || '').trim())) return e.textContent.trim().split(/\s|-/)[0].toLowerCase(); }
-      return null;
     };
     const status = () => {
       const m = /In game\s*\(([^)]+)\)/.exec(doc.body ? doc.body.textContent : '');

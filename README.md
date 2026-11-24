@@ -15,7 +15,7 @@ phase**, when names are hidden. Everything is stored locally in your browser; no
 ## Updating
 An unpacked extension does not update itself. Download the repo again (or `git pull`), then press the **reload**
 button on the extension's card at `chrome://extensions`. The installed version is shown in the toolbar popup and
-at the top of the database page (currently 0.13.8) so you can check you have the latest.
+at the top of the database page (currently 0.14.0) so you can check you have the latest.
 
 ## How it works
 - **When names are visible** (in game, or the revealed rows in a ban phase) every player is saved:
@@ -25,8 +25,8 @@ at the top of the database page (currently 0.13.8) so you can check you have the
   the player's number in that match, not part of their name, so it is ignored.) A global assignment guarantees two rows never claim the same person.
 - Matching leans on one hard rule: season **W and L only ever go up**. Your example fits it —
   PlayerA. `4W-1L → 6W-3L` (+2W +2L) with RS unchanged; RS can move at most about ±25 per game (GM), and RS shows −20…99 within a division (below −20 you derank), so impossible changes are ruled out.
-- **Quick Play lobbies are not saved at all** (Ranked lobbies save everyone). Database → Settings → *Save Quick Play lobbies too* turns it on,
-  and then only players ranked GM or above are kept. Hidden-name recognition still works in Quick Play against what you already have.
+- **Quick Play lobbies** are read, but only players ranked GM or above are saved or updated; the lobby itself never goes to the Lobbies tab (Ranked lobbies save everyone).
+  Hidden-name recognition still works in Quick Play against what you already have.
 - **Hero details:** hover a hero tile (database, lobbies, on-page panel) for a tooltip with the hero's name and record (or its
   level), and open the ▾ dropdown under a player for **Heroes** (games + win rate), **Proficiency** (levels) and **Match history**.
   Details already read in the current match are skipped when you press the buttons again (Shift-click *Read hero details* to force a

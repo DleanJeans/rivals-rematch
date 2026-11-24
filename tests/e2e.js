@@ -171,21 +171,22 @@ const mockChrome = `
   store.delete('rdt_settings');
   page = await load('ban_qp.html');
   ok(qp.mode === 'quick play' && qp.qpLobby === true, `lobby recognised as Quick Play from the page header (mode="${qp.mode}")`);
-  ok(!byName('PlayerM1') && !byName('PlayerX6') && !byName('Player26') && !byName('Player29'), 'nobody from a Quick Play lobby is saved by default');
+  ok(!byName('PlayerM1') && !byName('PlayerX6') && !byName('Player26') && !byName('Player29'), 'nobody below GM from a Quick Play lobby is saved');
   ok(players().filter((p) => p.names.includes('PlayerM1') || p.names.includes('PlayerX6')).length === 0 && players().length === before, `database unchanged: still ${before} players (got ${players().length})`);
   ok(JSON.parse(store.get('rdt_games')).length === gamesBefore, 'and no lobby was recorded for it either');
   const qpHud = await page.evaluate(() => document.querySelector('#rdt-host').shadowRoot.querySelector('.hud').textContent);
-  ok(/Quick Play lobby: not saved/.test(qpHud), `the panel says it was not saved: "${qpHud.replace(/\s+/g, ' ').slice(0, 120)}"`);
+  ok(/Quick Play: updated 1 GM\+ player \(lobby not saved\)/.test(qpHud), `the panel reports only the GM+ player(s) updated and the lobby not saved: "${qpHud.replace(/\s+/g, ' ').slice(0, 120)}"`);
   await page.close();
 
-  // opt in: "Save Quick Play lobbies too" -> only GM and above are kept
-  store.set('rdt_settings', JSON.stringify({ saveQuickPlay: true }));
+  // a GM player in the lobby is kept (player record only)
 
   page = await load('ban_qp.html', () => {   // same lobby, but one visible Gold player is actually Grandmaster
     const li = [...document.querySelectorAll('li')].find((x) => x.textContent.includes('PlayerX6'));
     const im = li.querySelector('img[src*="/ranks/"]'); im.src = 'https://rivalsdata.com/assets/ranks/grandmaster.webp'; im.parentNode.firstChild.nodeType === 3 ? (im.parentNode.firstChild.textContent = 'GM2') : im.parentNode.childNodes.forEach((n) => { if (n.nodeType === 3) n.textContent = 'GM2'; });
   });
-  ok(!!byName('PlayerX6') && !byName('PlayerM1') && players().length === before + 1, 'opted in: the GM player is saved (+1), Platinum / Gold players still are not');
+  ok(!!byName('PlayerX6') && !byName('PlayerM1') && players().length === before + 1, 'the GM player is saved (+1), Platinum / Gold players still are not');
+  ok(JSON.parse(store.get('rdt_games')).length === gamesBefore, 'the Quick Play lobby is still never added to the Lobbies tab');
+  ok(!byName('PlayerX6').online, 'and no Competitive "in game" status is set');
   await page.close();
 
   // every tier at/above GM is kept; Diamond is not (labels as rivalsdata would render them, incl. "OAA" with a hyphenated image)
@@ -198,23 +199,6 @@ const mockChrome = `
   page = await load('ban_qp.html', `(${setTier.toString()})('PlayerM1', 'C2', 'celestial'); (${setTier.toString()})('Player26', 'E3', 'eternity'); (${setTier.toString()})('Player29', 'OAA', 'one-above-all');`);
   ok(players().length === before2 + 3 && !!byName('PlayerM1') && !!byName('Player26') && !!byName('Player29'), `Celestial, Eternity and One Above All are saved in Quick Play (+${players().length - before2})`);
   ok(!byName('Player27') && !byName('Player28'), 'Diamond players (Player27, Player28) still not saved');
-  await page.close();
-
-  console.log('\n[4b] Opted in with the GM-only filter off => Quick Play saves everyone, QP rank kept separate');
-  store.set('rdt_settings', JSON.stringify({ saveQuickPlay: true, qpHighRankOnly: false }));
-  page = await load('ban_qp.html');
-  const mo = byName('PlayerM1');
-  ok(!!mo && !!byName('PlayerX6'), 'with the filter off, Platinum / Gold players are saved again');
-  ok(mo.last.rs === 50 && mo.last.w == null, `partial row stored without inventing W/L (rs=${mo.last.rs}, w=${mo.last.w})`);
-  ok(mo.last.qp && mo.last.qp.label === 'B1', `QP rank kept separate (${mo.last.qp && mo.last.qp.label}) and not mistaken for ranked (${mo.last.rankLabel})`);
-  const only = await page.evaluate(() => {   // a player who shows ONLY a (QP) rank, no ranked column
-    const li = [...document.querySelectorAll('li')].find((x) => x.textContent.includes('PlayerM1'));
-    li.querySelectorAll('img[src*="/ranks/"]')[0].parentElement.remove();
-    const r = RDT.scrapeLive(document).rows.find((x) => x.name === 'PlayerM1');
-    return r && { rankIdx: r.rankIdx, qp: r.qp && r.qp.label, qpLobby: r.qpLobby };
-  });
-  ok(only && only.rankIdx === null && only.qp === 'B1' && only.qpLobby === true, `QP-only row is kept (not dropped): ${JSON.stringify(only)}`);
-  await page.screenshot({ path: path.join(__dirname, 'out_qp_ban.png') });
   await page.close();
 
   await browser.close();
