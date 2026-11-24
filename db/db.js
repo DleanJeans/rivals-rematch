@@ -140,13 +140,10 @@
     $('empty').hidden = data.players.length > 0;
     $('tbl').hidden = data.players.length === 0;
     const tb = document.querySelector('#tbl tbody'); tb.textContent = '';
-    list.slice(0, 500).forEach((p) => {
+    list.slice(0, 500).forEach((p, idx) => {
       const l = p.last || {};
       const tr = el('tr'); if (p.starred) tr.className = 'starred'; tr.dataset.uid = p.uid; if (autoNow.includes(p.uid)) tr.classList.add('auto-now');
-      const st = el('td', 'st'); const sb = el('button', 'star' + (p.starred ? ' on' : ''), p.starred ? '★' : '☆');
-      sb.title = p.starred ? 'Unstar' : 'Star this player'; sb.setAttribute('aria-pressed', String(!!p.starred));
-      sb.addEventListener('click', async () => { await S.updatePlayer(p.uid, { starred: !p.starred }); p.starred = !p.starred; renderPlayers(); });
-      st.appendChild(sb); tr.appendChild(st);
+      tr.appendChild(el('td', 'num dim', String(idx + 1)));   // row number in the displayed order, always from 1
       tr.appendChild(whoCell({ uid: p.uid, name: p.names[0] || p.uid, icon: p.icon, aka: p.names.slice(1, 4), party: l.party, partyColor: l.partyColor }));
       tr.appendChild(rankCell(l.rankLabel, l.rs));
       tr.appendChild(recordCell(l.w, l.l));

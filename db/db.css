@@ -116,3 +116,4 @@ p.hint{margin:0 0 10px}
 tr.auto-now td{background:color-mix(in srgb,var(--acc) 22%,transparent)}tr.auto-now td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
 
 .online{color:#4caf50;font-weight:600}
+.num{width:28px;text-align:right}
