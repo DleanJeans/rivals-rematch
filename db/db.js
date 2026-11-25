@@ -317,10 +317,10 @@
   function renderSettings() {
     const s = data.settings;
     $('sSelf').value = s.selfUid; $('sOverlay').checked = s.overlay;
-    $('sIcons').checked = s.useIcons; $('sSavedHeroes').checked = s.showSavedHeroes !== false; $('sAuto').checked = s.autoSaveFile; $('sRange').value = s.matchRankRange; $('sRankSave').checked = !!s.saveRankLimit; $('sSaveRange').value = s.saveRankRange != null ? s.saveRankRange : 3; $('sSaveRange').disabled = !s.saveRankLimit;
-    const me = data.all.find((p) => p.uid === s.selfUid), mi = me && me.last && me.last.rankIdx;
+    $('sIcons').checked = s.useIcons; $('sSavedHeroes').checked = s.showSavedHeroes !== false; $('sAuto').checked = s.autoSaveFile; $('sSelfRank').value = s.selfRank || ''; $('sRange').value = s.matchRankRange; $('sRankSave').checked = !!s.saveRankLimit; $('sSaveRange').value = s.saveRankRange != null ? s.saveRankRange : 3; $('sSaveRange').disabled = !s.saveRankLimit;
+    const me = data.all.find((p) => p.uid === s.selfUid), mr = RDT.parseRank(s.selfRank || ''), mi = mr ? RDT.rankIdx(mr) : (me && me.last && me.last.rankIdx);
     $('rangeInfo').textContent = mi != null
-      ? 'You are ' + me.last.rankLabel + ' → hidden players below ' + RDT.rankLabelOf(RDT.minRankIdx(mi, s.matchRankRange)) + ' are skipped. This follows your rank automatically.'
+      ? 'You are ' + RDT.rankLabelOf(mi) + ' → hidden players below ' + RDT.rankLabelOf(RDT.minRankIdx(mi, s.matchRankRange)) + ' are skipped. This follows your rank automatically.'
       : 'Your rank is not known yet (it is saved when you appear in a lobby).'; $('sDetails').checked = s.autoDetails; $('sMin').value = Math.round(s.minShow * 100);
     const st = data.stats;
     $('accuracy').textContent = st.checked
@@ -329,12 +329,12 @@
   }
   async function saveSettings() {
     const s = Object.assign({}, data.settings, {
-      selfUid: $('sSelf').value.trim(), overlay: $('sOverlay').checked,
+      selfUid: $('sSelf').value.trim(), selfRank: (() => { const r = RDT.parseRank($('sSelfRank').value); return r ? RDT.rankLabelOf(RDT.rankIdx(r)) || r.label : null; })(), overlay: $('sOverlay').checked,
       useIcons: $('sIcons').checked, showSavedHeroes: $('sSavedHeroes').checked, autoSaveFile: $('sAuto').checked, matchRankRange: Math.max(0, Math.min(24, parseInt($('sRange').value, 10) || 0)), saveRankLimit: $('sRankSave').checked, saveRankRange: Math.max(0, Math.min(24, parseInt($('sSaveRange').value, 10) || 0)), autoDetails: $('sDetails').checked, minShow: Math.min(0.95, Math.max(0.05, (+$('sMin').value || 50) / 100)),
     });
     await S.saveSettings(s); data.settings = s; $('sSaveRange').disabled = !s.saveRankLimit;
   }
-  ['sSelf', 'sOverlay', 'sIcons', 'sMin', 'sSavedHeroes', 'sAuto', 'sDetails', 'sRange', 'sRankSave', 'sSaveRange'].forEach((id) => $(id).addEventListener('change', saveSettings));
+  ['sSelf', 'sSelfRank', 'sOverlay', 'sIcons', 'sMin', 'sSavedHeroes', 'sAuto', 'sDetails', 'sRange', 'sRankSave', 'sSaveRange'].forEach((id) => $(id).addEventListener('change', saveSettings));
 
   try { $('ver').textContent = 'v' + chrome.runtime.getManifest().version; } catch (_) { /* no manifest in tests */ }
   try { RDT.autoUI.init({ toggle: $('autotoggle'), delay: $('autodelay'), status: $('autostatus'), parallel: $('autoparallel'), order: fullOrder }); } catch (_) { /* tests without the extension APIs */ }

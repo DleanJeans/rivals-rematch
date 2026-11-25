@@ -23,6 +23,16 @@ const lobby = () => ({ season: 11, qpLobby: false, rows: [row('100', GM1, 0, 0),
   Object.keys(mem).filter((k) => k.startsWith('p:') || k === 'rdt_games').forEach((k) => delete mem[k]);
   r = await S.ingest(lobby(), await S.getSettings());
   ok(r.saved === 2 && r.rankSkipped === 3, `limit 0: only players of your own rank and above, plus you (${r.saved} saved)`);
+  // own rank: saved from a lobby with you, used when you are absent
+  Object.keys(mem).forEach((k) => delete mem[k]);
+  await S.saveSettings(Object.assign(await S.getSettings(), { selfUid: '100', saveRankLimit: true, saveRankRange: 3 }));
+  { const lb = lobby(); lb.rows.forEach((x) => { x.rankLabel = R.rankLabelOf(x.rankIdx); }); await S.ingest(lb, await S.getSettings()); }
+  ok((await S.getSettings()).selfRank === 'GM1', 'a lobby with you in it saves your rank');
+  Object.keys(mem).filter((k) => k.startsWith('p:') || k === 'rdt_games').forEach((k) => delete mem[k]);
+  { const lb = lobby(); lb.rows = lb.rows.filter((x) => x.uid !== '100'); r = await S.ingest(lb, await S.getSettings()); }
+  ok(r.saved === 2 && r.rankSkipped === 2, `without you in the lobby or a stored row, the saved rank still limits (${r.saved} saved)`);
+  await S.saveSettings(Object.assign(await S.getSettings(), { selfRank: 'D1' }));
+  ok(S.selfRankIdx(await S.getSettings()) === R.rankIdx(R.parseRank('D1', 'diamond')), 'editing the rank in Settings changes the one used');
   // purge below a rank
   Object.keys(mem).forEach((k) => delete mem[k]);
   await S.saveSettings(Object.assign(await S.getSettings(), { selfUid: '100', saveRankLimit: false }));

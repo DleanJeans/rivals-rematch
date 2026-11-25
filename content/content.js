@@ -373,7 +373,7 @@
       const hiddenAll = lobby.rows.filter((r) => r.masked);
       // Only try to recognise players near your own rank: `matchRankRange` ranks below you (GM1 + 3 -> D1).
       const me = lobby.rows.find((r) => r.uid === settings.selfUid), meStored = all.find((p) => p.uid === settings.selfUid);
-      const selfIdx = me && me.rankIdx != null ? me.rankIdx : (meStored && meStored.last && meStored.last.rankIdx != null ? meStored.last.rankIdx : null);
+      const selfIdx = me && me.rankIdx != null ? me.rankIdx : (meStored && meStored.last && meStored.last.rankIdx != null ? meStored.last.rankIdx : S.selfRankIdx(settings));
       const minIdx = R.minRankIdx(selfIdx, settings.matchRankRange);
       const hidden = hiddenAll.filter((r) => minIdx == null || r.rankIdx == null || r.rankIdx >= minIdx);
       const belowRange = hiddenAll.length - hidden.length, minLabel = minIdx != null ? R.rankLabelOf(minIdx) : null;
